@@ -99,7 +99,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the scale.
+				Returns the transform's scale.
 			</description>
 		</method>
 		<method name="interpolate_with" qualifiers="const">
@@ -223,10 +223,19 @@
 		<method name="set_rotation">
 			<return type="void">
 			</return>
-			<argument index="0" name="rotation" type="float">
+			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Sets the transform's rotation (in radians).
+				Sets the transform's rotation to the given value (in radians).
+			</description>
+		</method>
+		<method name="set_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Sets the transform's scale to the given [Vector2] value.
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
