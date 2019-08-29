@@ -54,27 +54,27 @@ def configure(env):
     ## Build type
 
     if env["target"] == "release":
-        env.Append(CCFLAGS=["/MD"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+        env.Append(CCFLAGS=["-MD"])
+        env.Append(LINKFLAGS=["-SUBSYSTEM:WINDOWS"])
         if env["optimize"] != "none":
-            env.Append(CCFLAGS=["/O2", "/GL"])
-            env.Append(LINKFLAGS=["/LTCG"])
+            env.Append(CCFLAGS=["-O2", "-GL"])
+            env.Append(LINKFLAGS=["-LTCG"])
 
     elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["/MD"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.Append(CCFLAGS=["-MD"])
+        env.Append(LINKFLAGS=["-SUBSYSTEM:CONSOLE"])
         env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         if env["optimize"] != "none":
             env.Append(CCFLAGS=["/O2", "/Zi"])
 
     elif env["target"] == "debug":
-        env.Append(CCFLAGS=["/Zi"])
-        env.Append(CCFLAGS=["/MDd"])
+        env.Append(CCFLAGS=["-Zi"])
+        env.Append(CCFLAGS=["-MDd"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.Append(LINKFLAGS=["-SUBSYSTEM:CONSOLE"])
         env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
-        env.Append(LINKFLAGS=["/DEBUG"])
+        env.Append(LINKFLAGS=["-DEBUG"])
 
     ## Compiler configuration
 
@@ -93,7 +93,7 @@ def configure(env):
         + angle_root
         + "/winrt/10/src/angle.sln /nologo /v:m /m:"
         + jobs
-        + " /p:Configuration=Release /p:Platform="
+        + " -p:Configuration=Release -p:Platform="
     )
 
     if os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
@@ -108,7 +108,7 @@ def configure(env):
 
         arch = "arm"
         env["bits"] = "32"
-        env.Append(LINKFLAGS=["/MACHINE:ARM"])
+        env.Append(LINKFLAGS=["-MACHINE:ARM"])
         env.Append(LIBPATH=[vc_base_path + "lib/store/arm"])
 
         angle_build_cmd += "ARM"
@@ -137,7 +137,7 @@ def configure(env):
 
             angle_build_cmd += "Win32"
 
-            env.Append(LINKFLAGS=["/MACHINE:X86"])
+            env.Append(LINKFLAGS=["-MACHINE:X86"])
             env.Append(LIBPATH=[vc_base_path + "lib/store"])
             env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_Win32/lib"])
 
@@ -146,7 +146,7 @@ def configure(env):
 
             angle_build_cmd += "x64"
 
-            env.Append(LINKFLAGS=["/MACHINE:X64"])
+            env.Append(LINKFLAGS=["-MACHINE:X64"])
             env.Append(LIBPATH=[os.environ["VCINSTALLDIR"] + "lib/store/amd64"])
             env.Append(LIBPATH=[angle_root + "/winrt/10/src/Release_x64/lib"])
 
@@ -164,8 +164,8 @@ def configure(env):
 
     env.Append(CPPDEFINES=["__WRL_NO_DEFAULT_LIB__", ("PNG_ABORT", "abort")])
 
-    env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/store/references"])
-    env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/x86/store/references"])
+    env.Append(CPPFLAGS=["-AI", vc_base_path + "lib/store/references"])
+    env.Append(CPPFLAGS=["-AI", vc_base_path + "lib/x86/store/references"])
 
     env.Append(
         CCFLAGS=(
@@ -174,12 +174,12 @@ def configure(env):
         )
     )
     env.Append(CPPDEFINES=["_UNICODE", "UNICODE", ("WINAPI_FAMILY", "WINAPI_FAMILY_APP")])
-    env.Append(CXXFLAGS=["/ZW"])
+    env.Append(CXXFLAGS=["-ZW"])
     env.Append(
         CCFLAGS=[
-            "/AI",
+            "-AI",
             vc_base_path + "\\vcpackages",
-            "/AI",
+            "-AI",
             os.environ["WINDOWSSDKDIR"] + "\\References\\CommonConfiguration\\Neutral",
         ]
     )
@@ -188,14 +188,14 @@ def configure(env):
 
     env.Append(
         LINKFLAGS=[
-            "/MANIFEST:NO",
-            "/NXCOMPAT",
-            "/DYNAMICBASE",
-            "/WINMD",
-            "/APPCONTAINER",
-            "/ERRORREPORT:PROMPT",
-            "/NOLOGO",
-            "/TLBID:1",
+            "-MANIFEST:NO",
+            "-NXCOMPAT",
+            "-DYNAMICBASE",
+            "-WINMD",
+            "-APPCONTAINER",
+            "-ERRORREPORT:PROMPT",
+            "-NOLOGO",
+            "-TLBID:1",
             '/NODEFAULTLIB:"kernel32.lib"',
             '/NODEFAULTLIB:"ole32.lib"',
         ]

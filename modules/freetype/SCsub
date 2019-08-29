@@ -58,9 +58,9 @@ if env["builtin_freetype"]:
 
     if env["platform"] == "uwp":
         # Include header for UWP to fix build issues
-        env_freetype.Append(CCFLAGS=["/FI", '"modules/freetype/uwpdef.h"'])
+        env_freetype.Append(CCFLAGS=["-FI", '"modules/freetype/uwpdef.h"'])
         # Globally too, as freetype is used in scene (see bottom)
-        env.Append(CCFLAGS=["/FI", '"modules/freetype/uwpdef.h"'])
+        env.Append(CCFLAGS=["-FI", '"modules/freetype/uwpdef.h"'])
 
     env_freetype.Prepend(CPPPATH=[thirdparty_dir + "/include"])
     # Also needed in main env for scene/

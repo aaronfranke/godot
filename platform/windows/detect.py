@@ -190,51 +190,51 @@ def configure_msvc(env, manual_msvc_config):
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
+            env.Append(CCFLAGS=["-O2"])
+            env.Append(LINKFLAGS=["-OPT:REF"])
         elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
+            env.Append(CCFLAGS=["-O1"])
+            env.Append(LINKFLAGS=["-OPT:REF"])
+        env.Append(LINKFLAGS=["-ENTRY:mainCRTStartup"])
 
     elif env["target"] == "release_debug":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
+            env.Append(CCFLAGS=["-O2"])
+            env.Append(LINKFLAGS=["-OPT:REF"])
         elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
+            env.Append(CCFLAGS=["-O1"])
+            env.Append(LINKFLAGS=["-OPT:REF"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
 
     elif env["target"] == "debug":
-        env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
+        env.AppendUnique(CCFLAGS=["-Zi", "-FS", "-Od", "-EHsc"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(LINKFLAGS=["/DEBUG"])
+        env.Append(LINKFLAGS=["-DEBUG"])
 
     if env["debug_symbols"]:
-        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
-        env.AppendUnique(LINKFLAGS=["/DEBUG"])
+        env.AppendUnique(CCFLAGS=["-Zi", "-FS"])
+        env.AppendUnique(LINKFLAGS=["-DEBUG"])
 
     if env["windows_subsystem"] == "gui":
-        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+        env.Append(LINKFLAGS=["-SUBSYSTEM:WINDOWS"])
     else:
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.Append(LINKFLAGS=["-SUBSYSTEM:CONSOLE"])
         env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     ## Compile/link flags
 
     if env["use_static_cpp"]:
-        env.AppendUnique(CCFLAGS=["/MT"])
+        env.AppendUnique(CCFLAGS=["-MT"])
     else:
-        env.AppendUnique(CCFLAGS=["/MD"])
+        env.AppendUnique(CCFLAGS=["-MD"])
 
-    env.AppendUnique(CCFLAGS=["/Gd", "/GR", "/nologo"])
+    env.AppendUnique(CCFLAGS=["-Gd", "-GR", "-nologo"])
     # Force to use Unicode encoding
-    env.AppendUnique(CCFLAGS=["/utf-8"])
-    env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
+    env.AppendUnique(CCFLAGS=["-utf-8"])
+    env.AppendUnique(CXXFLAGS=["-TP"])  # assume all sources are C++
     if manual_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
-            env.Prepend(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
+            env.Prepend(CPPPATH=[os.getenv("WindowsSdkDir") + "-Include"])
         else:
             print("Missing environment variable: WindowsSdkDir")
 
@@ -291,19 +291,19 @@ def configure_msvc(env, manual_msvc_config):
 
     if manual_msvc_config:
         if os.getenv("WindowsSdkDir") is not None:
-            env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
+            env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "-Lib"])
         else:
             print("Missing environment variable: WindowsSdkDir")
 
     ## LTO
 
     if env["use_lto"]:
-        env.AppendUnique(CCFLAGS=["/GL"])
-        env.AppendUnique(ARFLAGS=["/LTCG"])
+        env.AppendUnique(CCFLAGS=["-GL"])
+        env.AppendUnique(ARFLAGS=["-LTCG"])
         if env["progress"]:
-            env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+            env.AppendUnique(LINKFLAGS=["-LTCG:STATUS"])
         else:
-            env.AppendUnique(LINKFLAGS=["/LTCG"])
+            env.AppendUnique(LINKFLAGS=["-LTCG"])
 
     if manual_msvc_config:
         env.Prepend(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
@@ -319,7 +319,7 @@ def configure_msvc(env, manual_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
-    env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
+    env.AppendUnique(LINKFLAGS=["-STACK:" + str(STACK_SIZE)])
 
 
 def configure_mingw(env):

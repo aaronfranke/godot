@@ -405,9 +405,9 @@ if selected_platform in platform_list:
         env.Prepend(CFLAGS=["-std=gnu11"])
         env.Prepend(CXXFLAGS=["-std=gnu++17"])
     else:
-        # MSVC doesn't have clear C standard support, /std only covers C++.
+        # MSVC doesn't have clear C standard support, -std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-        env.Prepend(CCFLAGS=["/std:c++17"])
+        env.Prepend(CCFLAGS=["-std:c++17"])
 
     # Enforce our minimal compiler version requirements
     cc_version = methods.get_compiler_version(env) or {
@@ -486,20 +486,20 @@ if selected_platform in platform_list:
     # Configure compiler warnings
     if env.msvc:  # MSVC
         # Truncations, narrowing conversions, signed/unsigned comparisons...
-        disable_nonessential_warnings = ["/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800"]
+        disable_nonessential_warnings = ["-wd4267", "-wd4244", "-wd4305", "-wd4018", "-wd4800"]
         if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["/Wall"])  # Implies /W4
+            env.Append(CCFLAGS=["-Wall"])  # Implies -W4
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["/W3"] + disable_nonessential_warnings)
+            env.Append(CCFLAGS=["-W3"] + disable_nonessential_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["/W2"] + disable_nonessential_warnings)
+            env.Append(CCFLAGS=["-W2"] + disable_nonessential_warnings)
         else:  # 'no'
-            env.Append(CCFLAGS=["/w"])
+            env.Append(CCFLAGS=["-w"])
         # Set exception handling model to avoid warnings caused by Windows system headers.
-        env.Append(CCFLAGS=["/EHsc"])
+        env.Append(CCFLAGS=["-EHsc"])
 
         if env["werror"]:
-            env.Append(CCFLAGS=["/WX"])
+            env.Append(CCFLAGS=["-WX"])
     else:  # GCC, Clang
         gcc_common_warnings = []
 
