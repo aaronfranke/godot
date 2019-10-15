@@ -1661,7 +1661,12 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[6] = { "x.x", "y.x", "o.x", "x.y", "y.y", "o.y" };
+	static const char **desc;
+	if (EDITOR_GET("interface/inspector/use_math_notation_for_matrices")) {
+		desc = new const char *[6] { "Mxx", "Mxy", "Mxo", "Myx", "Myy", "Myo" };
+	} else {
+		desc = new const char *[6] { "x.x", "y.x", "o.x", "x.y", "y.y", "o.y" };
+	}
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -1671,6 +1676,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
+	delete desc;
 	set_bottom_editor(g);
 	setting = false;
 }
@@ -1739,7 +1745,12 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[9] = { "x.x", "y.x", "z.x", "x.y", "y.y", "z.y", "x.z", "y.z", "z.z" };
+	static const char **desc;
+	if (EDITOR_GET("interface/inspector/use_math_notation_for_matrices")) {
+		desc = new const char *[9] { "Mxx", "Mxy", "Mxz", "Myx", "Myy", "Myz", "Mzx", "Mzy", "Mzz" };
+	} else {
+		desc = new const char *[9] { "x.x", "y.x", "z.x", "x.y", "y.y", "z.y", "x.z", "y.z", "z.z" };
+	}
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -1749,6 +1760,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
+	delete desc;
 	set_bottom_editor(g);
 	setting = false;
 }
@@ -1823,7 +1835,12 @@ EditorPropertyTransform::EditorPropertyTransform() {
 	g->set_columns(4);
 	add_child(g);
 
-	static const char *desc[12] = { "x.x", "y.x", "z.x", "o.x", "x.y", "y.y", "z.y", "o.y", "x.z", "y.z", "z.z", "o.z" };
+	static const char **desc;
+	if (EDITOR_GET("interface/inspector/use_math_notation_for_matrices")) {
+		desc = new const char *[12] { "Mxx", "Mxy", "Mxz", "Mxo", "Myx", "Myy", "Myz", "Myo", "Mzx", "Mzy", "Mzz", "Mzo" };
+	} else {
+		desc = new const char *[12] { "x.x", "y.x", "z.x", "o.x", "x.y", "y.y", "z.y", "o.y", "x.z", "y.z", "z.z", "o.z" };
+	}
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -1833,6 +1850,7 @@ EditorPropertyTransform::EditorPropertyTransform() {
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
+	delete desc;
 	set_bottom_editor(g);
 	setting = false;
 }
