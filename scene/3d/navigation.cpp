@@ -39,12 +39,12 @@ void Navigation::_navmesh_link(int p_id) {
 	ERR_FAIL_COND(nm.linked);
 	ERR_FAIL_COND(nm.navmesh.is_null());
 
-	PoolVector<Vector3> vertices = nm.navmesh->get_vertices();
+	PoolVector3Array vertices = nm.navmesh->get_vertices();
 	int len = vertices.size();
 	if (len == 0)
 		return;
 
-	PoolVector<Vector3>::Read r = vertices.read();
+	PoolVector3Array::Read r = vertices.read();
 
 	for (int i = 0; i < nm.navmesh->get_polygon_count(); i++) {
 

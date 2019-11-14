@@ -57,11 +57,11 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 	const int dst_bpl = image_width * comps;
 
-	PoolVector<uint8_t> data;
+	PoolByteArray data;
 
 	data.resize(dst_bpl * image_height);
 
-	PoolVector<uint8_t>::Write dw = data.write();
+	PoolByteArray::Write dw = data.write();
 
 	jpgd::uint8 *pImage_data = (jpgd::uint8 *)dw.ptr();
 
@@ -104,12 +104,12 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
-	PoolVector<uint8_t> src_image;
+	PoolByteArray src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
 	src_image.resize(src_image_len);
 
-	PoolVector<uint8_t>::Write w = src_image.write();
+	PoolByteArray::Write w = src_image.write();
 
 	f->get_buffer(&w[0], src_image_len);
 

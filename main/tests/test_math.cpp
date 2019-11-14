@@ -455,21 +455,21 @@ MainLoop *test() {
 	print_line("Mem used: " + itos(MemoryPool::total_memory));
 	print_line("MAx mem used: " + itos(MemoryPool::max_memory));
 
-	PoolVector<int> ints;
+	PoolIntArray ints;
 	ints.resize(20);
 
 	{
-		PoolVector<int>::Write w;
+		PoolIntArray::Write w;
 		w = ints.write();
 		for (int i = 0; i < ints.size(); i++) {
 			w[i] = i;
 		}
 	}
 
-	PoolVector<int> posho = ints;
+	PoolIntArray posho = ints;
 
 	{
-		PoolVector<int>::Read r = posho.read();
+		PoolIntArray::Read r = posho.read();
 		for (int i = 0; i < posho.size(); i++) {
 			print_line(itos(i) + " : " + itos(r[i]));
 		}

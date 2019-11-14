@@ -118,8 +118,8 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	int vpc = 0;
 
 	{
-		PoolVector<uint8_t> data = img->get_data();
-		PoolVector<uint8_t>::Read r = data.read();
+		PoolByteArray data = img->get_data();
+		PoolByteArray::Read r = data.read();
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {

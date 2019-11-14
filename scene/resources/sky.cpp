@@ -134,7 +134,7 @@ Ref<Image> ProceduralSky::_generate_sky() {
 
 	update_queued = false;
 
-	PoolVector<uint8_t> imgdata;
+	PoolByteArray imgdata;
 
 	static const int size[TEXTURE_SIZE_MAX] = {
 		256, 512, 1024, 2048, 4096
@@ -146,7 +146,7 @@ Ref<Image> ProceduralSky::_generate_sky() {
 	imgdata.resize(w * h * 4); //RGBE
 
 	{
-		PoolVector<uint8_t>::Write dataw = imgdata.write();
+		PoolByteArray::Write dataw = imgdata.write();
 
 		uint32_t *ptr = (uint32_t *)dataw.ptr();
 

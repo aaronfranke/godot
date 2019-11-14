@@ -40,7 +40,7 @@ class NavigationMesh : public Resource {
 
 	GDCLASS(NavigationMesh, Resource);
 
-	PoolVector<Vector3> vertices;
+	PoolVector3Array vertices;
 	struct Polygon {
 		Vector<int> indices;
 	};
@@ -180,8 +180,8 @@ public:
 
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
 
-	void set_vertices(const PoolVector<Vector3> &p_vertices);
-	PoolVector<Vector3> get_vertices() const;
+	void set_vertices(const PoolVector3Array &p_vertices);
+	PoolVector3Array get_vertices() const;
 
 	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;

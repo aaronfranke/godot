@@ -3199,7 +3199,7 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 			pd.write[0] = w;
 			pd.write[1] = h;
 
-			PoolVector<uint8_t>::Read r = img->get_data().read();
+			PoolByteArray::Read r = img->get_data().read();
 
 			long *wr = &pd.write[2];
 			uint8_t const *pr = r.ptr();

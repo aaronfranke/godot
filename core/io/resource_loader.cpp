@@ -898,10 +898,10 @@ void ResourceLoader::load_path_remaps() {
 	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths"))
 		return;
 
-	PoolVector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
+	PoolStringArray remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
 	int rc = remaps.size();
 	ERR_FAIL_COND(rc & 1); //must be even
-	PoolVector<String>::Read r = remaps.read();
+	PoolStringArray::Read r = remaps.read();
 
 	for (int i = 0; i < rc; i += 2) {
 

@@ -282,11 +282,11 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 					image->shrink_x2();
 				}
 
-				PoolVector<uint8_t> data = Image::lossless_packer(image);
+				PoolByteArray data = Image::lossless_packer(image);
 				int data_len = data.size();
 				f->store_32(data_len);
 
-				PoolVector<uint8_t>::Read r = data.read();
+				PoolByteArray::Read r = data.read();
 				f->store_buffer(r.ptr(), data_len);
 			}
 
@@ -311,11 +311,11 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 					image->shrink_x2();
 				}
 
-				PoolVector<uint8_t> data = Image::lossy_packer(image, p_lossy_quality);
+				PoolByteArray data = Image::lossy_packer(image, p_lossy_quality);
 				int data_len = data.size();
 				f->store_32(data_len);
 
-				PoolVector<uint8_t>::Read r = data.read();
+				PoolByteArray::Read r = data.read();
 				f->store_buffer(r.ptr(), data_len);
 			}
 		} break;
@@ -346,9 +346,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			f->store_32(format);
 
-			PoolVector<uint8_t> data = image->get_data();
+			PoolByteArray data = image->get_data();
 			int dl = data.size();
-			PoolVector<uint8_t>::Read r = data.read();
+			PoolByteArray::Read r = data.read();
 			f->store_buffer(r.ptr(), dl);
 		} break;
 		case COMPRESS_UNCOMPRESSED: {
@@ -363,9 +363,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 			format |= image->get_format();
 			f->store_32(format);
 
-			PoolVector<uint8_t> data = image->get_data();
+			PoolByteArray data = image->get_data();
 			int dl = data.size();
-			PoolVector<uint8_t>::Read r = data.read();
+			PoolByteArray::Read r = data.read();
 
 			f->store_buffer(r.ptr(), dl);
 

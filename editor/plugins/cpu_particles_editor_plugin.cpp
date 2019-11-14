@@ -80,8 +80,8 @@ void CPUParticlesEditor::edit(CPUParticles *p_particles) {
 void CPUParticlesEditor::_generate_emission_points() {
 
 	/// hacer codigo aca
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
+	PoolVector3Array points;
+	PoolVector3Array normals;
 
 	if (!_generate(points, normals)) {
 		return;

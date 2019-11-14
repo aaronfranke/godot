@@ -343,7 +343,7 @@ void CSGShape::_update_shape() {
 	}
 
 	//fill arrays
-	PoolVector<Vector3> physics_faces;
+	PoolVector3Array physics_faces;
 	bool fill_physics_faces = false;
 	if (root_collision_shape.is_valid()) {
 		physics_faces.resize(n->faces.size() * 3);
@@ -351,7 +351,7 @@ void CSGShape::_update_shape() {
 	}
 
 	{
-		PoolVector<Vector3>::Write physicsw;
+		PoolVector3Array::Write physicsw;
 
 		if (fill_physics_faces) {
 			physicsw = physics_faces.write();
@@ -470,18 +470,18 @@ AABB CSGShape::get_aabb() const {
 	return node_aabb;
 }
 
-PoolVector<Vector3> CSGShape::get_brush_faces() {
-	ERR_FAIL_COND_V(!is_inside_tree(), PoolVector<Vector3>());
+PoolVector3Array CSGShape::get_brush_faces() {
+	ERR_FAIL_COND_V(!is_inside_tree(), PoolVector3Array());
 	CSGBrush *b = _get_brush();
 	if (!b) {
-		return PoolVector<Vector3>();
+		return PoolVector3Array();
 	}
 
-	PoolVector<Vector3> faces;
+	PoolVector3Array faces;
 	int fc = b->faces.size();
 	faces.resize(fc * 3);
 	{
-		PoolVector<Vector3>::Write w = faces.write();
+		PoolVector3Array::Write w = faces.write();
 		for (int i = 0; i < fc; i++) {
 			w[i * 3 + 0] = b->faces[i].vertices[0];
 			w[i * 3 + 1] = b->faces[i].vertices[1];
@@ -671,7 +671,7 @@ CSGCombiner::CSGCombiner() {
 
 /////////////////////
 
-CSGBrush *CSGPrimitive::_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials) {
+CSGBrush *CSGPrimitive::_create_brush_from_arrays(const PoolVector3Array &p_vertices, const PoolVector2Array &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials) {
 
 	CSGBrush *brush = memnew(CSGBrush);
 
@@ -721,10 +721,10 @@ CSGBrush *CSGMesh::_build_brush() {
 	if (!mesh.is_valid())
 		return NULL;
 
-	PoolVector<Vector3> vertices;
+	PoolVector3Array vertices;
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
-	PoolVector<Vector2> uvs;
+	PoolVector2Array uvs;
 	Ref<Material> material = get_material();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
@@ -740,22 +740,22 @@ CSGBrush *CSGMesh::_build_brush() {
 			ERR_FAIL_COND_V(arrays.size() == 0, NULL);
 		}
 
-		PoolVector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
+		PoolVector3Array avertices = arrays[Mesh::ARRAY_VERTEX];
 		if (avertices.size() == 0)
 			continue;
 
-		PoolVector<Vector3>::Read vr = avertices.read();
+		PoolVector3Array::Read vr = avertices.read();
 
-		PoolVector<Vector3> anormals = arrays[Mesh::ARRAY_NORMAL];
-		PoolVector<Vector3>::Read nr;
+		PoolVector3Array anormals = arrays[Mesh::ARRAY_NORMAL];
+		PoolVector3Array::Read nr;
 		bool nr_used = false;
 		if (anormals.size()) {
 			nr = anormals.read();
 			nr_used = true;
 		}
 
-		PoolVector<Vector2> auvs = arrays[Mesh::ARRAY_TEX_UV];
-		PoolVector<Vector2>::Read uvr;
+		PoolVector2Array auvs = arrays[Mesh::ARRAY_TEX_UV];
+		PoolVector2Array::Read uvr;
 		bool uvr_used = false;
 		if (auvs.size()) {
 			uvr = auvs.read();
@@ -769,7 +769,7 @@ CSGBrush *CSGMesh::_build_brush() {
 			mat = mesh->surface_get_material(i);
 		}
 
-		PoolVector<int> aindices = arrays[Mesh::ARRAY_INDEX];
+		PoolIntArray aindices = arrays[Mesh::ARRAY_INDEX];
 		if (aindices.size()) {
 			int as = vertices.size();
 			int is = aindices.size();
@@ -779,12 +779,12 @@ CSGBrush *CSGMesh::_build_brush() {
 			materials.resize((as + is) / 3);
 			uvs.resize(as + is);
 
-			PoolVector<Vector3>::Write vw = vertices.write();
+			PoolVector3Array::Write vw = vertices.write();
 			PoolVector<bool>::Write sw = smooth.write();
-			PoolVector<Vector2>::Write uvw = uvs.write();
+			PoolVector2Array::Write uvw = uvs.write();
 			PoolVector<Ref<Material> >::Write mw = materials.write();
 
-			PoolVector<int>::Read ir = aindices.read();
+			PoolIntArray::Read ir = aindices.read();
 
 			for (int j = 0; j < is; j += 3) {
 
@@ -825,9 +825,9 @@ CSGBrush *CSGMesh::_build_brush() {
 			uvs.resize(as + is);
 			materials.resize((as + is) / 3);
 
-			PoolVector<Vector3>::Write vw = vertices.write();
+			PoolVector3Array::Write vw = vertices.write();
 			PoolVector<bool>::Write sw = smooth.write();
-			PoolVector<Vector2>::Write uvw = uvs.write();
+			PoolVector2Array::Write uvw = uvs.write();
 			PoolVector<Ref<Material> >::Write mw = materials.write();
 
 			for (int j = 0; j < is; j += 3) {
@@ -932,8 +932,8 @@ CSGBrush *CSGSphere::_build_brush() {
 	bool invert_val = is_inverting_faces();
 	Ref<Material> material = get_material();
 
-	PoolVector<Vector3> faces;
-	PoolVector<Vector2> uvs;
+	PoolVector3Array faces;
+	PoolVector2Array uvs;
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<bool> invert;
@@ -947,8 +947,8 @@ CSGBrush *CSGSphere::_build_brush() {
 
 	{
 
-		PoolVector<Vector3>::Write facesw = faces.write();
-		PoolVector<Vector2>::Write uvsw = uvs.write();
+		PoolVector3Array::Write facesw = faces.write();
+		PoolVector2Array::Write uvsw = uvs.write();
 		PoolVector<bool>::Write smoothw = smooth.write();
 		PoolVector<Ref<Material> >::Write materialsw = materials.write();
 		PoolVector<bool>::Write invertw = invert.write();
@@ -1135,8 +1135,8 @@ CSGBrush *CSGBox::_build_brush() {
 	bool invert_val = is_inverting_faces();
 	Ref<Material> material = get_material();
 
-	PoolVector<Vector3> faces;
-	PoolVector<Vector2> uvs;
+	PoolVector3Array faces;
+	PoolVector2Array uvs;
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<bool> invert;
@@ -1150,8 +1150,8 @@ CSGBrush *CSGBox::_build_brush() {
 
 	{
 
-		PoolVector<Vector3>::Write facesw = faces.write();
-		PoolVector<Vector2>::Write uvsw = uvs.write();
+		PoolVector3Array::Write facesw = faces.write();
+		PoolVector2Array::Write uvsw = uvs.write();
 		PoolVector<bool>::Write smoothw = smooth.write();
 		PoolVector<Ref<Material> >::Write materialsw = materials.write();
 		PoolVector<bool>::Write invertw = invert.write();
@@ -1313,8 +1313,8 @@ CSGBrush *CSGCylinder::_build_brush() {
 	bool invert_val = is_inverting_faces();
 	Ref<Material> material = get_material();
 
-	PoolVector<Vector3> faces;
-	PoolVector<Vector2> uvs;
+	PoolVector3Array faces;
+	PoolVector2Array uvs;
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<bool> invert;
@@ -1328,8 +1328,8 @@ CSGBrush *CSGCylinder::_build_brush() {
 
 	{
 
-		PoolVector<Vector3>::Write facesw = faces.write();
-		PoolVector<Vector2>::Write uvsw = uvs.write();
+		PoolVector3Array::Write facesw = faces.write();
+		PoolVector2Array::Write uvsw = uvs.write();
 		PoolVector<bool>::Write smoothw = smooth.write();
 		PoolVector<Ref<Material> >::Write materialsw = materials.write();
 		PoolVector<bool>::Write invertw = invert.write();
@@ -1562,8 +1562,8 @@ CSGBrush *CSGTorus::_build_brush() {
 	bool invert_val = is_inverting_faces();
 	Ref<Material> material = get_material();
 
-	PoolVector<Vector3> faces;
-	PoolVector<Vector2> uvs;
+	PoolVector3Array faces;
+	PoolVector2Array uvs;
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<bool> invert;
@@ -1577,8 +1577,8 @@ CSGBrush *CSGTorus::_build_brush() {
 
 	{
 
-		PoolVector<Vector3>::Write facesw = faces.write();
-		PoolVector<Vector2>::Write uvsw = uvs.write();
+		PoolVector3Array::Write facesw = faces.write();
+		PoolVector2Array::Write uvsw = uvs.write();
 		PoolVector<bool>::Write smoothw = smooth.write();
 		PoolVector<Ref<Material> >::Write materialsw = materials.write();
 		PoolVector<bool>::Write invertw = invert.write();
@@ -1856,8 +1856,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 	bool invert_val = is_inverting_faces();
 	Ref<Material> material = get_material();
 
-	PoolVector<Vector3> faces;
-	PoolVector<Vector2> uvs;
+	PoolVector3Array faces;
+	PoolVector2Array uvs;
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<bool> invert;
@@ -1872,8 +1872,8 @@ CSGBrush *CSGPolygon::_build_brush() {
 	AABB aabb; //must be computed
 	{
 
-		PoolVector<Vector3>::Write facesw = faces.write();
-		PoolVector<Vector2>::Write uvsw = uvs.write();
+		PoolVector3Array::Write facesw = faces.write();
+		PoolVector2Array::Write uvsw = uvs.write();
 		PoolVector<bool>::Write smoothw = smooth.write();
 		PoolVector<Ref<Material> >::Write materialsw = materials.write();
 		PoolVector<bool>::Write invertw = invert.write();

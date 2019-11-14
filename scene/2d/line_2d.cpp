@@ -70,7 +70,7 @@ bool Line2D::_edit_use_rect() const {
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	const real_t d = _width / 2 + p_tolerance;
-	PoolVector<Vector2>::Read points = _points.read();
+	PoolVector2Array::Read points = _points.read();
 	for (int i = 0; i < _points.size() - 1; i++) {
 		Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
 		if (p.distance_to(p_point) <= d)
@@ -80,7 +80,7 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	return false;
 }
 
-void Line2D::set_points(const PoolVector<Vector2> &p_points) {
+void Line2D::set_points(const PoolVector2Array &p_points) {
 	_points = p_points;
 	update();
 }
@@ -116,7 +116,7 @@ Ref<Curve> Line2D::get_curve() const {
 	return _curve;
 }
 
-PoolVector<Vector2> Line2D::get_points() const {
+PoolVector2Array Line2D::get_points() const {
 	return _points;
 }
 
@@ -280,7 +280,7 @@ void Line2D::_draw() {
 	points.resize(_points.size());
 	int len = points.size();
 	{
-		PoolVector<Vector2>::Read points_read = _points.read();
+		PoolVector2Array::Read points_read = _points.read();
 		for (int i = 0; i < len; ++i) {
 			points.write[i] = points_read[i];
 		}

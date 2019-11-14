@@ -63,13 +63,13 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	int width = f->get_line().to_int();
 
-	PoolVector<uint8_t> imgdata;
+	PoolByteArray imgdata;
 
 	imgdata.resize(height * width * sizeof(uint32_t));
 
 	{
 
-		PoolVector<uint8_t>::Write w = imgdata.write();
+		PoolByteArray::Write w = imgdata.write();
 
 		uint8_t *ptr = (uint8_t *)w.ptr();
 

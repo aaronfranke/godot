@@ -61,9 +61,9 @@ void CollisionPolygon2D::_build_polygon() {
 
 		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
 
-		PoolVector<Vector2> segments;
+		PoolVector2Array segments;
 		segments.resize(polygon.size() * 2);
-		PoolVector<Vector2>::Write w = segments.write();
+		PoolVector2Array::Write w = segments.write();
 
 		for (int i = 0; i < polygon.size(); i++) {
 			w[(i << 1) + 0] = polygon[i];

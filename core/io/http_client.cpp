@@ -110,7 +110,7 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 	return connection;
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
+Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolByteArray &p_body) {
 
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
@@ -152,10 +152,10 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 	request += "\r\n";
 	CharString cs = request.utf8();
 
-	PoolVector<uint8_t> data;
+	PoolByteArray data;
 	data.resize(cs.length());
 	{
-		PoolVector<uint8_t>::Write data_write = data.write();
+		PoolByteArray::Write data_write = data.write();
 		for (int i = 0; i < cs.length(); i++) {
 			data_write[i] = cs[i];
 		}
@@ -163,7 +163,7 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 
 	data.append_array(p_body);
 
-	PoolVector<uint8_t>::Read r = data.read();
+	PoolByteArray::Read r = data.read();
 	Error err = connection->put_data(&r[0], data.size());
 
 	if (err) {

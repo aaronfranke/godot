@@ -141,8 +141,8 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	hash_table.resize(size);
 	bucket_table.resize(bucket_table_size);
 
-	PoolVector<int>::Write htwb = hash_table.write();
-	PoolVector<int>::Write btwb = bucket_table.write();
+	PoolIntArray::Write htwb = hash_table.write();
+	PoolIntArray::Write btwb = bucket_table.write();
 
 	uint32_t *htw = (uint32_t *)&htwb[0];
 	uint32_t *btw = (uint32_t *)&btwb[0];
@@ -174,7 +174,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	}
 
 	strings.resize(total_compression_size);
-	PoolVector<uint8_t>::Write cw = strings.write();
+	PoolByteArray::Write cw = strings.write();
 
 	for (int i = 0; i < compressed.size(); i++) {
 		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
@@ -228,11 +228,11 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	CharString str = p_src_text.operator String().utf8();
 	uint32_t h = hash(0, str.get_data());
 
-	PoolVector<int>::Read htr = hash_table.read();
+	PoolIntArray::Read htr = hash_table.read();
 	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	PoolVector<int>::Read btr = bucket_table.read();
+	PoolIntArray::Read btr = bucket_table.read();
 	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	PoolVector<uint8_t>::Read sr = strings.read();
+	PoolByteArray::Read sr = strings.read();
 	const char *sptr = (const char *)&sr[0];
 
 	uint32_t p = htptr[h % htsize];

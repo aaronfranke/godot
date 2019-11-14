@@ -1097,12 +1097,12 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 	ERR_FAIL_COND_MSG(version > PACK_VERSION, "Save format version too new.");
 
-	PoolVector<String> snames = p_dictionary["names"];
+	PoolStringArray snames = p_dictionary["names"];
 	if (snames.size()) {
 
 		int namecount = snames.size();
 		names.resize(namecount);
-		PoolVector<String>::Read r = snames.read();
+		PoolStringArray::Read r = snames.read();
 		for (int i = 0; i < names.size(); i++)
 			names.write[i] = r[i];
 	}
@@ -1124,8 +1124,8 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	nodes.resize(p_dictionary["node_count"]);
 	int nc = nodes.size();
 	if (nc) {
-		PoolVector<int> snodes = p_dictionary["nodes"];
-		PoolVector<int>::Read r = snodes.read();
+		PoolIntArray snodes = p_dictionary["nodes"];
+		PoolIntArray::Read r = snodes.read();
 		int idx = 0;
 		for (int i = 0; i < nc; i++) {
 			NodeData &nd = nodes.write[i];
@@ -1156,8 +1156,8 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 	if (cc) {
 
-		PoolVector<int> sconns = p_dictionary["conns"];
-		PoolVector<int>::Read r = sconns.read();
+		PoolIntArray sconns = p_dictionary["conns"];
+		PoolIntArray::Read r = sconns.read();
 		int idx = 0;
 		for (int i = 0; i < cc; i++) {
 			ConnectionData &cd = connections.write[i];
@@ -1203,12 +1203,12 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 
 Dictionary SceneState::get_bundled_scene() const {
 
-	PoolVector<String> rnames;
+	PoolStringArray rnames;
 	rnames.resize(names.size());
 
 	if (names.size()) {
 
-		PoolVector<String>::Write r = rnames.write();
+		PoolStringArray::Write r = rnames.write();
 
 		for (int i = 0; i < names.size(); i++)
 			r[i] = names[i];
@@ -1612,10 +1612,10 @@ void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
 }
 
-PoolVector<String> SceneState::_get_node_groups(int p_idx) const {
+PoolStringArray SceneState::_get_node_groups(int p_idx) const {
 
 	Vector<StringName> groups = get_node_groups(p_idx);
-	PoolVector<String> ret;
+	PoolStringArray ret;
 
 	for (int i = 0; i < groups.size(); i++)
 		ret.push_back(groups[i]);

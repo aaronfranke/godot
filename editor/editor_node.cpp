@@ -475,7 +475,7 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	push_item(script.operator->());
 }
 
-void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
+void EditorNode::_resources_changed(const PoolStringArray &p_resources) {
 
 	List<Ref<Resource> > changed;
 

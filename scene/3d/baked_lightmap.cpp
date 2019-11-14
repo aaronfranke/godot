@@ -46,12 +46,12 @@ AABB BakedLightmapData::get_bounds() const {
 	return bounds;
 }
 
-void BakedLightmapData::set_octree(const PoolVector<uint8_t> &p_octree) {
+void BakedLightmapData::set_octree(const PoolByteArray &p_octree) {
 
 	VS::get_singleton()->lightmap_capture_set_octree(baked_light, p_octree);
 }
 
-PoolVector<uint8_t> BakedLightmapData::get_octree() const {
+PoolByteArray BakedLightmapData::get_octree() const {
 
 	return VS::get_singleton()->lightmap_capture_get_octree(baked_light);
 }
@@ -495,13 +495,13 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			if (hdr) {
 
 				//just save a regular image
-				PoolVector<uint8_t> data;
+				PoolByteArray data;
 				int s = lm.light.size();
 				data.resize(lm.light.size() * 2);
 				{
 
-					PoolVector<uint8_t>::Write w = data.write();
-					PoolVector<float>::Read r = lm.light.read();
+					PoolByteArray::Write w = data.write();
+					PoolRealArray::Read r = lm.light.read();
 					uint16_t *hfw = (uint16_t *)w.ptr();
 					for (int i = 0; i < s; i++) {
 						hfw[i] = Math::make_half_float(r[i]);
@@ -513,13 +513,13 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			} else {
 
 				//just save a regular image
-				PoolVector<uint8_t> data;
+				PoolByteArray data;
 				int s = lm.light.size();
 				data.resize(lm.light.size());
 				{
 
-					PoolVector<uint8_t>::Write w = data.write();
-					PoolVector<float>::Read r = lm.light.read();
+					PoolByteArray::Write w = data.write();
+					PoolRealArray::Read r = lm.light.read();
 					for (int i = 0; i < s; i += 3) {
 						Color c(r[i + 0], r[i + 1], r[i + 2]);
 						c = c.to_srgb();

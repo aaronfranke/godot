@@ -37,12 +37,12 @@ class NavigationPolygon : public Resource {
 
 	GDCLASS(NavigationPolygon, Resource);
 
-	PoolVector<Vector2> vertices;
+	PoolVector2Array vertices;
 	struct Polygon {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector<PoolVector<Vector2> > outlines;
+	Vector<PoolVector2Array> outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty;
@@ -60,16 +60,16 @@ public:
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
-	void set_vertices(const PoolVector<Vector2> &p_vertices);
-	PoolVector<Vector2> get_vertices() const;
+	void set_vertices(const PoolVector2Array &p_vertices);
+	PoolVector2Array get_vertices() const;
 
 	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;
 
-	void add_outline(const PoolVector<Vector2> &p_outline);
-	void add_outline_at_index(const PoolVector<Vector2> &p_outline, int p_index);
-	void set_outline(int p_idx, const PoolVector<Vector2> &p_outline);
-	PoolVector<Vector2> get_outline(int p_idx) const;
+	void add_outline(const PoolVector2Array &p_outline);
+	void add_outline_at_index(const PoolVector2Array &p_outline, int p_index);
+	void set_outline(int p_idx, const PoolVector2Array &p_outline);
+	PoolVector2Array get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
 

@@ -50,7 +50,7 @@ void TextFile::reload_from_file() {
 
 Error TextFile::load_text(const String &p_path) {
 
-	PoolVector<uint8_t> sourcef;
+	PoolByteArray sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
@@ -58,7 +58,7 @@ Error TextFile::load_text(const String &p_path) {
 
 	int len = f->get_len();
 	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
+	PoolByteArray::Write w = sourcef.write();
 	int r = f->get_buffer(w.ptr(), len);
 	f->close();
 	memdelete(f);

@@ -145,7 +145,7 @@ public:
 
 	FUNCRID(mesh)
 
-	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolByteArray &, int, const PoolByteArray &, int, const AABB &, const Vector<PoolByteArray> &, const Vector<AABB> &)
 
 	FUNC2(mesh_set_blend_shape_count, RID, int)
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
@@ -153,7 +153,7 @@ public:
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	FUNC1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	FUNC4(mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
+	FUNC4(mesh_surface_update_region, RID, int, int, const PoolByteArray &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -161,14 +161,14 @@ public:
 	FUNC2RC(int, mesh_surface_get_array_len, RID, int)
 	FUNC2RC(int, mesh_surface_get_array_index_len, RID, int)
 
-	FUNC2RC(PoolVector<uint8_t>, mesh_surface_get_array, RID, int)
-	FUNC2RC(PoolVector<uint8_t>, mesh_surface_get_index_array, RID, int)
+	FUNC2RC(PoolByteArray, mesh_surface_get_array, RID, int)
+	FUNC2RC(PoolByteArray, mesh_surface_get_index_array, RID, int)
 
 	FUNC2RC(uint32_t, mesh_surface_get_format, RID, int)
 	FUNC2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
 
 	FUNC2RC(AABB, mesh_surface_get_aabb, RID, int)
-	FUNC2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
+	FUNC2RC(Vector<PoolByteArray>, mesh_surface_get_blend_shapes, RID, int)
 	FUNC2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
 
 	FUNC2(mesh_remove_surface, RID, int)
@@ -200,7 +200,7 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_color, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	FUNC2(multimesh_set_as_bulk_array, RID, const PoolRealArray &)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
@@ -306,8 +306,8 @@ public:
 	FUNC2(gi_probe_set_compress, RID, bool)
 	FUNC1RC(bool, gi_probe_is_compressed, RID)
 
-	FUNC2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
-	FUNC1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
+	FUNC2(gi_probe_set_dynamic_data, RID, const PoolIntArray &)
+	FUNC1RC(PoolIntArray, gi_probe_get_dynamic_data, RID)
 
 	/* LIGHTMAP CAPTURE */
 
@@ -316,8 +316,8 @@ public:
 	FUNC2(lightmap_capture_set_bounds, RID, const AABB &)
 	FUNC1RC(AABB, lightmap_capture_get_bounds, RID)
 
-	FUNC2(lightmap_capture_set_octree, RID, const PoolVector<uint8_t> &)
-	FUNC1RC(PoolVector<uint8_t>, lightmap_capture_get_octree, RID)
+	FUNC2(lightmap_capture_set_octree, RID, const PoolByteArray &)
+	FUNC1RC(PoolByteArray, lightmap_capture_get_octree, RID)
 	FUNC2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
 	FUNC1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
 	FUNC2(lightmap_capture_set_octree_cell_subdiv, RID, int)
@@ -571,8 +571,8 @@ public:
 	FUNC2(canvas_light_occluder_set_light_mask, RID, int)
 
 	FUNCRID(canvas_occluder_polygon)
-	FUNC3(canvas_occluder_polygon_set_shape, RID, const PoolVector<Vector2> &, bool)
-	FUNC2(canvas_occluder_polygon_set_shape_as_lines, RID, const PoolVector<Vector2> &)
+	FUNC3(canvas_occluder_polygon_set_shape, RID, const PoolVector2Array &, bool)
+	FUNC2(canvas_occluder_polygon_set_shape_as_lines, RID, const PoolVector2Array &)
 
 	FUNC2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 

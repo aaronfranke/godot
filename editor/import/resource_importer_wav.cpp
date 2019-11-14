@@ -467,7 +467,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		is16 = false;
 	}
 
-	PoolVector<uint8_t> dst_data;
+	PoolByteArray dst_data;
 	AudioStreamSample::Format dst_format;
 
 	if (compression == 1) {
@@ -490,8 +490,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				right.write[i] = data[i * 2 + 1];
 			}
 
-			PoolVector<uint8_t> bleft;
-			PoolVector<uint8_t> bright;
+			PoolByteArray bleft;
+			PoolByteArray bright;
 
 			_compress_ima_adpcm(left, bleft);
 			_compress_ima_adpcm(right, bright);
@@ -499,9 +499,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			int dl = bleft.size();
 			dst_data.resize(dl * 2);
 
-			PoolVector<uint8_t>::Write w = dst_data.write();
-			PoolVector<uint8_t>::Read rl = bleft.read();
-			PoolVector<uint8_t>::Read rr = bright.read();
+			PoolByteArray::Write w = dst_data.write();
+			PoolByteArray::Read rl = bleft.read();
+			PoolByteArray::Read rr = bright.read();
 
 			for (int i = 0; i < dl; i++) {
 				w[i * 2 + 0] = rl[i];
@@ -514,7 +514,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		dst_format = is16 ? AudioStreamSample::FORMAT_16_BITS : AudioStreamSample::FORMAT_8_BITS;
 		dst_data.resize(data.size() * (is16 ? 2 : 1));
 		{
-			PoolVector<uint8_t>::Write w = dst_data.write();
+			PoolByteArray::Write w = dst_data.write();
 
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {

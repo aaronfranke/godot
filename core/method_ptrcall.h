@@ -404,12 +404,12 @@ MAKE_STRINGCONV_BY_REFERENCE(IP_Address);
 template <>
 struct PtrToArg<PoolVector<Face3> > {
 	_FORCE_INLINE_ static PoolVector<Face3> convert(const void *p_ptr) {
-		const PoolVector<Vector3> *dvs = reinterpret_cast<const PoolVector<Vector3> *>(p_ptr);
+		const PoolVector3Array *dvs = reinterpret_cast<const PoolVector3Array *>(p_ptr);
 		PoolVector<Face3> ret;
 		int len = dvs->size() / 3;
 		ret.resize(len);
 		{
-			PoolVector<Vector3>::Read r = dvs->read();
+			PoolVector3Array::Read r = dvs->read();
 			PoolVector<Face3>::Write w = ret.write();
 			for (int i = 0; i < len; i++) {
 				w[i].vertex[0] = r[i * 3 + 0];
@@ -420,12 +420,12 @@ struct PtrToArg<PoolVector<Face3> > {
 		return ret;
 	}
 	_FORCE_INLINE_ static void encode(PoolVector<Face3> p_vec, void *p_ptr) {
-		PoolVector<Vector3> *arr = reinterpret_cast<PoolVector<Vector3> *>(p_ptr);
+		PoolVector3Array *arr = reinterpret_cast<PoolVector3Array *>(p_ptr);
 		int len = p_vec.size();
 		arr->resize(len * 3);
 		{
 			PoolVector<Face3>::Read r = p_vec.read();
-			PoolVector<Vector3>::Write w = arr->write();
+			PoolVector3Array::Write w = arr->write();
 			for (int i = 0; i < len; i++) {
 				w[i * 3 + 0] = r[i].vertex[0];
 				w[i * 3 + 1] = r[i].vertex[1];
@@ -437,12 +437,12 @@ struct PtrToArg<PoolVector<Face3> > {
 template <>
 struct PtrToArg<const PoolVector<Face3> &> {
 	_FORCE_INLINE_ static PoolVector<Face3> convert(const void *p_ptr) {
-		const PoolVector<Vector3> *dvs = reinterpret_cast<const PoolVector<Vector3> *>(p_ptr);
+		const PoolVector3Array *dvs = reinterpret_cast<const PoolVector3Array *>(p_ptr);
 		PoolVector<Face3> ret;
 		int len = dvs->size() / 3;
 		ret.resize(len);
 		{
-			PoolVector<Vector3>::Read r = dvs->read();
+			PoolVector3Array::Read r = dvs->read();
 			PoolVector<Face3>::Write w = ret.write();
 			for (int i = 0; i < len; i++) {
 				w[i].vertex[0] = r[i * 3 + 0];

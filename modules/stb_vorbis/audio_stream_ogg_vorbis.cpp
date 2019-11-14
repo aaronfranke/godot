@@ -163,7 +163,7 @@ void AudioStreamOGGVorbis::clear_data() {
 	}
 }
 
-void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
+void AudioStreamOGGVorbis::set_data(const PoolByteArray &p_data) {
 
 	int src_data_len = p_data.size();
 #define MAX_TEST_MEM (1 << 20)
@@ -182,7 +182,7 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 		ogg_alloc.alloc_buffer = w.ptr();
 		ogg_alloc.alloc_buffer_length_in_bytes = alloc_try;
 
-		PoolVector<uint8_t>::Read src_datar = p_data.read();
+		PoolByteArray::Read src_datar = p_data.read();
 
 		int error;
 		ogg_stream = stb_vorbis_open_memory((const unsigned char *)src_datar.ptr(), src_data_len, &error, &ogg_alloc);
@@ -217,14 +217,14 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 	}
 }
 
-PoolVector<uint8_t> AudioStreamOGGVorbis::get_data() const {
+PoolByteArray AudioStreamOGGVorbis::get_data() const {
 
-	PoolVector<uint8_t> vdata;
+	PoolByteArray vdata;
 
 	if (data_len && data) {
 		vdata.resize(data_len);
 		{
-			PoolVector<uint8_t>::Write w = vdata.write();
+			PoolByteArray::Write w = vdata.write();
 			copymem(w.ptr(), data, data_len);
 		}
 	}

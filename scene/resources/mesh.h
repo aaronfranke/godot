@@ -187,7 +187,7 @@ protected:
 
 public:
 	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolByteArray &p_array, int p_vertex_count, const PoolByteArray &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolByteArray> &p_blend_shapes = Vector<PoolByteArray>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
 
 	Array surface_get_arrays(int p_surface) const;
 	Array surface_get_blend_shape_arrays(int p_surface) const;
@@ -200,7 +200,7 @@ public:
 	void set_blend_shape_mode(BlendShapeMode p_mode);
 	BlendShapeMode get_blend_shape_mode() const;
 
-	void surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+	void surface_update_region(int p_surface, int p_offset, const PoolByteArray &p_data);
 
 	int get_surface_count() const;
 	void surface_remove(int p_idx);

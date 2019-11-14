@@ -41,12 +41,12 @@ class SoftBodyVisualServerHandler {
 
 	RID mesh;
 	int surface;
-	PoolVector<uint8_t> buffer;
+	PoolByteArray buffer;
 	uint32_t stride;
 	uint32_t offset_vertices;
 	uint32_t offset_normal;
 
-	PoolVector<uint8_t>::Write write_buffer;
+	PoolByteArray::Write write_buffer;
 
 private:
 	SoftBodyVisualServerHandler();

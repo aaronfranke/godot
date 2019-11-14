@@ -41,7 +41,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image);
 
 // Append p_image, as a png, to p_buffer.
 // Contents of p_buffer is unspecified if error returned.
-Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer);
+Error image_to_png(const Ref<Image> &p_image, PoolByteArray &p_buffer);
 
 } // namespace PNGDriverCommon
 

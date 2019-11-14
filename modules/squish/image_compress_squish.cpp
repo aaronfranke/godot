@@ -37,13 +37,13 @@ void image_decompress_squish(Image *p_image) {
 	int h = p_image->get_height();
 
 	Image::Format target_format = Image::FORMAT_RGBA8;
-	PoolVector<uint8_t> data;
+	PoolByteArray data;
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
-	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
-	PoolVector<uint8_t>::Write wb = data.write();
+	PoolByteArray::Read rb = p_image->get_data().read();
+	PoolByteArray::Write wb = data.write();
 
 	int squish_flags = Image::FORMAT_MAX;
 	if (p_image->get_format() == Image::FORMAT_DXT1) {
@@ -174,14 +174,14 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 			}
 		}
 
-		PoolVector<uint8_t> data;
+		PoolByteArray data;
 		int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 		int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 		data.resize(target_size);
 		int shift = Image::get_format_pixel_rshift(target_format);
 
-		PoolVector<uint8_t>::Read rb = p_image->get_data().read();
-		PoolVector<uint8_t>::Write wb = data.write();
+		PoolByteArray::Read rb = p_image->get_data().read();
+		PoolByteArray::Write wb = data.write();
 
 		int dst_ofs = 0;
 

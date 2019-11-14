@@ -35,7 +35,7 @@
 #include "scene/3d/cpu_particles.h"
 #include "scene/resources/particles_material.h"
 
-bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
+bool ParticlesEditorBase::_generate(PoolVector3Array &points, PoolVector3Array &normals) {
 
 	bool use_normals = emission_fill->get_selected() == 1;
 
@@ -379,8 +379,8 @@ void ParticlesEditor::edit(Particles *p_particles) {
 void ParticlesEditor::_generate_emission_points() {
 
 	/// hacer codigo aca
-	PoolVector<Vector3> points;
-	PoolVector<Vector3> normals;
+	PoolVector3Array points;
+	PoolVector3Array normals;
 
 	if (!_generate(points, normals)) {
 		return;
@@ -391,13 +391,13 @@ void ParticlesEditor::_generate_emission_points() {
 	int w = 2048;
 	int h = (point_count / 2048) + 1;
 
-	PoolVector<uint8_t> point_img;
+	PoolByteArray point_img;
 	point_img.resize(w * h * 3 * sizeof(float));
 
 	{
-		PoolVector<uint8_t>::Write iw = point_img.write();
+		PoolByteArray::Write iw = point_img.write();
 		zeromem(iw.ptr(), w * h * 3 * sizeof(float));
-		PoolVector<Vector3>::Read r = points.read();
+		PoolVector3Array::Read r = points.read();
 		float *wf = (float *)iw.ptr();
 		for (int i = 0; i < point_count; i++) {
 			wf[i * 3 + 0] = r[i].x;
@@ -421,13 +421,13 @@ void ParticlesEditor::_generate_emission_points() {
 		material->set_emission_point_count(point_count);
 		material->set_emission_point_texture(tex);
 
-		PoolVector<uint8_t> point_img2;
+		PoolByteArray point_img2;
 		point_img2.resize(w * h * 3 * sizeof(float));
 
 		{
-			PoolVector<uint8_t>::Write iw = point_img2.write();
+			PoolByteArray::Write iw = point_img2.write();
 			zeromem(iw.ptr(), w * h * 3 * sizeof(float));
-			PoolVector<Vector3>::Read r = normals.read();
+			PoolVector3Array::Read r = normals.read();
 			float *wf = (float *)iw.ptr();
 			for (int i = 0; i < point_count; i++) {
 				wf[i * 3 + 0] = r[i].x;

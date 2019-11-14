@@ -46,7 +46,7 @@ public:
 
 private:
 	RID occ_polygon;
-	PoolVector<Vector2> polygon;
+	PoolVector2Array polygon;
 	bool closed;
 	CullMode cull;
 
@@ -60,8 +60,8 @@ public:
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
-	void set_polygon(const PoolVector<Vector2> &p_polygon);
-	PoolVector<Vector2> get_polygon() const;
+	void set_polygon(const PoolVector2Array &p_polygon);
+	PoolVector2Array get_polygon() const;
 
 	void set_closed(bool p_closed);
 	bool is_closed() const;

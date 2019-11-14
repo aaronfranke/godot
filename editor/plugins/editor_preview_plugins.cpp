@@ -206,12 +206,12 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size2 
 		return Ref<Texture>();
 	}
 
-	PoolVector<uint8_t> data;
+	PoolByteArray data;
 
 	data.resize(bm->get_size().width * bm->get_size().height);
 
 	{
-		PoolVector<uint8_t>::Write w = data.write();
+		PoolByteArray::Write w = data.write();
 
 		for (int i = 0; i < bm->get_size().width; i++) {
 			for (int j = 0; j < bm->get_size().height; j++) {
@@ -395,10 +395,10 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	int lons = 32;
 	float radius = 1.0;
 
-	PoolVector<Vector3> vertices;
-	PoolVector<Vector3> normals;
-	PoolVector<Vector2> uvs;
-	PoolVector<float> tangents;
+	PoolVector3Array vertices;
+	PoolVector3Array normals;
+	PoolVector2Array uvs;
+	PoolRealArray tangents;
 	Basis tt = Basis(Vector3(0, 1, 0), Math_PI * 0.5);
 
 	for (int i = 1; i <= lats; i++) {
@@ -616,13 +616,13 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture>());
 
-	PoolVector<uint8_t> img;
+	PoolByteArray img;
 
 	int w = p_size.x;
 	int h = p_size.y;
 	img.resize(w * h * 3);
 
-	PoolVector<uint8_t>::Write imgdata = img.write();
+	PoolByteArray::Write imgdata = img.write();
 	uint8_t *imgw = imgdata.ptr();
 
 	Ref<AudioStreamPlayback> playback = stream->instance_playback();

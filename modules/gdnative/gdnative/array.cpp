@@ -55,7 +55,7 @@ void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src) {
 
 void GDAPI godot_array_new_pool_color_array(godot_array *r_dest, const godot_pool_color_array *p_pca) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<Color> *pca = (PoolVector<Color> *)p_pca;
+	PoolColorArray *pca = (PoolColorArray *)p_pca;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -67,7 +67,7 @@ void GDAPI godot_array_new_pool_color_array(godot_array *r_dest, const godot_poo
 
 void GDAPI godot_array_new_pool_vector3_array(godot_array *r_dest, const godot_pool_vector3_array *p_pv3a) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<Vector3> *pca = (PoolVector<Vector3> *)p_pv3a;
+	PoolVector3Array *pca = (PoolVector3Array *)p_pv3a;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -79,7 +79,7 @@ void GDAPI godot_array_new_pool_vector3_array(godot_array *r_dest, const godot_p
 
 void GDAPI godot_array_new_pool_vector2_array(godot_array *r_dest, const godot_pool_vector2_array *p_pv2a) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<Vector2> *pca = (PoolVector<Vector2> *)p_pv2a;
+	PoolVector2Array *pca = (PoolVector2Array *)p_pv2a;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -91,7 +91,7 @@ void GDAPI godot_array_new_pool_vector2_array(godot_array *r_dest, const godot_p
 
 void GDAPI godot_array_new_pool_string_array(godot_array *r_dest, const godot_pool_string_array *p_psa) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<String> *pca = (PoolVector<String> *)p_psa;
+	PoolStringArray *pca = (PoolStringArray *)p_psa;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -127,7 +127,7 @@ void GDAPI godot_array_new_pool_int_array(godot_array *r_dest, const godot_pool_
 
 void GDAPI godot_array_new_pool_byte_array(godot_array *r_dest, const godot_pool_byte_array *p_pba) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<uint8_t> *pca = (PoolVector<uint8_t> *)p_pba;
+	PoolByteArray *pca = (PoolByteArray *)p_pba;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 

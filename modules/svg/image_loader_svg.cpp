@@ -95,9 +95,9 @@ void ImageLoaderSVG::set_convert_colors(Dictionary *p_replace_color) {
 	}
 }
 
-Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors) {
+Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolByteArray *p_data, float p_scale, bool upsample, bool convert_colors) {
 	NSVGimage *svg_image;
-	PoolVector<uint8_t>::Read src_r = p_data->read();
+	PoolByteArray::Read src_r = p_data->read();
 	svg_image = nsvgParse((char *)src_r.ptr(), "px", 96);
 	if (svg_image == NULL) {
 		ERR_PRINT("SVG Corrupted");
@@ -114,10 +114,10 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 	int h = (int)(svg_image->height * p_scale * upscale);
 	ERR_FAIL_COND_V_MSG(h > Image::MAX_HEIGHT, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max height.", rtos(p_scale)));
 
-	PoolVector<uint8_t> dst_image;
+	PoolByteArray dst_image;
 	dst_image.resize(w * h * 4);
 
-	PoolVector<uint8_t>::Write dw = dst_image.write();
+	PoolByteArray::Write dw = dst_image.write();
 
 	rasterizer.rasterize(svg_image, 0, 0, p_scale * upscale, (unsigned char *)dw.ptr(), w, h, w * 4);
 
@@ -134,9 +134,9 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors) {
 
 	size_t str_len = strlen(p_svg_str);
-	PoolVector<uint8_t> src_data;
+	PoolByteArray src_data;
 	src_data.resize(str_len + 1);
-	PoolVector<uint8_t>::Write src_w = src_data.write();
+	PoolByteArray::Write src_w = src_data.write();
 	memcpy(src_w.ptr(), p_svg_str, str_len + 1);
 
 	return _create_image(p_image, &src_data, p_scale, upsample, convert_colors);
@@ -145,9 +145,9 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
 	uint32_t size = f->get_len();
-	PoolVector<uint8_t> src_image;
+	PoolByteArray src_image;
 	src_image.resize(size + 1);
-	PoolVector<uint8_t>::Write src_w = src_image.write();
+	PoolByteArray::Write src_w = src_image.write();
 	f->get_buffer(src_w.ptr(), size);
 	src_w.ptr()[size] = '\0';
 

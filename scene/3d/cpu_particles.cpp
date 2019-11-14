@@ -419,17 +419,17 @@ void CPUParticles::set_emission_box_extents(Vector3 p_extents) {
 	emission_box_extents = p_extents;
 }
 
-void CPUParticles::set_emission_points(const PoolVector<Vector3> &p_points) {
+void CPUParticles::set_emission_points(const PoolVector3Array &p_points) {
 
 	emission_points = p_points;
 }
 
-void CPUParticles::set_emission_normals(const PoolVector<Vector3> &p_normals) {
+void CPUParticles::set_emission_normals(const PoolVector3Array &p_normals) {
 
 	emission_normals = p_normals;
 }
 
-void CPUParticles::set_emission_colors(const PoolVector<Color> &p_colors) {
+void CPUParticles::set_emission_colors(const PoolColorArray &p_colors) {
 
 	emission_colors = p_colors;
 }
@@ -442,16 +442,16 @@ Vector3 CPUParticles::get_emission_box_extents() const {
 
 	return emission_box_extents;
 }
-PoolVector<Vector3> CPUParticles::get_emission_points() const {
+PoolVector3Array CPUParticles::get_emission_points() const {
 
 	return emission_points;
 }
-PoolVector<Vector3> CPUParticles::get_emission_normals() const {
+PoolVector3Array CPUParticles::get_emission_normals() const {
 
 	return emission_normals;
 }
 
-PoolVector<Color> CPUParticles::get_emission_colors() const {
+PoolColorArray CPUParticles::get_emission_colors() const {
 
 	return emission_colors;
 }
@@ -1022,10 +1022,10 @@ void CPUParticles::_update_particle_data_buffer() {
 
 		int pc = particles.size();
 
-		PoolVector<int>::Write ow;
+		PoolIntArray::Write ow;
 		int *order = NULL;
 
-		PoolVector<float>::Write w = particle_data.write();
+		PoolRealArray::Write w = particle_data.write();
 		PoolVector<Particle>::Read r = particles.read();
 		float *ptr = w.ptr();
 
@@ -1182,7 +1182,7 @@ void CPUParticles::_notification(int p_what) {
 
 			int pc = particles.size();
 
-			PoolVector<float>::Write w = particle_data.write();
+			PoolRealArray::Write w = particle_data.write();
 			PoolVector<Particle>::Read r = particles.read();
 			float *ptr = w.ptr();
 

@@ -45,7 +45,7 @@ class TriangleMesh : public Reference {
 	};
 
 	PoolVector<Triangle> triangles;
-	PoolVector<Vector3> vertices;
+	PoolVector3Array vertices;
 
 	struct BVH {
 
@@ -96,10 +96,10 @@ public:
 	PoolVector<Face3> get_faces() const;
 
 	PoolVector<Triangle> get_triangles() const { return triangles; }
-	PoolVector<Vector3> get_vertices() const { return vertices; }
-	void get_indices(PoolVector<int> *r_triangles_indices) const;
+	PoolVector3Array get_vertices() const { return vertices; }
+	void get_indices(PoolIntArray *r_triangles_indices) const;
 
-	void create(const PoolVector<Vector3> &p_faces);
+	void create(const PoolVector3Array &p_faces);
 	TriangleMesh();
 };
 

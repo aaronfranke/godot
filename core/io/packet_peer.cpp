@@ -50,7 +50,7 @@ bool PacketPeer::is_object_decoding_allowed() const {
 	return allow_object_decoding;
 }
 
-Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) {
+Error PacketPeer::get_packet_buffer(PoolByteArray &r_buffer) {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -62,20 +62,20 @@ Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) {
 	if (buffer_size == 0)
 		return OK;
 
-	PoolVector<uint8_t>::Write w = r_buffer.write();
+	PoolByteArray::Write w = r_buffer.write();
 	for (int i = 0; i < buffer_size; i++)
 		w[i] = buffer[i];
 
 	return OK;
 }
 
-Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
+Error PacketPeer::put_packet_buffer(const PoolByteArray &p_buffer) {
 
 	int len = p_buffer.size();
 	if (len == 0)
 		return OK;
 
-	PoolVector<uint8_t>::Read r = p_buffer.read();
+	PoolByteArray::Read r = p_buffer.read();
 	return put_packet(&r[0], len);
 }
 
@@ -116,12 +116,12 @@ Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 	return var;
 }
 
-Error PacketPeer::_put_packet(const PoolVector<uint8_t> &p_buffer) {
+Error PacketPeer::_put_packet(const PoolByteArray &p_buffer) {
 	return put_packet_buffer(p_buffer);
 }
-PoolVector<uint8_t> PacketPeer::_get_packet() {
+PoolByteArray PacketPeer::_get_packet() {
 
-	PoolVector<uint8_t> raw;
+	PoolByteArray raw;
 	last_get_error = get_packet_buffer(raw);
 	return raw;
 }

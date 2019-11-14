@@ -776,14 +776,14 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 	_send_rpc(p_node, p_peer_id, p_unreliable, true, p_property, &vptr, 1);
 }
 
-Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, NetworkedMultiplayerPeer::TransferMode p_mode) {
+Error MultiplayerAPI::send_bytes(PoolByteArray p_data, int p_to, NetworkedMultiplayerPeer::TransferMode p_mode) {
 
 	ERR_FAIL_COND_V_MSG(p_data.size() < 1, ERR_INVALID_DATA, "Trying to send an empty raw packet.");
 	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no network peer is active.");
 	ERR_FAIL_COND_V_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a network peer which is not connected.");
 
 	MAKE_ROOM(p_data.size() + 1);
-	PoolVector<uint8_t>::Read r = p_data.read();
+	PoolByteArray::Read r = p_data.read();
 	packet_cache.write[0] = NETWORK_COMMAND_RAW;
 	memcpy(&packet_cache.write[1], &r[0], p_data.size());
 
@@ -797,11 +797,11 @@ void MultiplayerAPI::_process_raw(int p_from, const uint8_t *p_packet, int p_pac
 
 	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
 
-	PoolVector<uint8_t> out;
+	PoolByteArray out;
 	int len = p_packet_len - 1;
 	out.resize(len);
 	{
-		PoolVector<uint8_t>::Write w = out.write();
+		PoolByteArray::Write w = out.write();
 		memcpy(&w[0], &p_packet[1], len);
 	}
 	emit_signal("network_peer_packet", p_from, out);

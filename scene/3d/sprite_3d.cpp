@@ -206,9 +206,9 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid())
 		return triangle_mesh;
 
-	PoolVector<Vector3> faces;
+	PoolVector3Array faces;
 	faces.resize(6);
-	PoolVector<Vector3>::Write facesw = faces.write();
+	PoolVector3Array::Write facesw = faces.write();
 
 	Rect2 final_rect = get_item_rect();
 

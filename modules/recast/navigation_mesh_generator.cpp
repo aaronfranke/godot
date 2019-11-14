@@ -83,13 +83,13 @@ void EditorNavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Tra
 
 		Array a = p_mesh->surface_get_arrays(i);
 
-		PoolVector<Vector3> mesh_vertices = a[Mesh::ARRAY_VERTEX];
-		PoolVector<Vector3>::Read vr = mesh_vertices.read();
+		PoolVector3Array mesh_vertices = a[Mesh::ARRAY_VERTEX];
+		PoolVector3Array::Read vr = mesh_vertices.read();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
 
-			PoolVector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
-			PoolVector<int>::Read ir = mesh_indices.read();
+			PoolIntArray mesh_indices = a[Mesh::ARRAY_INDEX];
+			PoolIntArray::Read ir = mesh_indices.read();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
 				_add_vertex(p_xform.xform(vr[j]), p_verticies);
@@ -272,7 +272,7 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 
 void EditorNavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh) {
 
-	PoolVector<Vector3> nav_vertices;
+	PoolVector3Array nav_vertices;
 
 	for (int i = 0; i < p_detail_mesh->nverts; i++) {
 		const float *v = &p_detail_mesh->verts[i * 3];
@@ -488,7 +488,7 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 void EditorNavigationMeshGenerator::clear(Ref<NavigationMesh> p_nav_mesh) {
 	if (p_nav_mesh.is_valid()) {
 		p_nav_mesh->clear_polygons();
-		p_nav_mesh->set_vertices(PoolVector<Vector3>());
+		p_nav_mesh->set_vertices(PoolVector3Array());
 	}
 }
 

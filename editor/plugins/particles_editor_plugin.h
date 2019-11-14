@@ -55,7 +55,7 @@ protected:
 
 	PoolVector<Face3> geometry;
 
-	bool _generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals);
+	bool _generate(PoolVector3Array &points, PoolVector3Array &normals);
 	virtual void _generate_emission_points() = 0;
 	void _node_selected(const NodePath &p_path);
 

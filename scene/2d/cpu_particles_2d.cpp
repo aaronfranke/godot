@@ -163,22 +163,22 @@ void CPUParticles2D::_update_mesh_texture() {
 	} else {
 		tex_size = Size2(1, 1);
 	}
-	PoolVector<Vector2> vertices;
+	PoolVector2Array vertices;
 	vertices.push_back(-tex_size * 0.5);
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, 0));
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
 	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
-	PoolVector<Vector2> uvs;
+	PoolVector2Array uvs;
 	uvs.push_back(Vector2(0, 0));
 	uvs.push_back(Vector2(1, 0));
 	uvs.push_back(Vector2(1, 1));
 	uvs.push_back(Vector2(0, 1));
-	PoolVector<Color> colors;
+	PoolColorArray colors;
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
-	PoolVector<int> indices;
+	PoolIntArray indices;
 	indices.push_back(0);
 	indices.push_back(1);
 	indices.push_back(2);
@@ -437,17 +437,17 @@ void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
 	emission_rect_extents = p_extents;
 }
 
-void CPUParticles2D::set_emission_points(const PoolVector<Vector2> &p_points) {
+void CPUParticles2D::set_emission_points(const PoolVector2Array &p_points) {
 
 	emission_points = p_points;
 }
 
-void CPUParticles2D::set_emission_normals(const PoolVector<Vector2> &p_normals) {
+void CPUParticles2D::set_emission_normals(const PoolVector2Array &p_normals) {
 
 	emission_normals = p_normals;
 }
 
-void CPUParticles2D::set_emission_colors(const PoolVector<Color> &p_colors) {
+void CPUParticles2D::set_emission_colors(const PoolColorArray &p_colors) {
 
 	emission_colors = p_colors;
 }
@@ -460,16 +460,16 @@ Vector2 CPUParticles2D::get_emission_rect_extents() const {
 
 	return emission_rect_extents;
 }
-PoolVector<Vector2> CPUParticles2D::get_emission_points() const {
+PoolVector2Array CPUParticles2D::get_emission_points() const {
 
 	return emission_points;
 }
-PoolVector<Vector2> CPUParticles2D::get_emission_normals() const {
+PoolVector2Array CPUParticles2D::get_emission_normals() const {
 
 	return emission_normals;
 }
 
-PoolVector<Color> CPUParticles2D::get_emission_colors() const {
+PoolColorArray CPUParticles2D::get_emission_colors() const {
 
 	return emission_colors;
 }
@@ -957,10 +957,10 @@ void CPUParticles2D::_update_particle_data_buffer() {
 
 		int pc = particles.size();
 
-		PoolVector<int>::Write ow;
+		PoolIntArray::Write ow;
 		int *order = NULL;
 
-		PoolVector<float>::Write w = particle_data.write();
+		PoolRealArray::Write w = particle_data.write();
 		PoolVector<Particle>::Read r = particles.read();
 		float *ptr = w.ptr();
 
@@ -1106,7 +1106,7 @@ void CPUParticles2D::_notification(int p_what) {
 
 			int pc = particles.size();
 
-			PoolVector<float>::Write w = particle_data.write();
+			PoolRealArray::Write w = particle_data.write();
 			PoolVector<Particle>::Read r = particles.read();
 			float *ptr = w.ptr();
 

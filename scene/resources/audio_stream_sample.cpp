@@ -476,7 +476,7 @@ float AudioStreamSample::get_length() const {
 	return float(len) / mix_rate;
 }
 
-void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
+void AudioStreamSample::set_data(const PoolByteArray &p_data) {
 
 	AudioServer::get_singleton()->lock();
 	if (data) {
@@ -488,7 +488,7 @@ void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
 	int datalen = p_data.size();
 	if (datalen) {
 
-		PoolVector<uint8_t>::Read r = p_data.read();
+		PoolByteArray::Read r = p_data.read();
 		int alloc_len = datalen + DATA_PAD * 2;
 		data = AudioServer::get_singleton()->audio_data_alloc(alloc_len); //alloc with some padding for interpolation
 		zeromem(data, alloc_len);
@@ -499,15 +499,15 @@ void AudioStreamSample::set_data(const PoolVector<uint8_t> &p_data) {
 
 	AudioServer::get_singleton()->unlock();
 }
-PoolVector<uint8_t> AudioStreamSample::get_data() const {
+PoolByteArray AudioStreamSample::get_data() const {
 
-	PoolVector<uint8_t> pv;
+	PoolByteArray pv;
 
 	if (data) {
 		pv.resize(data_bytes);
 		{
 
-			PoolVector<uint8_t>::Write w = pv.write();
+			PoolByteArray::Write w = pv.write();
 			uint8_t *dataptr = (uint8_t *)data;
 			copymem(w.ptr(), dataptr + DATA_PAD, data_bytes);
 		}
@@ -565,8 +565,8 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	PoolVector<uint8_t> data = get_data();
-	PoolVector<uint8_t>::Read read_data = data.read();
+	PoolByteArray data = get_data();
+	PoolByteArray::Read read_data = data.read();
 	switch (format) {
 		case AudioStreamSample::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {

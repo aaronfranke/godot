@@ -331,7 +331,7 @@ private:
 	Track *_find_track(const NodePath &p_path);
 	void _recompute_caches();
 	void _recompute_caches(const StringName &p_node);
-	PoolVector<String> _get_node_list();
+	PoolStringArray _get_node_list();
 
 	void _compute_weights(float *p_fallback_weight, HashMap<NodePath, float> *p_weights, float p_coeff, const HashMap<NodePath, bool> *p_filter = NULL, float p_filtered_coeff = 0);
 

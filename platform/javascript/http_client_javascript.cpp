@@ -103,7 +103,7 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	return OK;
 }
 
-Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body) {
+Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolByteArray &p_body) {
 
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)

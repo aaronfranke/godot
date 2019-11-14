@@ -78,7 +78,7 @@ private:
 
 	bool got_response;
 	int response_code;
-	PoolVector<String> response_headers;
+	PoolStringArray response_headers;
 
 	String download_to_file;
 

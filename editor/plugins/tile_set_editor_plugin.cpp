@@ -250,7 +250,7 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 	if (String(d["type"]) == "files") {
 
-		PoolVector<String> files = d["files"];
+		PoolStringArray files = d["files"];
 
 		_on_textures_added(files);
 	}
@@ -1601,9 +1601,9 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									if (dragging_point >= 0) {
 										dragging_point = -1;
 
-										PoolVector<Vector2> polygon;
+										PoolVector2Array polygon;
 										polygon.resize(current_shape.size());
-										PoolVector<Vector2>::Write w = polygon.write();
+										PoolVector2Array::Write w = polygon.write();
 
 										for (int i = 0; i < current_shape.size(); i++) {
 											w[i] = current_shape[i] - shape_anchor;
@@ -1622,10 +1622,10 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									if (dragging_point >= 0) {
 										dragging_point = -1;
 
-										PoolVector<Vector2> polygon;
+										PoolVector2Array polygon;
 										Vector<int> indices;
 										polygon.resize(current_shape.size());
-										PoolVector<Vector2>::Write w = polygon.write();
+										PoolVector2Array::Write w = polygon.write();
 
 										for (int i = 0; i < current_shape.size(); i++) {
 											w[i] = current_shape[i] - shape_anchor;
@@ -2764,7 +2764,7 @@ void TileSetEditor::draw_polygon_shapes() {
 							colors.push_back(c_bg);
 						}
 					} else {
-						PoolVector<Vector2> vertices = shape->get_vertices();
+						PoolVector2Array vertices = shape->get_vertices();
 						for (int j = 0; j < shape->get_polygon(0).size(); j++) {
 							polygon.push_back(vertices[shape->get_polygon(0)[j]] + anchor);
 							colors.push_back(c_bg);
@@ -2812,7 +2812,7 @@ void TileSetEditor::draw_polygon_shapes() {
 								colors.push_back(c_bg);
 							}
 						} else {
-							PoolVector<Vector2> vertices = shape->get_vertices();
+							PoolVector2Array vertices = shape->get_vertices();
 							for (int j = 0; j < shape->get_polygon(0).size(); j++) {
 								polygon.push_back(vertices[shape->get_polygon(0)[j]] + anchor);
 								colors.push_back(c_bg);
@@ -2899,9 +2899,9 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 	} else if (edit_mode == EDITMODE_OCCLUSION) {
 		Ref<OccluderPolygon2D> shape = memnew(OccluderPolygon2D);
 
-		PoolVector<Vector2> polygon;
+		PoolVector2Array polygon;
 		polygon.resize(current_shape.size());
-		PoolVector<Vector2>::Write w = polygon.write();
+		PoolVector2Array::Write w = polygon.write();
 
 		for (int i = 0; i < current_shape.size(); i++) {
 			w[i] = current_shape[i] - shape_anchor;
@@ -2925,10 +2925,10 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 	} else if (edit_mode == EDITMODE_NAVIGATION) {
 		Ref<NavigationPolygon> shape = memnew(NavigationPolygon);
 
-		PoolVector<Vector2> polygon;
+		PoolVector2Array polygon;
 		Vector<int> indices;
 		polygon.resize(current_shape.size());
-		PoolVector<Vector2>::Write w = polygon.write();
+		PoolVector2Array::Write w = polygon.write();
 
 		for (int i = 0; i < current_shape.size(); i++) {
 			w[i] = current_shape[i] - shape_anchor;
@@ -2988,7 +2988,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 			current_shape.resize(0);
 			if (edited_navigation_shape.is_valid()) {
 				if (edited_navigation_shape->get_polygon_count() > 0) {
-					PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
+					PoolVector2Array vertices = edited_navigation_shape->get_vertices();
 					for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
 						current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + current_tile_region.position);
 					}
@@ -3037,7 +3037,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 			current_shape.resize(0);
 			if (edited_navigation_shape.is_valid()) {
 				if (edited_navigation_shape->get_polygon_count() > 0) {
-					PoolVector<Vector2> vertices = edited_navigation_shape->get_vertices();
+					PoolVector2Array vertices = edited_navigation_shape->get_vertices();
 					for (int i = 0; i < edited_navigation_shape->get_polygon(0).size(); i++) {
 						current_shape.push_back(vertices[edited_navigation_shape->get_polygon(0)[i]] + shape_anchor);
 					}

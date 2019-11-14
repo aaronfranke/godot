@@ -142,7 +142,7 @@ btScaledBvhTriangleMeshShape *ShapeBullet::create_shape_concave(btBvhTriangleMes
 	}
 }
 
-btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
+btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(PoolRealArray &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	const btScalar ignoredHeightScale(1);
 	const int YAxis = 1; // 0=X, 1=Y, 2=Z
 	const bool flipQuadEdges = false;
@@ -370,7 +370,7 @@ ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 		delete meshShape->getTriangleInfoMap();
 		bulletdelete(meshShape);
 	}
-	faces = PoolVector<Vector3>();
+	faces = PoolVector3Array();
 }
 
 void ConcavePolygonShapeBullet::set_data(const Variant &p_data) {
@@ -385,7 +385,7 @@ PhysicsServer::ShapeType ConcavePolygonShapeBullet::get_type() const {
 	return PhysicsServer::SHAPE_CONCAVE_POLYGON;
 }
 
-void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
+void ConcavePolygonShapeBullet::setup(PoolVector3Array p_faces) {
 	faces = p_faces;
 	if (meshShape) {
 		/// Clear previous created shape
@@ -401,7 +401,7 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 
 		btTriangleMesh *shapeInterface = bulletnew(btTriangleMesh);
 		src_face_count /= 3;
-		PoolVector<Vector3>::Read r = p_faces.read();
+		PoolVector3Array::Read r = p_faces.read();
 		const Vector3 *facesr = r.ptr();
 
 		btVector3 supVec_0;
@@ -471,7 +471,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	// TODO This code will need adjustments if real_t is set to `double`,
 	// because that precision is unnecessary for a heightmap and Bullet doesn't support it...
 
-	PoolVector<real_t> l_heights;
+	PoolRealArray l_heights;
 	Variant l_heights_v = d["heights"];
 
 	if (l_heights_v.get_type() == Variant::POOL_REAL_ARRAY) {
@@ -515,7 +515,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	// Compute min and max heights if not specified.
 	if (!d.has("min_height") && !d.has("max_height")) {
 
-		PoolVector<real_t>::Read r = l_heights.read();
+		PoolRealArray::Read r = l_heights.read();
 		int heights_size = l_heights.size();
 
 		for (int i = 0; i < heights_size; ++i) {
@@ -540,7 +540,7 @@ PhysicsServer::ShapeType HeightMapShapeBullet::get_type() const {
 	return PhysicsServer::SHAPE_HEIGHTMAP;
 }
 
-void HeightMapShapeBullet::setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
+void HeightMapShapeBullet::setup(PoolRealArray &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	// TODO cell size must be tweaked using localScaling, which is a shared property for all Bullet shapes
 
 	// If this array is resized outside of here, it should be preserved due to CoW

@@ -101,13 +101,13 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 	}
 
 	const png_uint_32 stride = PNG_IMAGE_ROW_STRIDE(png_img);
-	PoolVector<uint8_t> buffer;
+	PoolByteArray buffer;
 	Error err = buffer.resize(PNG_IMAGE_BUFFER_SIZE(png_img, stride));
 	if (err) {
 		png_image_free(&png_img); // only required when we return before finish_read
 		return err;
 	}
-	PoolVector<uint8_t>::Write writer = buffer.write();
+	PoolByteArray::Write writer = buffer.write();
 
 	// read image data to buffer and release libpng resources
 	success = png_image_finish_read(&png_img, NULL, writer.ptr(), stride, NULL);
@@ -119,7 +119,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 	return OK;
 }
 
-Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
+Error image_to_png(const Ref<Image> &p_image, PoolByteArray &p_buffer) {
 
 	Ref<Image> source_image = p_image->duplicate();
 
@@ -157,8 +157,8 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 			}
 	}
 
-	const PoolVector<uint8_t> image_data = source_image->get_data();
-	const PoolVector<uint8_t>::Read reader = image_data.read();
+	const PoolByteArray image_data = source_image->get_data();
+	const PoolByteArray::Read reader = image_data.read();
 
 	// we may be passed a buffer with existing content we're expected to append to
 	const int buffer_offset = p_buffer.size();
@@ -172,7 +172,7 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 		Error err = p_buffer.resize(buffer_offset + png_size_estimate);
 		ERR_FAIL_COND_V(err, err);
 
-		PoolVector<uint8_t>::Write writer = p_buffer.write();
+		PoolByteArray::Write writer = p_buffer.write();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
 				&compressed_size, 0, reader.ptr(), 0, NULL);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
@@ -186,7 +186,7 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 		Error err = p_buffer.resize(buffer_offset + compressed_size);
 		ERR_FAIL_COND_V(err, err);
 
-		PoolVector<uint8_t>::Write writer = p_buffer.write();
+		PoolByteArray::Write writer = p_buffer.write();
 		success = png_image_write_to_memory(&png_img, &writer[buffer_offset],
 				&compressed_size, 0, reader.ptr(), 0, NULL);
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);

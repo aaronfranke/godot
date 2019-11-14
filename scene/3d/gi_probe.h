@@ -53,8 +53,8 @@ public:
 	void set_to_cell_xform(const Transform &p_xform);
 	Transform get_to_cell_xform() const;
 
-	void set_dynamic_data(const PoolVector<int> &p_data);
-	PoolVector<int> get_dynamic_data() const;
+	void set_dynamic_data(const PoolIntArray &p_data);
+	PoolIntArray get_dynamic_data() const;
 
 	void set_dynamic_range(int p_range);
 	int get_dynamic_range() const;

@@ -202,7 +202,7 @@ public:
 	void set_connection(const Ref<StreamPeer> &p_connection);
 	Ref<StreamPeer> get_connection() const;
 
-	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body);
+	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolByteArray &p_body);
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
 
 	void close();

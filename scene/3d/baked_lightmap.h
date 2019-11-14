@@ -63,8 +63,8 @@ public:
 	void set_bounds(const AABB &p_bounds);
 	AABB get_bounds() const;
 
-	void set_octree(const PoolVector<uint8_t> &p_octree);
-	PoolVector<uint8_t> get_octree() const;
+	void set_octree(const PoolByteArray &p_octree);
+	PoolByteArray get_octree() const;
 
 	void set_cell_space_transform(const Transform &p_xform);
 	Transform get_cell_space_transform() const;

@@ -53,8 +53,8 @@ Ref<WebSocketPeer> EMWSServer::get_peer(int p_id) const {
 	return NULL;
 }
 
-PoolVector<String> EMWSServer::get_protocols() const {
-	PoolVector<String> out;
+PoolStringArray EMWSServer::get_protocols() const {
+	PoolStringArray out;
 
 	return out;
 }

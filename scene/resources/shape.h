@@ -58,7 +58,7 @@ public:
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
 
-	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform);
+	void add_vertices_to_array(PoolVector3Array &array, const Transform &p_xform);
 
 	real_t get_margin() const;
 	void set_margin(real_t p_margin);

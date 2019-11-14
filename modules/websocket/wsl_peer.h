@@ -84,7 +84,7 @@ private:
 	// Our packet info is just a boolean (is_string), using uint8_t for it.
 	PacketBuffer<uint8_t> _in_buffer;
 
-	PoolVector<uint8_t> _packet_buffer;
+	PoolByteArray _packet_buffer;
 
 	WriteMode write_mode;
 

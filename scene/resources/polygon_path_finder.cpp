@@ -415,7 +415,7 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("segments"));
 	ERR_FAIL_COND(!p_data.has("bounds"));
 
-	PoolVector<Vector2> p = p_data["points"];
+	PoolVector2Array p = p_data["points"];
 	Array c = p_data["connections"];
 
 	ERR_FAIL_COND(c.size() != p.size());
@@ -425,11 +425,11 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 	int pc = p.size();
 	points.resize(pc + 2);
 
-	PoolVector<Vector2>::Read pr = p.read();
+	PoolVector2Array::Read pr = p.read();
 	for (int i = 0; i < pc; i++) {
 		points.write[i].pos = pr[i];
-		PoolVector<int> con = c[i];
-		PoolVector<int>::Read cr = con.read();
+		PoolIntArray con = c[i];
+		PoolIntArray::Read cr = con.read();
 		int cc = con.size();
 		for (int j = 0; j < cc; j++) {
 
@@ -439,19 +439,19 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 
 	if (p_data.has("penalties")) {
 
-		PoolVector<float> penalties = p_data["penalties"];
+		PoolRealArray penalties = p_data["penalties"];
 		if (penalties.size() == pc) {
-			PoolVector<float>::Read pr2 = penalties.read();
+			PoolRealArray::Read pr2 = penalties.read();
 			for (int i = 0; i < pc; i++) {
 				points.write[i].penalty = pr2[i];
 			}
 		}
 	}
 
-	PoolVector<int> segs = p_data["segments"];
+	PoolIntArray segs = p_data["segments"];
 	int sc = segs.size();
 	ERR_FAIL_COND(sc & 1);
-	PoolVector<int>::Read sr = segs.read();
+	PoolIntArray::Read sr = segs.read();
 	for (int i = 0; i < sc; i += 2) {
 
 		Edge e(sr[i], sr[i + 1]);
@@ -463,25 +463,25 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 Dictionary PolygonPathFinder::_get_data() const {
 
 	Dictionary d;
-	PoolVector<Vector2> p;
-	PoolVector<int> ind;
+	PoolVector2Array p;
+	PoolIntArray ind;
 	Array connections;
 	p.resize(MAX(0, points.size() - 2));
 	connections.resize(MAX(0, points.size() - 2));
 	ind.resize(edges.size() * 2);
-	PoolVector<float> penalties;
+	PoolRealArray penalties;
 	penalties.resize(MAX(0, points.size() - 2));
 	{
-		PoolVector<Vector2>::Write wp = p.write();
-		PoolVector<float>::Write pw = penalties.write();
+		PoolVector2Array::Write wp = p.write();
+		PoolRealArray::Write pw = penalties.write();
 
 		for (int i = 0; i < points.size() - 2; i++) {
 			wp[i] = points[i].pos;
 			pw[i] = points[i].penalty;
-			PoolVector<int> c;
+			PoolIntArray c;
 			c.resize(points[i].connections.size());
 			{
-				PoolVector<int>::Write cw = c.write();
+				PoolIntArray::Write cw = c.write();
 				int idx = 0;
 				for (Set<int>::Element *E = points[i].connections.front(); E; E = E->next()) {
 					cw[idx++] = E->get();
@@ -492,7 +492,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 	}
 	{
 
-		PoolVector<int>::Write iw = ind.write();
+		PoolIntArray::Write iw = ind.write();
 		int idx = 0;
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
 			iw[idx++] = E->get().points[0];

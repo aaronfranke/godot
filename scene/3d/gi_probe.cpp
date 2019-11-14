@@ -65,11 +65,11 @@ Transform GIProbeData::get_to_cell_xform() const {
 	return VS::get_singleton()->gi_probe_get_to_cell_xform(probe);
 }
 
-void GIProbeData::set_dynamic_data(const PoolVector<int> &p_data) {
+void GIProbeData::set_dynamic_data(const PoolIntArray &p_data) {
 
 	VS::get_singleton()->gi_probe_set_dynamic_data(probe, p_data);
 }
-PoolVector<int> GIProbeData::get_dynamic_data() const {
+PoolIntArray GIProbeData::get_dynamic_data() const {
 
 	return VS::get_singleton()->gi_probe_get_dynamic_data(probe);
 }
@@ -431,7 +431,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	//create the data for visual server
 
-	PoolVector<int> data = baker.create_gi_probe_data();
+	PoolIntArray data = baker.create_gi_probe_data();
 
 	if (p_create_visual_debug) {
 		MultiMeshInstance *mmi = memnew(MultiMeshInstance);

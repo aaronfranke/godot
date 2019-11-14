@@ -175,7 +175,7 @@ void EditorProfiler::_update_plot() {
 		graph_image.resize(desired_len);
 	}
 
-	PoolVector<uint8_t>::Write wr = graph_image.write();
+	PoolByteArray::Write wr = graph_image.write();
 
 	//clear
 	for (int i = 0; i < desired_len; i += 4) {

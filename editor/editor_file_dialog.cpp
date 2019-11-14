@@ -347,7 +347,7 @@ void EditorFileDialog::_action_pressed() {
 
 		String fbase = dir_access->get_current_dir();
 
-		PoolVector<String> files;
+		PoolStringArray files;
 		for (int i = 0; i < item_list->get_item_count(); i++) {
 			if (item_list->is_selected(i))
 				files.push_back(fbase.plus_file(item_list->get_item_text(i)));

@@ -106,8 +106,8 @@ private:
 	RID multimesh;
 
 	PoolVector<Particle> particles;
-	PoolVector<float> particle_data;
-	PoolVector<int> particle_order;
+	PoolRealArray particle_data;
+	PoolIntArray particle_order;
 
 	struct SortLifetime {
 		const Particle *particles;
@@ -166,9 +166,9 @@ private:
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
 	Vector3 emission_box_extents;
-	PoolVector<Vector3> emission_points;
-	PoolVector<Vector3> emission_normals;
-	PoolVector<Color> emission_colors;
+	PoolVector3Array emission_points;
+	PoolVector3Array emission_normals;
+	PoolColorArray emission_colors;
 	int emission_point_count;
 
 	Vector3 gravity;
@@ -263,17 +263,17 @@ public:
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
 	void set_emission_box_extents(Vector3 p_extents);
-	void set_emission_points(const PoolVector<Vector3> &p_points);
-	void set_emission_normals(const PoolVector<Vector3> &p_normals);
-	void set_emission_colors(const PoolVector<Color> &p_colors);
+	void set_emission_points(const PoolVector3Array &p_points);
+	void set_emission_normals(const PoolVector3Array &p_normals);
+	void set_emission_colors(const PoolColorArray &p_colors);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
 	Vector3 get_emission_box_extents() const;
-	PoolVector<Vector3> get_emission_points() const;
-	PoolVector<Vector3> get_emission_normals() const;
-	PoolVector<Color> get_emission_colors() const;
+	PoolVector3Array get_emission_points() const;
+	PoolVector3Array get_emission_normals() const;
+	PoolColorArray get_emission_colors() const;
 	int get_emission_point_count() const;
 
 	void set_gravity(const Vector3 &p_gravity);

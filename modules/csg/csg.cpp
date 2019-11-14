@@ -39,7 +39,7 @@ void CSGBrush::clear() {
 	faces.clear();
 }
 
-void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials, const PoolVector<bool> &p_invert_faces) {
+void CSGBrush::build_from_faces(const PoolVector3Array &p_vertices, const PoolVector2Array &p_uvs, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials, const PoolVector<bool> &p_invert_faces) {
 
 	clear();
 
@@ -47,9 +47,9 @@ void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const Poo
 
 	ERR_FAIL_COND((vc % 3) != 0);
 
-	PoolVector<Vector3>::Read rv = p_vertices.read();
+	PoolVector3Array::Read rv = p_vertices.read();
 	int uvc = p_uvs.size();
-	PoolVector<Vector2>::Read ruv = p_uvs.read();
+	PoolVector2Array::Read ruv = p_uvs.read();
 	int sc = p_smooth.size();
 	PoolVector<bool>::Read rs = p_smooth.read();
 	int mc = p_materials.size();

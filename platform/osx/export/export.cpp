@@ -145,7 +145,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 }
 
-void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
+void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolByteArray &p_source, Vector<uint8_t> &p_dest) {
 
 	int src_len = p_size * p_size;
 
@@ -276,7 +276,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			DirAccess::remove_file_or_error(path);
 
 		} else {
-			PoolVector<uint8_t> src_data = copy->get_data();
+			PoolByteArray src_data = copy->get_data();
 
 			//encode 24bit RGB RLE icon
 			{

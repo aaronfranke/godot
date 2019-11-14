@@ -89,7 +89,7 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 	return index;
 }
 
-void TriangleMesh::get_indices(PoolVector<int> *r_triangles_indices) const {
+void TriangleMesh::get_indices(PoolIntArray *r_triangles_indices) const {
 
 	if (!valid)
 		return;
@@ -100,7 +100,7 @@ void TriangleMesh::get_indices(PoolVector<int> *r_triangles_indices) const {
 	PoolVector<Triangle>::Read triangles_read = triangles.read();
 
 	r_triangles_indices->resize(triangles_num * 3);
-	PoolVector<int>::Write r_indices_write = r_triangles_indices->write();
+	PoolIntArray::Write r_indices_write = r_triangles_indices->write();
 
 	for (int i = 0; i < triangles_num; ++i) {
 		r_indices_write[3 * i + 0] = triangles_read[i].indices[0];
@@ -109,7 +109,7 @@ void TriangleMesh::get_indices(PoolVector<int> *r_triangles_indices) const {
 	}
 }
 
-void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
+void TriangleMesh::create(const PoolVector3Array &p_faces) {
 
 	valid = false;
 
@@ -127,7 +127,7 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 		//except for the Set for repeated triangles, everything
 		//goes in-place.
 
-		PoolVector<Vector3>::Read r = p_faces.read();
+		PoolVector3Array::Read r = p_faces.read();
 		PoolVector<Triangle>::Write w = triangles.write();
 		Map<Vector3, int> db;
 
@@ -164,7 +164,7 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 		}
 
 		vertices.resize(db.size());
-		PoolVector<Vector3>::Write vw = vertices.write();
+		PoolVector3Array::Write vw = vertices.write();
 		for (Map<Vector3, int>::Element *E = db.front(); E; E = E->next()) {
 			vw[E->get()] = E->key();
 		}
@@ -209,7 +209,7 @@ Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 	int level = 0;
 
 	PoolVector<Triangle>::Read trianglesr = triangles.read();
-	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector3Array::Read verticesr = vertices.read();
 	PoolVector<BVH>::Read bvhr = bvh.read();
 
 	const Triangle *triangleptr = trianglesr.ptr();
@@ -305,7 +305,7 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 	int level = 0;
 
 	PoolVector<Triangle>::Read trianglesr = triangles.read();
-	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector3Array::Read verticesr = vertices.read();
 	PoolVector<BVH>::Read bvhr = bvh.read();
 
 	const Triangle *triangleptr = trianglesr.ptr();
@@ -420,7 +420,7 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 	int level = 0;
 
 	PoolVector<Triangle>::Read trianglesr = triangles.read();
-	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector3Array::Read verticesr = vertices.read();
 	PoolVector<BVH>::Read bvhr = bvh.read();
 
 	const Triangle *triangleptr = trianglesr.ptr();
@@ -530,7 +530,7 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 	int level = 0;
 
 	PoolVector<Triangle>::Read trianglesr = triangles.read();
-	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector3Array::Read verticesr = vertices.read();
 	PoolVector<BVH>::Read bvhr = bvh.read();
 
 	const Triangle *triangleptr = trianglesr.ptr();
@@ -646,7 +646,7 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 	int level = 0;
 
 	PoolVector<Triangle>::Read trianglesr = triangles.read();
-	PoolVector<Vector3>::Read verticesr = vertices.read();
+	PoolVector3Array::Read verticesr = vertices.read();
 	PoolVector<BVH>::Read bvhr = bvh.read();
 
 	Transform scale(Basis().scaled(p_scale));
@@ -743,7 +743,7 @@ PoolVector<Face3> TriangleMesh::get_faces() const {
 
 	PoolVector<Face3>::Write w = faces.write();
 	PoolVector<Triangle>::Read r = triangles.read();
-	PoolVector<Vector3>::Read rv = vertices.read();
+	PoolVector3Array::Read rv = vertices.read();
 
 	for (int i = 0; i < ts; i++) {
 		for (int j = 0; j < 3; j++) {

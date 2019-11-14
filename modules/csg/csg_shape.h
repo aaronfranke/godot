@@ -80,17 +80,17 @@ private:
 	};
 
 	struct ShapeUpdateSurface {
-		PoolVector<Vector3> vertices;
-		PoolVector<Vector3> normals;
-		PoolVector<Vector2> uvs;
-		PoolVector<float> tans;
+		PoolVector3Array vertices;
+		PoolVector3Array normals;
+		PoolVector2Array uvs;
+		PoolRealArray tans;
 		Ref<Material> material;
 		int last_added;
 
-		PoolVector<Vector3>::Write verticesw;
-		PoolVector<Vector3>::Write normalsw;
-		PoolVector<Vector2>::Write uvsw;
-		PoolVector<float>::Write tansw;
+		PoolVector3Array::Write verticesw;
+		PoolVector3Array::Write normalsw;
+		PoolVector2Array::Write uvsw;
+		PoolRealArray::Write tansw;
 	};
 
 	//mikktspace callbacks
@@ -122,7 +122,7 @@ public:
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 
-	virtual PoolVector<Vector3> get_brush_faces();
+	virtual PoolVector3Array get_brush_faces();
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
@@ -172,7 +172,7 @@ private:
 	bool invert_faces;
 
 protected:
-	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials);
+	CSGBrush *_create_brush_from_arrays(const PoolVector3Array &p_vertices, const PoolVector2Array &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material> > &p_materials);
 	static void _bind_methods();
 
 public:

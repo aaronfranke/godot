@@ -5072,8 +5072,8 @@ void SpatialEditor::_update_gizmos_menu_theme() {
 
 void SpatialEditor::_init_grid() {
 
-	PoolVector<Color> grid_colors[3];
-	PoolVector<Vector3> grid_points[3];
+	PoolColorArray grid_colors[3];
+	PoolVector3Array grid_points[3];
 
 	Color primary_grid_color = EditorSettings::get_singleton()->get("editors/3d/primary_grid_color");
 	Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/3d/secondary_grid_color");

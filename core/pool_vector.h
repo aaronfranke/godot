@@ -31,6 +31,7 @@
 #ifndef POOL_VECTOR_H
 #define POOL_VECTOR_H
 
+#include "core/math/math_defs.h"
 #include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/os/rw_lock.h"
@@ -644,5 +645,9 @@ void PoolVector<T>::invert() {
 		w[s - i - 1] = temp;
 	}
 }
+
+typedef PoolVector<uint8_t> PoolByteArray;
+typedef PoolVector<int> PoolIntArray;
+typedef PoolVector<real_t> PoolRealArray;
 
 #endif // POOL_VECTOR_H
