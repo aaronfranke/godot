@@ -1423,7 +1423,7 @@ Variant::operator uint64_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return _data._uint;
 		case FLOAT:
 			return _data._float;
 		case STRING:
@@ -2367,9 +2367,9 @@ Variant::Variant(int64_t p_int) {
 	_data._int = p_int;
 }
 
-Variant::Variant(uint64_t p_int) {
+Variant::Variant(uint64_t p_uint) {
 	type = INT;
-	_data._int = p_int;
+	_data._uint = p_uint;
 }
 
 Variant::Variant(signed short p_short) {

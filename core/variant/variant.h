@@ -196,6 +196,7 @@ private:
 	union {
 		bool _bool;
 		int64_t _int;
+		uint64_t _uint;
 		double _float;
 		Transform2D *_transform2d;
 		::AABB *_aabb;
@@ -376,7 +377,7 @@ public:
 	Variant(signed char p_char); // real one
 	Variant(unsigned char p_char);
 	Variant(int64_t p_int); // real one
-	Variant(uint64_t p_int);
+	Variant(uint64_t p_uint);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
