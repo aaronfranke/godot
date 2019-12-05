@@ -30,6 +30,7 @@
 
 #include "editor_properties.h"
 
+#include "core/os/keyboard.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/filesystem_dock.h"
 #include "editor_node.h"
@@ -883,6 +884,38 @@ EditorPropertyObjectID::EditorPropertyObjectID() {
 	add_child(edit);
 	add_focusable(edit);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyObjectID::_edit_pressed));
+}
+
+///////////////////// KEY SCANCODE /////////////////////////
+
+void EditorPropertyInputEventKey::_edit_pressed() {
+	//emit_signal("key_scancode_selected", get_edited_property(), get_edited_object()->get(get_edited_property()));
+}
+
+void EditorPropertyInputEventKey::update_property() {
+	uint64_t id = get_edited_object()->get(get_edited_property());
+	if (id != 0) {
+		edit->set_text(keycode_get_string(id));
+	} else {
+		edit->set_text(TTR("[Invalid Key]"));
+	}
+}
+
+void EditorPropertyInputEventKey::setup(const String &p_base_type) {
+	base_type = p_base_type;
+	edit->set_disabled(false);
+	edit->set_icon(EditorNode::get_singleton()->get_class_icon("Keyboard"));
+}
+
+void EditorPropertyInputEventKey::_bind_methods() {
+	//ClassDB::bind_method(D_METHOD("_edit_pressed"), &EditorPropertyInputEventKey::_edit_pressed);
+}
+
+EditorPropertyInputEventKey::EditorPropertyInputEventKey() {
+	edit = memnew(Button);
+	add_child(edit);
+	add_focusable(edit);
+	edit->connect("pressed", this, "_edit_pressed");
 }
 
 ///////////////////// FLOAT /////////////////////////
@@ -2723,6 +2756,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				editor->setup(options);
 				add_property_editor(p_path, editor);
 
+			} else if (p_hint == PROPERTY_HINT_KEY_ACCEL) {
+				EditorPropertyInputEventKey *editor = memnew(EditorPropertyInputEventKey);
+				editor->setup(p_hint_text);
+				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_FLAGS) {
 				EditorPropertyFlags *editor = memnew(EditorPropertyFlags);
 				Vector<String> options = p_hint_text.split(",");

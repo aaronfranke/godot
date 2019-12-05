@@ -295,6 +295,21 @@ public:
 	EditorPropertyObjectID();
 };
 
+class EditorPropertyInputEventKey : public EditorProperty {
+	GDCLASS(EditorPropertyInputEventKey, EditorProperty);
+	Button *edit;
+	String base_type;
+	void _edit_pressed();
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void update_property();
+	void setup(const String &p_base_type);
+	EditorPropertyInputEventKey();
+};
+
 class EditorPropertyFloat : public EditorProperty {
 	GDCLASS(EditorPropertyFloat, EditorProperty);
 	EditorSpinSlider *spin;
