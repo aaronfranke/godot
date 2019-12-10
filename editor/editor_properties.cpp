@@ -1656,9 +1656,9 @@ void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step,
 	}
 }
 
-EditorPropertyTransform2D::EditorPropertyTransform2D() {
+EditorPropertyTransform2D::EditorPropertyTransform2D(bool include_origin) {
 	GridContainer *g = memnew(GridContainer);
-	g->set_columns(3);
+	g->set_columns(include_origin ? 3 : 2);
 	add_child(g);
 
 	static const char **desc;
@@ -1671,7 +1671,9 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		g->add_child(spin[i]);
+		if (include_origin || i % 3 != 2) {
+			g->add_child(spin[i]);
+		}
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
@@ -2667,7 +2669,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
+			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D(p_usage != 2));
 			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
