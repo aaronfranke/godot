@@ -31,9 +31,18 @@
 #ifndef MARSHALLS_H
 #define MARSHALLS_H
 
+#include "core/int_types.h"
+#include "core/math/math_defs.h"
 #include "core/reference.h"
 #include "core/typedefs.h"
 #include "core/variant.h"
+
+// uintr_t is only for pairing with real_t, and we only need it in here.
+#ifdef REAL_T_IS_DOUBLE
+typedef uint64_t uintr_t;
+#else
+typedef uint32_t uintr_t;
+#endif
 
 /**
   * Miscellaneous helpers for marshalling data types, and encoding
@@ -50,6 +59,13 @@ union MarshallDouble {
 
 	uint64_t l; ///< long long
 	double d; ///< double
+};
+
+// Behaves like one of the above, depending on compilation setting.
+union MarshallReal {
+
+	uintr_t i;
+	real_t r;
 };
 
 static inline unsigned int encode_uint16(uint16_t p_uint, uint8_t *p_arr) {
@@ -104,6 +120,27 @@ static inline unsigned int encode_double(double p_double, uint8_t *p_arr) {
 	encode_uint64(md.l, p_arr);
 
 	return sizeof(uint64_t);
+}
+
+static inline unsigned int encode_uintr(uintr_t p_uint, uint8_t *p_arr) {
+
+	for (size_t i = 0; i < sizeof(uintr_t); i++) {
+
+		*p_arr = p_uint & 0xFF;
+		p_arr++;
+		p_uint >>= 8;
+	}
+
+	return sizeof(uintr_t);
+}
+
+static inline unsigned int encode_real(real_t p_real, uint8_t *p_arr) {
+
+	MarshallReal mr;
+	mr.r = p_real;
+	encode_uintr(mr.i, p_arr);
+
+	return sizeof(uintr_t);
 }
 
 static inline int encode_cstring(const char *p_string, uint8_t *p_data) {
@@ -182,6 +219,28 @@ static inline double decode_double(const uint8_t *p_arr) {
 	MarshallDouble md;
 	md.l = decode_uint64(p_arr);
 	return md.d;
+}
+
+static inline uintr_t decode_uintr(const uint8_t *p_arr) {
+
+	uintr_t u = 0;
+
+	for (size_t i = 0; i < sizeof(uintr_t); i++) {
+
+		uint32_t b = *p_arr;
+		b <<= (i * 8);
+		u |= b;
+		p_arr++;
+	}
+
+	return u;
+}
+
+static inline real_t decode_real(const uint8_t *p_arr) {
+
+	MarshallReal mr;
+	mr.i = decode_uintr(p_arr);
+	return mr.r;
 }
 
 class EncodedObjectAsID : public Reference {
