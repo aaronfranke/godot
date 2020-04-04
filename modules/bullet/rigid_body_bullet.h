@@ -89,13 +89,13 @@ private:
 
 public:
 	virtual Vector3 get_total_gravity() const;
-	virtual float get_total_angular_damp() const;
-	virtual float get_total_linear_damp() const;
+	virtual real_t get_total_angular_damp() const;
+	virtual real_t get_total_linear_damp() const;
 
 	virtual Vector3 get_center_of_mass() const;
 	virtual Basis get_principal_inertia_axes() const;
 	// get the mass
-	virtual float get_inverse_mass() const;
+	virtual real_t get_inverse_mass() const;
 	// get density of this body space
 	virtual Vector3 get_inverse_inertia() const;
 	// get density of this body space
@@ -124,7 +124,7 @@ public:
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const;
-	virtual float get_contact_impulse(int p_contact_idx) const;
+	virtual real_t get_contact_impulse(int p_contact_idx) const;
 	virtual int get_contact_local_shape(int p_contact_idx) const;
 
 	virtual RID get_contact_collider(int p_contact_idx) const;
@@ -151,7 +151,7 @@ public:
 		Vector3 hitLocalLocation;
 		Vector3 hitWorldLocation;
 		Vector3 hitNormal;
-		float appliedImpulse;
+		real_t appliedImpulse;
 	};
 
 	struct ForceIntegrationCallback {
@@ -267,7 +267,7 @@ public:
 	}
 
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
-	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
+	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const real_t &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
 	bool was_colliding(RigidBodyBullet *p_other_object);
 
 	void assert_no_constraints();

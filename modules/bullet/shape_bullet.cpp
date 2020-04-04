@@ -474,7 +474,11 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	Vector<real_t> l_heights;
 	Variant l_heights_v = d["heights"];
 
+#ifdef REAL_T_IS_DOUBLE
+	if (l_heights_v.get_type() == Variant::PACKED_FLOAT64_ARRAY) {
+#else
 	if (l_heights_v.get_type() == Variant::PACKED_FLOAT32_ARRAY) {
+#endif
 		// Ready-to-use heights can be passed
 
 		l_heights = l_heights_v;
@@ -495,7 +499,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 		l_heights.resize(l_image->get_width() * l_image->get_height());
 
-		real_t *w = l_heights.ptrw();
+		float *w = l_heights.ptrw();
 		const uint8_t *r = im_data.ptr();
 		float *rp = (float *)r;
 		// At this point, `rp` could be used directly for Bullet, but I don't know how safe it would be.
@@ -505,7 +509,11 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 		}
 
 	} else {
+#ifdef REAL_T_IS_DOUBLE
+		ERR_FAIL_MSG("Expected PackedFloat64Array or float Image.");
+#else
 		ERR_FAIL_MSG("Expected PackedFloat32Array or float Image.");
+#endif
 	}
 
 	ERR_FAIL_COND(l_width <= 0);
