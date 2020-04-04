@@ -66,7 +66,7 @@ public:
 	void set_axis_angle(const Vector3 &axis, const real_t &angle);
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
-		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
+		real_t r = 1.0 / Math::sqrt(1 - w * w);
 		r_axis.x = x * r;
 		r_axis.y = y * r;
 		r_axis.z = z * r;

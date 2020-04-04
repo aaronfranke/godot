@@ -335,7 +335,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					CharType c = cchar;
 					bool exp_sign = false;
 					bool exp_beg = false;
-					bool is_float = false;
+					bool is_floating = false;
 
 					while (true) {
 
@@ -346,10 +346,10 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 									//pass
 								} else if (c == '.') {
 									reading = READING_DEC;
-									is_float = true;
+									is_floating = true;
 								} else if (c == 'e') {
 									reading = READING_EXP;
-									is_float = true;
+									is_floating = true;
 								} else {
 									reading = READING_DONE;
 								}
@@ -390,7 +390,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 					r_token.type = TK_NUMBER;
 
-					if (is_float)
+					if (is_floating)
 						r_token.value = num.as_double();
 					else
 						r_token.value = num.as_int();
@@ -989,16 +989,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		} else if (id == "PackedFloat32Array" || id == "PackedRealArray" || id == "PoolRealArray" || id == "FloatArray") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
-			Vector<float> arr;
+			Vector<real_t> arr;
 			{
 				int len = args.size();
 				arr.resize(len);
-				float *w = arr.ptrw();
+				real_t *w = arr.ptrw();
 				for (int i = 0; i < len; i++) {
 					w[i] = args[i];
 				}
@@ -1080,8 +1080,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		} else if (id == "PackedVector2Array" || id == "PoolVector2Array" || id == "Vector2Array") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -1101,8 +1101,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		} else if (id == "PackedVector3Array" || id == "PoolVector3Array" || id == "Vector3Array") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 

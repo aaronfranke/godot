@@ -295,7 +295,7 @@ bool SphereShape3DSW::intersect_point(const Vector3 &p_point) const {
 Vector3 SphereShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 
 	Vector3 p = p_point;
-	float l = p.length();
+	real_t l = p.length();
 	if (l < radius)
 		return p_point;
 	return (p / l) * radius;
@@ -478,7 +478,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		return min_point;
 
 	//check segments
-	float min_distance = 1e20;
+	real_t min_distance = 1e20;
 	Vector3 closest_vertex = half_extents * p_point.sign();
 	Vector3 s[2] = {
 		closest_vertex,
@@ -492,7 +492,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 
 		Vector3 closest_edge = Geometry::get_closest_point_to_segment(p_point, s);
 
-		float d = p_point.distance_to(closest_edge);
+		real_t d = p_point.distance_to(closest_edge);
 		if (d < min_distance) {
 			min_point = closest_edge;
 			min_distance = d;
@@ -917,7 +917,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 		return p_point;
 	}
 
-	float min_distance = 1e20;
+	real_t min_distance = 1e20;
 	Vector3 min_point;
 
 	//check edges
@@ -931,7 +931,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 		};
 
 		Vector3 closest = Geometry::get_closest_point_to_segment(p_point, s);
-		float d = closest.distance_to(p_point);
+		real_t d = closest.distance_to(p_point);
 		if (d < min_distance) {
 			min_distance = d;
 			min_point = closest;

@@ -854,9 +854,9 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 	return ret;
 }
 
-Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
+Vector<real_t> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
 
-	Vector<float> ret;
+	Vector<real_t> ret;
 	int from = 0;
 	int len = length();
 
@@ -877,9 +877,9 @@ Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty)
 	return ret;
 }
 
-Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty) const {
+Vector<real_t> String::split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty) const {
 
-	Vector<float> ret;
+	Vector<real_t> ret;
 	int from = 0;
 	int len = length();
 
@@ -1127,7 +1127,7 @@ String String::num(double p_num, int p_decimals) {
 
 	if (p_decimals > 0 || (p_decimals == -1 && (int)p_num != p_num)) {
 
-		double dec = p_num - (float)((int)p_num);
+		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
 		if (p_decimals > MAX_DIGITS)
@@ -1148,7 +1148,7 @@ String String::num(double p_num, int p_decimals) {
 				if (digit == MAX_DIGITS) //no point in going to infinite
 					break;
 
-				if ((dec - (float)((int)dec)) < 1e-6)
+				if (dec - (double)((int)dec) < 1e-6)
 					break;
 			}
 
@@ -2127,6 +2127,11 @@ double String::to_double(const char *p_str) {
 #endif
 }
 
+real_t String::to_real() const {
+
+	return to_double();
+}
+
 float String::to_float() const {
 
 	return to_double();
@@ -2866,7 +2871,7 @@ Vector<String> String::bigrams() const {
 }
 
 // Similarity according to Sorensen-Dice coefficient
-float String::similarity(const String &p_string) const {
+real_t String::similarity(const String &p_string) const {
 	if (operator==(p_string)) {
 		// Equal strings are totally similar
 		return 1.0f;
@@ -2882,8 +2887,8 @@ float String::similarity(const String &p_string) const {
 	int src_size = src_bigrams.size();
 	int tgt_size = tgt_bigrams.size();
 
-	float sum = src_size + tgt_size;
-	float inter = 0;
+	int sum = src_size + tgt_size;
+	int inter = 0;
 	for (int i = 0; i < src_size; i++) {
 		for (int j = 0; j < tgt_size; j++) {
 			if (src_bigrams[i] == tgt_bigrams[j]) {
@@ -4215,7 +4220,8 @@ String String::sprintf(const Array &values, bool *error) const {
 
 					break;
 				}
-				case 'f': { // Float
+				case 'r': // Real number
+				case 'f': { // Real number
 					if (value_index >= values.size()) {
 						return "not enough arguments for format string";
 					}

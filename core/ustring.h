@@ -33,6 +33,7 @@
 
 #include "core/array.h"
 #include "core/cowdata.h"
+#include "core/math/math_defs.h"
 #include "core/typedefs.h"
 #include "core/vector.h"
 
@@ -243,6 +244,7 @@ public:
 	static String md5(const uint8_t *p_md5);
 	static String hex_encode_buffer(const uint8_t *p_buffer, int p_len);
 	bool is_numeric() const;
+	real_t to_real() const;
 	double to_double() const;
 	float to_float() const;
 	int hex_to_int(bool p_with_prefix = true) const;
