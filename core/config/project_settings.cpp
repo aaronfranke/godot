@@ -857,7 +857,9 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			vc.type = v->variant.get_type();
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
 			if (v->variant == v->initial) {
-				continue;
+				if (vc.name != "rendering/quality/driver/driver_name") {
+					continue;
+				}
 			}
 
 			vclist.insert(vc);
