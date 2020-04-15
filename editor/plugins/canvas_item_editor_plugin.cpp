@@ -79,8 +79,8 @@ public:
 	SnapDialog() {
 		const int SPIN_BOX_GRID_RANGE = 16384;
 		const int SPIN_BOX_ROTATION_RANGE = 360;
-		const float SPIN_BOX_SCALE_MIN = 0.01f;
-		const float SPIN_BOX_SCALE_MAX = 100;
+		const real_t SPIN_BOX_SCALE_MIN = 0.01;
+		const real_t SPIN_BOX_SCALE_MAX = 100;
 
 		Label *label;
 		VBoxContainer *container;
@@ -209,7 +209,7 @@ public:
 		child_container->add_child(scale_step);
 	}
 
-	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const float p_rotation_offset, const float p_rotation_step, const float p_scale_step) {
+	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const real_t p_rotation_offset, const real_t p_rotation_step, const real_t p_scale_step) {
 		grid_offset_x->set_value(p_grid_offset.x);
 		grid_offset_y->set_value(p_grid_offset.y);
 		grid_step_x->set_value(p_grid_step.x);
@@ -220,7 +220,7 @@ public:
 		scale_step->set_value(p_scale_step);
 	}
 
-	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, float &p_rotation_offset, float &p_rotation_step, float &p_scale_step) {
+	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, real_t &p_rotation_offset, real_t &p_rotation_step, real_t &p_scale_step) {
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
 		p_primary_grid_steps = int(primary_grid_steps->get_value());
@@ -248,13 +248,13 @@ bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning
 }
 
 void CanvasItemEditor::_snap_if_closer_float(
-		float p_value,
-		float &r_current_snap, SnapTarget &r_current_snap_target,
-		float p_target_value, SnapTarget p_snap_target,
-		float p_radius) {
+		real_t p_value,
+		real_t &r_current_snap, SnapTarget &r_current_snap_target,
+		real_t p_target_value, SnapTarget p_snap_target,
+		real_t p_radius) {
 
-	float radius = p_radius / zoom;
-	float dist = Math::abs(p_value - p_target_value);
+	real_t radius = p_radius / zoom;
+	real_t dist = Math::abs(p_value - p_target_value);
 	if ((p_radius < 0 || dist < radius) && (r_current_snap_target == SNAP_TARGET_NONE || dist < Math::abs(r_current_snap - p_value))) {
 		r_current_snap = p_target_value;
 		r_current_snap_target = p_snap_target;
@@ -266,7 +266,7 @@ void CanvasItemEditor::_snap_if_closer_point(
 		Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
 		Point2 p_target_value, SnapTarget p_snap_target,
 		real_t rotation,
-		float p_radius) {
+		real_t p_radius) {
 
 	Transform2D rot_trans = Transform2D(rotation, Point2());
 	p_value = rot_trans.inverse().xform(p_value);
@@ -461,10 +461,10 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	return output;
 }
 
-float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
+real_t CanvasItemEditor::snap_angle(real_t p_target, real_t p_start) const {
 	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) && snap_rotation_step != 0) {
 		if (snap_relative) {
-			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
+			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int64_t)(p_start / snap_rotation_step) * snap_rotation_step);
 		} else {
 			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset;
 		}
@@ -860,9 +860,9 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	return (p_control->get_transform().xform(position) - parent_rect.position) / parent_rect.size;
 }
 
-void CanvasItemEditor::_save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state) {
+void CanvasItemEditor::_save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<real_t> *p_bones_length, List<Dictionary> *p_bones_state) {
 	if (p_bones_length)
-		*p_bones_length = List<float>();
+		*p_bones_length = List<real_t>();
 	if (p_bones_state)
 		*p_bones_state = List<Dictionary>();
 
@@ -1000,7 +1000,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			}
 
 			// Hover over guides
-			float minimum = 1e20;
+			real_t minimum = 1e20;
 			is_hovering_h_guide = false;
 			is_hovering_v_guide = false;
 
@@ -1414,8 +1414,8 @@ void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 			Point2 root_pos = joints_list.back()->get()->get_global_transform_with_canvas().get_origin();
 
 			// Restraints the node to a maximum distance is necessary
-			float total_len = 0;
-			for (List<float>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
+			real_t total_len = 0;
+			for (List<real_t>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
 				total_len += E->get();
 			}
 			if ((root_pos.distance_to(leaf_pos)) > total_len) {
@@ -1427,13 +1427,13 @@ void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 
 			// Run the solver
 			int solver_iterations = 64;
-			float solver_k = 0.3;
+			real_t solver_k = 0.3;
 
 			// Build the position list
 			for (int i = 0; i < solver_iterations; i++) {
 				// Handle the leaf joint
 				int node_id = 0;
-				for (List<float>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
+				for (List<real_t>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
 					Vector2 direction = (joints_pos[node_id + 1] - joints_pos[node_id]).normalized();
 					int len = E->get();
 					if (E == se->pre_drag_bones_length.front()) {
@@ -1453,7 +1453,7 @@ void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 			for (int node_id = joints_list.size() - 1; node_id > 0; node_id--) {
 				Point2 current = (joints_list[node_id - 1]->get_global_position() - joints_list[node_id]->get_global_position()).normalized();
 				Point2 target = (joints_pos[node_id - 1] - joints_list[node_id]->get_global_position()).normalized();
-				float rot = current.angle_to(target);
+				real_t rot = current.angle_to(target);
 				if (joints_list[node_id]->get_global_transform().basis_determinant() < 0) {
 					rot = -rot;
 				}
@@ -1571,7 +1571,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 					for (int i = 0; i < 4; i++) {
 						anchor_pos[i] = (transform * control->get_global_transform_with_canvas()).xform(_anchor_to_position(control, anchor_pos[i]));
 						anchor_rects[i] = Rect2(anchor_pos[i], anchor_handle->get_size());
-						anchor_rects[i].position -= anchor_handle->get_size() * Vector2(float(i == 0 || i == 3), float(i <= 1));
+						anchor_rects[i].position -= anchor_handle->get_size() * Vector2(real_t(i == 0 || i == 3), real_t(i <= 1));
 					}
 
 					DragType dragger[] = {
@@ -1706,7 +1706,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 					};
 
 					DragType resize_drag = DRAG_NONE;
-					float radius = (select_handle->get_size().width / 2) * 1.5;
+					real_t radius = (select_handle->get_size().width / 2) * 1.5;
 
 					for (int i = 0; i < 4; i++) {
 						int prev = (i + 3) % 4;
@@ -1750,7 +1750,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			bool symmetric = m->get_alt();
 
 			Rect2 local_rect = canvas_item->_edit_get_rect();
-			float aspect = local_rect.get_size().y / local_rect.get_size().x;
+			real_t aspect = local_rect.get_size().y / local_rect.get_size().x;
 			Point2 current_begin = local_rect.get_position();
 			Point2 current_end = local_rect.get_position() + local_rect.get_size();
 			Point2 max_begin = (symmetric) ? (current_begin + current_end - canvas_item->_edit_get_minimum_size()) / 2.0 : current_end - canvas_item->_edit_get_minimum_size();
@@ -1920,7 +1920,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 			Size2 scale = canvas_item->call("get_scale");
 			Size2 original_scale = scale;
-			float ratio = scale.y / scale.x;
+			real_t ratio = scale.y / scale.x;
 			if (drag_type == DRAG_SCALE_BOTH) {
 				Size2 scale_factor = drag_to_local / drag_from_local;
 				if (uniform) {
@@ -2623,7 +2623,7 @@ void CanvasItemEditor::_draw_margin_at_position(int p_value, Point2 p_position, 
 	}
 }
 
-void CanvasItemEditor::_draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side) {
+void CanvasItemEditor::_draw_percentage_at_position(real_t p_value, Point2 p_position, Margin p_side) {
 	String str = vformat("%.1f %%", p_value * 100.0);
 	if (p_value != 0) {
 		_draw_text_at_position(p_position, str, p_side);
@@ -2648,7 +2648,7 @@ void CanvasItemEditor::_draw_guides() {
 		for (int i = 0; i < vguides.size(); i++) {
 			if (drag_type == DRAG_V_GUIDE && i == dragged_guide_index)
 				continue;
-			float x = xform.xform(Point2(vguides[i], 0)).x;
+			real_t x = xform.xform(Point2(vguides[i], 0)).x;
 			viewport->draw_line(Point2(x, 0), Point2(x, viewport->get_size().y), guide_color, Math::round(EDSCALE));
 		}
 	}
@@ -2658,7 +2658,7 @@ void CanvasItemEditor::_draw_guides() {
 		for (int i = 0; i < hguides.size(); i++) {
 			if (drag_type == DRAG_H_GUIDE && i == dragged_guide_index)
 				continue;
-			float y = xform.xform(Point2(0, hguides[i])).y;
+			real_t y = xform.xform(Point2(0, hguides[i])).y;
 			viewport->draw_line(Point2(0, y), Point2(viewport->get_size().x, y), guide_color, Math::round(EDSCALE));
 		}
 	}
@@ -2718,7 +2718,7 @@ void CanvasItemEditor::_draw_rulers() {
 			ruler_transform.scale_basis(Point2(2, 2));
 		}
 	} else {
-		float basic_rule = 100;
+		real_t basic_rule = 100;
 		for (int i = 0; basic_rule * zoom > 100; i++) {
 			basic_rule /= (i % 2) ? 5.0 : 2.0;
 		}
@@ -2747,7 +2747,7 @@ void CanvasItemEditor::_draw_rulers() {
 		Point2 position = (transform * ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0));
 		if (i % (major_subdivision * minor_subdivision) == 0) {
 			viewport->draw_line(Point2(position.x, 0), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
-			float val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).x;
+			real_t val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).x;
 			viewport->draw_string(font, Point2(position.x + 2, font->get_height()), vformat(((int)val == val) ? "%d" : "%.1f", val), font_color);
 		} else {
 			if (i % minor_subdivision == 0) {
@@ -2764,7 +2764,7 @@ void CanvasItemEditor::_draw_rulers() {
 		Point2 position = (transform * ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i));
 		if (i % (major_subdivision * minor_subdivision) == 0) {
 			viewport->draw_line(Point2(0, position.y), Point2(RULER_WIDTH, position.y), graduation_color, Math::round(EDSCALE));
-			float val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).y;
+			real_t val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).y;
 
 			Transform2D text_xform = Transform2D(-Math_PI / 2.0, Point2(font->get_height(), position.y - 2));
 			viewport->draw_set_transform_matrix(viewport->get_transform() * text_xform);
@@ -2884,9 +2884,9 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		Color font_color = get_theme_color("font_color", "Editor");
 		Color font_secondary_color = font_color;
 		font_secondary_color.a = 0.5;
-		float text_height = font->get_height();
-		const float text_width = 76;
-		const float angle_text_width = 54;
+		real_t text_height = font->get_height();
+		const real_t text_width = 76;
+		const real_t angle_text_width = 54;
 
 		Point2 text_pos = (begin + end) / 2 - Vector2(text_width / 2, text_height / 2);
 		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
@@ -2894,8 +2894,8 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		viewport->draw_string(font, text_pos, vformat("%.2f px", length_vector.length()), font_color);
 
 		if (draw_secondary_lines) {
-			const float horizontal_angle_rad = atan2(length_vector.y, length_vector.x);
-			const float vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
+			const real_t horizontal_angle_rad = atan2(length_vector.y, length_vector.x);
+			const real_t vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
 			const int horizontal_angle = round(180 * horizontal_angle_rad / Math_PI);
 			const int vertical_angle = round(180 * vertical_angle_rad / Math_PI);
 
@@ -2931,28 +2931,28 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 			// Angle arcs
 			int arc_point_count = 8;
-			float arc_radius_max_length_percent = 0.1;
-			float ruler_length = length_vector.length() * zoom;
-			float arc_max_radius = 50.0;
-			float arc_line_width = 2.0;
+			real_t arc_radius_max_length_percent = 0.1;
+			real_t ruler_length = length_vector.length() * zoom;
+			real_t arc_max_radius = 50.0;
+			real_t arc_line_width = 2.0;
 
 			const Vector2 end_to_begin = (end - begin);
 
-			float arc_1_start_angle =
+			real_t arc_1_start_angle =
 					end_to_begin.x < 0 ?
 							(end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 - vertical_angle_rad : Math_PI / 2.0) :
 							(end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
-			float arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
+			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
 			// Constrain arc to triangle height & max size
-			float arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
+			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
 
-			float arc_2_start_angle =
+			real_t arc_2_start_angle =
 					end_to_begin.x < 0 ?
 							(end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad) :
 							(end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
-			float arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
+			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
 			// Constrain arc to triangle width & max size
-			float arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
+			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
 
 			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
@@ -2993,7 +2993,7 @@ void CanvasItemEditor::_draw_control_anchors(Control *control) {
 	if (tool == TOOL_SELECT && !Object::cast_to<Container>(control->get_parent())) {
 
 		// Compute the anchors
-		float anchors_values[4];
+		real_t anchors_values[4];
 		anchors_values[0] = control->get_anchor(MARGIN_LEFT);
 		anchors_values[1] = control->get_anchor(MARGIN_TOP);
 		anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
@@ -3025,7 +3025,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		Color color_base = Color(0.8, 0.8, 0.8, 0.5);
 
 		// Compute the anchors
-		float anchors_values[4];
+		real_t anchors_values[4];
 		anchors_values[0] = control->get_anchor(MARGIN_LEFT);
 		anchors_values[1] = control->get_anchor(MARGIN_TOP);
 		anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
@@ -3079,7 +3079,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			}
 
 			// Display the percentages next to the lines
-			float percent_val;
+			real_t percent_val;
 			percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
 			percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
 			_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 1) % 4]) / 2, (Margin)((dragged_anchor + 1) % 4));
@@ -3098,9 +3098,9 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		// Draw the margin values and the node width/height when dragging control side
-		float ratio = 0.33;
+		real_t ratio = 0.33;
 		Transform2D parent_transform = xform * control->get_transform().affine_inverse();
-		float node_pos_in_parent[4];
+		real_t node_pos_in_parent[4];
 
 		Rect2 parent_rect = control->get_parent_anchorable_rect();
 
@@ -3420,10 +3420,10 @@ void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_c
 		points.push_back(Point2(0, to.y));
 		points.push_back(Point2(viewport_size.x, to.y));
 	} else {
-		float y_for_zero_x = (to.y * from.x - from.y * to.x) / (from.x - to.x);
-		float x_for_zero_y = (to.x * from.y - from.x * to.y) / (from.y - to.y);
-		float y_for_viewport_x = ((to.y - from.y) * (viewport_size.x - from.x)) / (to.x - from.x) + from.y;
-		float x_for_viewport_y = ((to.x - from.x) * (viewport_size.y - from.y)) / (to.y - from.y) + from.x; // faux
+		real_t y_for_zero_x = (to.y * from.x - from.y * to.x) / (from.x - to.x);
+		real_t x_for_zero_y = (to.x * from.y - from.x * to.y) / (from.y - to.y);
+		real_t y_for_viewport_x = ((to.y - from.y) * (viewport_size.x - from.x)) / (to.x - from.x) + from.y;
+		real_t x_for_viewport_y = ((to.x - from.x) * (viewport_size.y - from.y)) / (to.y - from.y) + from.x; // faux
 
 		//bool start_set = false;
 		if (y_for_zero_x >= 0 && y_for_zero_x <= viewport_size.y) {
@@ -3626,7 +3626,7 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 
 	RID viewport_canvas_item = viewport->get_canvas_item();
 	if (canvas_item) {
-		float offset = 0;
+		real_t offset = 0;
 
 		Ref<Texture2D> lock = get_theme_icon("LockViewport", "EditorIcons");
 		if (p_node->has_meta("_edit_lock_") && show_edit_locks) {
@@ -3818,7 +3818,7 @@ void CanvasItemEditor::_notification(int p_what) {
 
 			Control *control = Object::cast_to<Control>(canvas_item);
 			if (control) {
-				float anchors[4];
+				real_t anchors[4];
 				Vector2 pivot;
 
 				pivot = control->get_pivot_offset();
@@ -4133,7 +4133,7 @@ void CanvasItemEditor::_update_scrollbars() {
 	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		float centered = -(size.y / 2) / zoom + screen_rect.y / 2;
+		real_t centered = -(size.y / 2) / zoom + screen_rect.y / 2;
 		if (constrain_editor_view && ABS(centered - previous_update_view_offset.y) < ABS(centered - view_offset.y)) {
 			view_offset.y = previous_update_view_offset.y;
 		}
@@ -4154,7 +4154,7 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		float centered = -(size.x / 2) / zoom + screen_rect.x / 2;
+		real_t centered = -(size.x / 2) / zoom + screen_rect.x / 2;
 		if (constrain_editor_view && ABS(centered - previous_update_view_offset.x) < ABS(centered - view_offset.x)) {
 			view_offset.x = previous_update_view_offset.x;
 		}
@@ -4198,7 +4198,7 @@ void CanvasItemEditor::_popup_warning_depop(Control *p_control) {
 	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
-void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const float p_duration) {
+void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const real_t p_duration) {
 	Timer *timer;
 	if (!popup_temporarily_timers.has(p_control)) {
 		timer = memnew(Timer);
@@ -4216,7 +4216,7 @@ void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const floa
 	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
-void CanvasItemEditor::_update_scroll(float) {
+void CanvasItemEditor::_update_scroll(real_t) {
 
 	if (updating_scroll)
 		return;
@@ -4313,11 +4313,11 @@ void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	undo_redo->commit_action();
 }
 
-void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
+void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 	if (p_zoom < MIN_ZOOM || p_zoom > MAX_ZOOM)
 		return;
 
-	float prev_zoom = zoom;
+	real_t prev_zoom = zoom;
 	zoom = p_zoom;
 
 	view_offset += p_position / prev_zoom - p_position / zoom;
@@ -5078,8 +5078,8 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	} else { // VIEW_FRAME_TO_SELECTION
 
 		if (rect.size.x > CMP_EPSILON && rect.size.y > CMP_EPSILON) {
-			float scale_x = viewport->get_size().x / rect.size.x;
-			float scale_y = viewport->get_size().y / rect.size.y;
+			real_t scale_x = viewport->get_size().x / rect.size.x;
+			real_t scale_y = viewport->get_size().y / rect.size.y;
 			zoom = scale_x < scale_y ? scale_x : scale_y;
 			zoom *= 0.90;
 			viewport->update();
@@ -5147,7 +5147,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	if (state.has("zoom")) {
 		// Compensate the editor scale, so that the editor scale can be changed
 		// and the zoom level will still be the same (relative to the editor scale).
-		zoom = float(p_state["zoom"]) * MAX(1, EDSCALE);
+		zoom = real_t(p_state["zoom"]) * MAX(1, EDSCALE);
 		_update_zoom_label();
 	}
 

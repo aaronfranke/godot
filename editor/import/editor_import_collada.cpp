@@ -920,7 +920,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				}
 
 				if (has_weights) {
-					Vector<float> weights;
+					Vector<real_t> weights;
 					Vector<int> bones;
 					weights.resize(RS::ARRAY_WEIGHTS_SIZE);
 					bones.resize(RS::ARRAY_WEIGHTS_SIZE);
@@ -1493,7 +1493,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	//animation->set_loop(true);
 	//create animation tracks
 
-	Vector<float> base_snapshots;
+	Vector<real_t> base_snapshots;
 
 	float f = 0;
 	float snapshot_interval = 1.0 / bake_fps; //should be customizable somewhere...
@@ -1548,7 +1548,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		animation->track_set_path(track, path);
 		animation->track_set_imported(track, true); //helps merging later
 
-		Vector<float> snapshots = base_snapshots;
+		Vector<real_t> snapshots = base_snapshots;
 
 		if (nm.anim_tracks.size() == 1) {
 			//use snapshot keys from anim track instead, because this was most likely exported baked
@@ -1594,7 +1594,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					continue;
 				}
 
-				Vector<float> data = at.get_value_at_time(snapshots[i]);
+				Vector<real_t> data = at.get_value_at_time(snapshots[i]);
 				ERR_CONTINUE(data.empty());
 
 				Collada::Node::XForm &xf = cn->xform_list.write[xform_idx];
@@ -1728,7 +1728,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 				float time = at.keys[j].time;
 				Variant value;
-				Vector<float> data = at.keys[j].data;
+				Vector<real_t> data = at.keys[j].data;
 				if (data.size() == 1) {
 					//push a float
 					value = data[0];

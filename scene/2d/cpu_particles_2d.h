@@ -84,24 +84,24 @@ private:
 	struct Particle {
 		Transform2D transform;
 		Color color;
-		float custom[4];
-		float rotation;
+		real_t custom[4];
+		real_t rotation;
 		Vector2 velocity;
 		bool active;
-		float angle_rand;
-		float scale_rand;
-		float hue_rot_rand;
-		float anim_offset_rand;
-		float time;
-		float lifetime;
+		real_t angle_rand;
+		real_t scale_rand;
+		real_t hue_rot_rand;
+		real_t anim_offset_rand;
+		real_t time;
+		real_t lifetime;
 		Color base_color;
 
 		uint32_t seed;
 	};
 
-	float time;
-	float inactive_time;
-	float frame_remainder;
+	real_t time;
+	real_t inactive_time;
+	real_t frame_remainder;
 	int cycle;
 	bool redraw;
 
@@ -109,7 +109,7 @@ private:
 	RID multimesh;
 
 	Vector<Particle> particles;
-	Vector<float> particle_data;
+	Vector<real_t> particle_data;
 	Vector<int> particle_order;
 
 	struct SortLifetime {
@@ -133,12 +133,12 @@ private:
 
 	bool one_shot;
 
-	float lifetime;
-	float pre_process_time;
-	float explosiveness_ratio;
-	float randomness_ratio;
-	float lifetime_randomness;
-	float speed_scale;
+	real_t lifetime;
+	real_t pre_process_time;
+	real_t explosiveness_ratio;
+	real_t randomness_ratio;
+	real_t lifetime_randomness;
+	real_t speed_scale;
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
@@ -153,10 +153,10 @@ private:
 	////////
 
 	Vector2 direction;
-	float spread;
+	real_t spread;
 
-	float parameters[PARAM_MAX];
-	float randomness[PARAM_MAX];
+	real_t parameters[PARAM_MAX];
+	real_t randomness[PARAM_MAX];
 
 	Ref<Curve> curve_parameters[PARAM_MAX];
 	Color color;
@@ -165,7 +165,7 @@ private:
 	bool flags[FLAG_MAX];
 
 	EmissionShape emission_shape;
-	float emission_sphere_radius;
+	real_t emission_sphere_radius;
 	Vector2 emission_rect_extents;
 	Vector<Vector2> emission_points;
 	Vector<Vector2> emission_normals;
@@ -175,7 +175,7 @@ private:
 	Vector2 gravity;
 
 	void _update_internal();
-	void _particles_process(float p_delta);
+	void _particles_process(real_t p_delta);
 	void _update_particle_data_buffer();
 
 	Mutex update_mutex;
@@ -196,27 +196,27 @@ protected:
 public:
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
-	void set_lifetime(float p_lifetime);
+	void set_lifetime(real_t p_lifetime);
 	void set_one_shot(bool p_one_shot);
-	void set_pre_process_time(float p_time);
-	void set_explosiveness_ratio(float p_ratio);
-	void set_randomness_ratio(float p_ratio);
-	void set_lifetime_randomness(float p_random);
+	void set_pre_process_time(real_t p_time);
+	void set_explosiveness_ratio(real_t p_ratio);
+	void set_randomness_ratio(real_t p_ratio);
+	void set_lifetime_randomness(real_t p_random);
 	void set_visibility_aabb(const Rect2 &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
-	void set_speed_scale(float p_scale);
+	void set_speed_scale(real_t p_scale);
 
 	bool is_emitting() const;
 	int get_amount() const;
-	float get_lifetime() const;
+	real_t get_lifetime() const;
 	bool get_one_shot() const;
-	float get_pre_process_time() const;
-	float get_explosiveness_ratio() const;
-	float get_randomness_ratio() const;
-	float get_lifetime_randomness() const;
+	real_t get_pre_process_time() const;
+	real_t get_explosiveness_ratio() const;
+	real_t get_randomness_ratio() const;
+	real_t get_lifetime_randomness() const;
 	Rect2 get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
-	float get_speed_scale() const;
+	real_t get_speed_scale() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;
@@ -241,14 +241,14 @@ public:
 	void set_direction(Vector2 p_direction);
 	Vector2 get_direction() const;
 
-	void set_spread(float p_spread);
-	float get_spread() const;
+	void set_spread(real_t p_spread);
+	real_t get_spread() const;
 
-	void set_param(Parameter p_param, float p_value);
-	float get_param(Parameter p_param) const;
+	void set_param(Parameter p_param, real_t p_value);
+	real_t get_param(Parameter p_param) const;
 
-	void set_param_randomness(Parameter p_param, float p_value);
-	float get_param_randomness(Parameter p_param) const;
+	void set_param_randomness(Parameter p_param, real_t p_value);
+	real_t get_param_randomness(Parameter p_param) const;
 
 	void set_param_curve(Parameter p_param, const Ref<Curve> &p_curve);
 	Ref<Curve> get_param_curve(Parameter p_param) const;
@@ -263,7 +263,7 @@ public:
 	bool get_particle_flag(Flags p_flag) const;
 
 	void set_emission_shape(EmissionShape p_shape);
-	void set_emission_sphere_radius(float p_radius);
+	void set_emission_sphere_radius(real_t p_radius);
 	void set_emission_rect_extents(Vector2 p_extents);
 	void set_emission_points(const Vector<Vector2> &p_points);
 	void set_emission_normals(const Vector<Vector2> &p_normals);
@@ -271,7 +271,7 @@ public:
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
-	float get_emission_sphere_radius() const;
+	real_t get_emission_sphere_radius() const;
 	Vector2 get_emission_rect_extents() const;
 	Vector<Vector2> get_emission_points() const;
 	Vector<Vector2> get_emission_normals() const;

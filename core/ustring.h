@@ -218,7 +218,7 @@ public:
 	bool is_subsequence_ofi(const String &p_string) const;
 	bool is_quoted() const;
 	Vector<String> bigrams() const;
-	float similarity(const String &p_string) const;
+	real_t similarity(const String &p_string) const;
 	String format(const Variant &values, String placeholder = "{_}") const;
 	String replace_first(const String &p_key, const String &p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
@@ -268,8 +268,8 @@ public:
 	Vector<String> split(const String &p_splitter, bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> rsplit(const String &p_splitter, bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> split_spaces() const;
-	Vector<float> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
-	Vector<float> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
+	Vector<real_t> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
+	Vector<real_t> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 

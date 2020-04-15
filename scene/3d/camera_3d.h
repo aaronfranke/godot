@@ -64,12 +64,12 @@ private:
 
 	Projection mode;
 
-	float fov;
-	float size;
+	real_t fov;
+	real_t size;
 	Vector2 frustum_offset;
-	float near, far;
-	float v_offset;
-	float h_offset;
+	real_t near, far;
+	real_t v_offset;
+	real_t h_offset;
 	KeepAspect keep_aspect;
 
 	RID camera;
@@ -108,10 +108,10 @@ public:
 		NOTIFICATION_LOST_CURRENT = 51
 	};
 
-	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
-	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
-	void set_frustum(float p_size, Vector2 p_offset, float p_z_near,
-			float p_z_far);
+	void set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
+	void set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
+	void set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near,
+			real_t p_z_far);
 	void set_projection(Camera3D::Projection p_mode);
 
 	void make_current();
@@ -121,18 +121,18 @@ public:
 
 	RID get_camera() const;
 
-	float get_fov() const;
-	float get_size() const;
-	float get_zfar() const;
-	float get_znear() const;
+	real_t get_fov() const;
+	real_t get_size() const;
+	real_t get_zfar() const;
+	real_t get_znear() const;
 	Vector2 get_frustum_offset() const;
 
 	Projection get_projection() const;
 
-	void set_fov(float p_fov);
-	void set_size(float p_size);
-	void set_zfar(float p_zfar);
-	void set_znear(float p_znear);
+	void set_fov(real_t p_fov);
+	void set_size(real_t p_size);
+	void set_zfar(real_t p_zfar);
+	void set_znear(real_t p_znear);
 	void set_frustum_offset(Vector2 p_offset);
 
 	virtual Transform get_camera_transform() const;
@@ -143,7 +143,7 @@ public:
 	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
 	virtual Vector3 project_position(const Point2 &p_point,
-			float p_z_depth) const;
+			real_t p_z_depth) const;
 
 	Vector<Vector3> get_near_plane_points() const;
 
@@ -164,11 +164,11 @@ public:
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;
 
-	void set_v_offset(float p_offset);
-	float get_v_offset() const;
+	void set_v_offset(real_t p_offset);
+	real_t get_v_offset() const;
 
-	void set_h_offset(float p_offset);
-	float get_h_offset() const;
+	void set_h_offset(real_t p_offset);
+	real_t get_h_offset() const;
 
 	void set_doppler_tracking(DopplerTracking p_tracking);
 	DopplerTracking get_doppler_tracking() const;
@@ -196,8 +196,8 @@ public:
 private:
 	ProcessMode process_mode;
 	RID pyramid_shape;
-	float margin;
-	float clip_offset;
+	real_t margin;
+	real_t clip_offset;
 	uint32_t collision_mask;
 	bool clip_to_areas;
 	bool clip_to_bodies;
@@ -218,8 +218,8 @@ public:
 	void set_clip_to_bodies(bool p_clip);
 	bool is_clip_to_bodies_enabled() const;
 
-	void set_margin(float p_margin);
-	float get_margin() const;
+	void set_margin(real_t p_margin);
+	real_t get_margin() const;
 
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
@@ -236,7 +236,7 @@ public:
 	void remove_exception(const Object *p_object);
 	void clear_exceptions();
 
-	float get_clip_offset() const;
+	real_t get_clip_offset() const;
 
 	ClippedCamera3D();
 	~ClippedCamera3D();

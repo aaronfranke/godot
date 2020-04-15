@@ -6583,7 +6583,7 @@ void TextEdit::_update_completion_candidates() {
 	completion_options.clear();
 	completion_index = 0;
 	completion_base = s;
-	Vector<float> sim_cache;
+	Vector<real_t> sim_cache;
 	bool single_quote = s.begins_with("'");
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq;

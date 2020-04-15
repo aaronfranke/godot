@@ -163,7 +163,7 @@ Transform Camera3D::get_camera_transform() const {
 	return tr;
 }
 
-void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
+void Camera3D::set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far) {
 
 	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE)
 		return;
@@ -177,7 +177,7 @@ void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_f
 	update_gizmo();
 	force_change = false;
 }
-void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
+void Camera3D::set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far) {
 
 	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL)
 		return;
@@ -193,7 +193,7 @@ void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	update_gizmo();
 }
 
-void Camera3D::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
+void Camera3D::set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM)
 		return;
 
@@ -312,7 +312,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 	} else {
 
 		Vector2 pos = cpos / viewport_size;
-		float vsize, hsize;
+		real_t vsize, hsize;
 		if (keep_aspect == KEEP_WIDTH) {
 			vsize = size / viewport_size.aspect();
 			hsize = size;
@@ -385,7 +385,7 @@ Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 	return res;
 }
 
-Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const {
+Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
 
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
@@ -551,17 +551,17 @@ void Camera3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 }
 
-float Camera3D::get_fov() const {
+real_t Camera3D::get_fov() const {
 
 	return fov;
 }
 
-float Camera3D::get_size() const {
+real_t Camera3D::get_size() const {
 
 	return size;
 }
 
-float Camera3D::get_znear() const {
+real_t Camera3D::get_znear() const {
 
 	return near;
 }
@@ -570,7 +570,7 @@ Vector2 Camera3D::get_frustum_offset() const {
 	return frustum_offset;
 }
 
-float Camera3D::get_zfar() const {
+real_t Camera3D::get_zfar() const {
 
 	return far;
 }
@@ -580,21 +580,21 @@ Camera3D::Projection Camera3D::get_projection() const {
 	return mode;
 }
 
-void Camera3D::set_fov(float p_fov) {
+void Camera3D::set_fov(real_t p_fov) {
 	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
 	fov = p_fov;
 	_update_camera_mode();
 	_change_notify("fov");
 }
 
-void Camera3D::set_size(float p_size) {
+void Camera3D::set_size(real_t p_size) {
 	ERR_FAIL_COND(p_size < 0.1 || p_size > 16384);
 	size = p_size;
 	_update_camera_mode();
 	_change_notify("size");
 }
 
-void Camera3D::set_znear(float p_znear) {
+void Camera3D::set_znear(real_t p_znear) {
 	near = p_znear;
 	_update_camera_mode();
 }
@@ -604,7 +604,7 @@ void Camera3D::set_frustum_offset(Vector2 p_offset) {
 	_update_camera_mode();
 }
 
-void Camera3D::set_zfar(float p_zfar) {
+void Camera3D::set_zfar(real_t p_zfar) {
 	far = p_zfar;
 	_update_camera_mode();
 }
@@ -648,23 +648,23 @@ Vector<Plane> Camera3D::get_frustum() const {
 	return cm.get_projection_planes(get_camera_transform());
 }
 
-void Camera3D::set_v_offset(float p_offset) {
+void Camera3D::set_v_offset(real_t p_offset) {
 
 	v_offset = p_offset;
 	_update_camera();
 }
 
-float Camera3D::get_v_offset() const {
+real_t Camera3D::get_v_offset() const {
 
 	return v_offset;
 }
 
-void Camera3D::set_h_offset(float p_offset) {
+void Camera3D::set_h_offset(real_t p_offset) {
 	h_offset = p_offset;
 	_update_camera();
 }
 
-float Camera3D::get_h_offset() const {
+real_t Camera3D::get_h_offset() const {
 
 	return h_offset;
 }
@@ -709,10 +709,10 @@ Camera3D::~Camera3D() {
 
 ////////////////////////////////////////
 
-void ClippedCamera3D::set_margin(float p_margin) {
+void ClippedCamera3D::set_margin(real_t p_margin) {
 	margin = p_margin;
 }
-float ClippedCamera3D::get_margin() const {
+real_t ClippedCamera3D::get_margin() const {
 	return margin;
 }
 void ClippedCamera3D::set_process_mode(ProcessMode p_mode) {
@@ -783,7 +783,7 @@ void ClippedCamera3D::_notification(int p_what) {
 		xf.origin = ray_from;
 		xf.orthonormalize();
 
-		float csafe, cunsafe;
+		real_t csafe, cunsafe;
 		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
 			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * csafe);
 		}
@@ -854,7 +854,7 @@ void ClippedCamera3D::clear_exceptions() {
 	exclude.clear();
 }
 
-float ClippedCamera3D::get_clip_offset() const {
+real_t ClippedCamera3D::get_clip_offset() const {
 
 	return clip_offset;
 }

@@ -209,7 +209,7 @@ struct EditorSceneImporterAssetImportInterpolate<Quat> {
 };
 
 template <class T>
-T EditorSceneImporterAssimp::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time,
+T EditorSceneImporterAssimp::_interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, float p_time,
 		AssetImportAnimation::Interpolation p_interp) {
 	//could use binary search, worth it?
 	int idx = -1;
@@ -574,11 +574,11 @@ void EditorSceneImporterAssimp::_insert_animation_track(ImportState &scene, cons
 	bool last = false;
 
 	Vector<Vector3> pos_values;
-	Vector<float> pos_times;
+	Vector<real_t> pos_times;
 	Vector<Vector3> scale_values;
-	Vector<float> scale_times;
+	Vector<real_t> scale_times;
 	Vector<Quat> rot_values;
-	Vector<float> rot_times;
+	Vector<real_t> rot_times;
 
 	for (size_t p = 0; p < assimp_track->mNumPositionKeys; p++) {
 		aiVector3D pos = assimp_track->mPositionKeys[p].mValue;
@@ -960,7 +960,7 @@ EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(ImportState &stat
 				Vector<BoneInfo> bone_info = vertex_weights[j];
 				Vector<int> bones;
 				bones.resize(bone_info.size());
-				Vector<float> weights;
+				Vector<real_t> weights;
 				weights.resize(bone_info.size());
 
 				// todo? do we really need to loop over all bones? - assimp may have helper to find all influences on this vertex.

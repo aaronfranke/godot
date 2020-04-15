@@ -640,7 +640,7 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, double *dst
 					d = *(int *)src;
 				} break;
 				case COMPONENT_TYPE_FLOAT: {
-					d = *(float *)src;
+					d = *(real_t *)src;
 				} break;
 			}
 
@@ -784,10 +784,10 @@ Vector<int> EditorSceneImporterGLTF::_decode_accessor_as_ints(GLTFState &state, 
 	return ret;
 }
 
-Vector<float> EditorSceneImporterGLTF::_decode_accessor_as_floats(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<real_t> EditorSceneImporterGLTF::_decode_accessor_as_floats(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 
 	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
-	Vector<float> ret;
+	Vector<real_t> ret;
 
 	if (attribs.size() == 0)
 		return ret;
@@ -796,9 +796,9 @@ Vector<float> EditorSceneImporterGLTF::_decode_accessor_as_floats(GLTFState &sta
 	const int ret_size = attribs.size();
 	ret.resize(ret_size);
 	{
-		float *w = ret.ptrw();
+		real_t *w = ret.ptrw();
 		for (int i = 0; i < ret_size; i++) {
-			w[i] = float(attribs_ptr[i]);
+			w[i] = real_t(attribs_ptr[i]);
 		}
 	}
 	return ret;
@@ -1021,13 +1021,13 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				array[Mesh::ARRAY_BONES] = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
 			}
 			if (a.has("WEIGHTS_0")) {
-				Vector<float> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
+				Vector<real_t> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
 				{ //gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
-					float *w = weights.ptrw();
+					real_t *w = weights.ptrw();
 
 					for (int k = 0; k < wc; k += 4) {
-						float total = 0.0;
+						real_t total = 0.0;
 						total += w[k + 0];
 						total += w[k + 1];
 						total += w[k + 2];
@@ -1164,10 +1164,10 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					}
 					if (t.has("TANGENT")) {
 						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(state, t["TANGENT"], true);
-						const Vector<float> src_tangents = array[Mesh::ARRAY_TANGENT];
+						const Vector<real_t> src_tangents = array[Mesh::ARRAY_TANGENT];
 						ERR_FAIL_COND_V(src_tangents.size() == 0, ERR_PARSE_ERROR);
 
-						Vector<float> tangents_v4;
+						Vector<real_t> tangents_v4;
 
 						{
 
@@ -1175,10 +1175,10 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 							int size4 = src_tangents.size();
 							tangents_v4.resize(size4);
-							float *w4 = tangents_v4.ptrw();
+							real_t *w4 = tangents_v4.ptrw();
 
 							const Vector3 *r3 = tangents_v3.ptr();
-							const float *r4 = src_tangents.ptr();
+							const real_t *r4 = src_tangents.ptr();
 
 							for (int l = 0; l < size4 / 4; l++) {
 
@@ -2395,7 +2395,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				}
 			}
 
-			const Vector<float> times = _decode_accessor_as_floats(state, input, false);
+			const Vector<real_t> times = _decode_accessor_as_floats(state, input, false);
 			if (path == "translation") {
 				const Vector<Vector3> translations = _decode_accessor_as_vec3(state, output, false);
 				track->translation_track.interpolation = interp;
@@ -2412,7 +2412,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				track->scale_track.times = Variant(times); //convert via variant
 				track->scale_track.values = Variant(scales); //convert via variant
 			} else if (path == "weights") {
-				const Vector<float> weights = _decode_accessor_as_floats(state, output, false);
+				const Vector<real_t> weights = _decode_accessor_as_floats(state, output, false);
 
 				ERR_FAIL_INDEX_V(state.nodes[node]->mesh, state.meshes.size(), ERR_PARSE_ERROR);
 				const GLTFMesh *mesh = &state.meshes[state.nodes[node]->mesh];
@@ -2425,12 +2425,12 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				ERR_FAIL_COND_V_MSG(weights.size() != expected_value_count, ERR_PARSE_ERROR, "Invalid weight data, expected " + itos(expected_value_count) + " weight values, got " + itos(weights.size()) + " instead.");
 
 				const int wlen = weights.size() / wc;
-				const float *r = weights.ptr();
+				const real_t *r = weights.ptr();
 				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
-					GLTFAnimation::Channel<float> cf;
+					GLTFAnimation::Channel<real_t> cf;
 					cf.interpolation = interp;
 					cf.times = Variant(times);
-					Vector<float> wdata;
+					Vector<real_t> wdata;
 					wdata.resize(wlen);
 					for (int l = 0; l < wlen; l++) {
 						wdata.write[l] = r[l * wc + k];
@@ -2606,20 +2606,20 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 template <class T>
 struct EditorSceneImporterGLTFInterpolate {
 
-	T lerp(const T &a, const T &b, float c) const {
+	T lerp(const T &a, const T &b, real_t c) const {
 
 		return a + (b - a) * c;
 	}
 
-	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, float t) {
+	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, real_t t) {
 
-		const float t2 = t * t;
-		const float t3 = t2 * t;
+		const real_t t2 = t * t;
+		const real_t t3 = t2 * t;
 
 		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 	}
 
-	T bezier(T start, T control_1, T control_2, T end, float t) {
+	T bezier(T start, T control_1, T control_2, T end, real_t t) {
 		/* Formula from Wikipedia article on Bezier curves. */
 		const real_t omt = (1.0 - t);
 		const real_t omt2 = omt * omt;
@@ -2635,21 +2635,21 @@ struct EditorSceneImporterGLTFInterpolate {
 template <>
 struct EditorSceneImporterGLTFInterpolate<Quat> {
 
-	Quat lerp(const Quat &a, const Quat &b, const float c) const {
+	Quat lerp(const Quat &a, const Quat &b, const real_t c) const {
 		ERR_FAIL_COND_V_MSG(!a.is_normalized(), Quat(), "The quaternion \"a\" must be normalized.");
 		ERR_FAIL_COND_V_MSG(!b.is_normalized(), Quat(), "The quaternion \"b\" must be normalized.");
 
 		return a.slerp(b, c).normalized();
 	}
 
-	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, const float c) {
+	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, const real_t c) {
 		ERR_FAIL_COND_V_MSG(!p1.is_normalized(), Quat(), "The quaternion \"p1\" must be normalized.");
 		ERR_FAIL_COND_V_MSG(!p2.is_normalized(), Quat(), "The quaternion \"p2\" must be normalized.");
 
 		return p1.slerp(p2, c).normalized();
 	}
 
-	Quat bezier(const Quat start, const Quat control_1, const Quat control_2, const Quat end, const float t) {
+	Quat bezier(const Quat start, const Quat control_1, const Quat control_2, const Quat end, const real_t t) {
 		ERR_FAIL_COND_V_MSG(!start.is_normalized(), Quat(), "The start quaternion must be normalized.");
 		ERR_FAIL_COND_V_MSG(!end.is_normalized(), Quat(), "The end quaternion must be normalized.");
 
@@ -2658,7 +2658,7 @@ struct EditorSceneImporterGLTFInterpolate<Quat> {
 };
 
 template <class T>
-T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
+T EditorSceneImporterGLTF::_interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, const real_t p_time, const GLTFAnimation::Interpolation p_interp) {
 
 	//could use binary search, worth it?
 	int idx = -1;
@@ -2679,7 +2679,7 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 				return p_values[p_times.size() - 1];
 			}
 
-			const float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+			const real_t c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
 			return interp.lerp(p_values[idx], p_values[idx + 1], c);
 
@@ -2703,7 +2703,7 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 				return p_values[1 + p_times.size() - 1];
 			}
 
-			const float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+			const real_t c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
 			return interp.catmull_rom(p_values[idx - 1], p_values[idx], p_values[idx + 1], p_values[idx + 3], c);
 
@@ -2716,7 +2716,7 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 				return p_values[(p_times.size() - 1) * 3 + 1];
 			}
 
-			const float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
+			const real_t c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
 			const T from = p_values[idx * 3 + 1];
 			const T c1 = from + p_values[idx * 3 + 2];
@@ -2749,7 +2749,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 		animation->set_loop(true);
 	}
 
-	float length = 0;
+	real_t length = 0;
 
 	for (Map<int, GLTFAnimation::Track>::Element *E = anim.tracks.front(); E; E = E->next()) {
 
@@ -2799,8 +2799,8 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 			animation->track_set_path(track_idx, node_path);
 			//first determine animation length
 
-			const float increment = 1.0 / float(bake_fps);
-			float time = 0.0;
+			const real_t increment = 1.0 / real_t(bake_fps);
+			real_t time = 0.0;
 
 			Vector3 base_pos;
 			Quat base_rot;
@@ -2883,17 +2883,17 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 			if (gltf_interp == GLTFAnimation::INTERP_LINEAR || gltf_interp == GLTFAnimation::INTERP_STEP) {
 				animation->track_set_interpolation_type(track_idx, gltf_interp == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_LINEAR);
 				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
-					const float t = track.weight_tracks[i].times[j];
-					const float w = track.weight_tracks[i].values[j];
+					const real_t t = track.weight_tracks[i].times[j];
+					const real_t w = track.weight_tracks[i].values[j];
 					animation->track_insert_key(track_idx, t, w);
 				}
 			} else {
 				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
-				const float increment = 1.0 / float(bake_fps);
-				float time = 0.0;
+				const real_t increment = 1.0 / real_t(bake_fps);
+				real_t time = 0.0;
 				bool last = false;
 				while (true) {
-					_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
+					_interpolate_track<real_t>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
 					if (last) {
 						break;
 					}

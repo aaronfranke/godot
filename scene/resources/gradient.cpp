@@ -76,8 +76,8 @@ void Gradient::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "colors"), COLOR_RAMP_SET_COLORS, COLOR_RAMP_GET_COLORS);
 }
 
-Vector<float> Gradient::get_offsets() const {
-	Vector<float> offsets;
+Vector<real_t> Gradient::get_offsets() const {
+	Vector<real_t> offsets;
 	offsets.resize(points.size());
 	for (int i = 0; i < points.size(); i++) {
 		offsets.write[i] = points[i].offset;
@@ -94,7 +94,7 @@ Vector<Color> Gradient::get_colors() const {
 	return colors;
 }
 
-void Gradient::set_offsets(const Vector<float> &p_offsets) {
+void Gradient::set_offsets(const Vector<real_t> &p_offsets) {
 	points.resize(p_offsets.size());
 	for (int i = 0; i < points.size(); i++) {
 		points.write[i].offset = p_offsets[i];

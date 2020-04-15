@@ -538,8 +538,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = Math_NAN;
 		else if (id == "Vector2") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -564,8 +564,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return OK;
 		} else if (id == "Rect2") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -590,8 +590,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return OK;
 		} else if (id == "Vector3") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -616,8 +616,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return OK;
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -632,8 +632,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return OK;
 		} else if (id == "Plane") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -645,8 +645,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return OK;
 		} else if (id == "Quat") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -659,8 +659,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		} else if (id == "AABB" || id == "Rect3") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -673,8 +673,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		} else if (id == "Basis" || id == "Matrix3") { //compatibility
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 
@@ -686,8 +686,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			return OK;
 		} else if (id == "Transform") {
 
-			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
 			if (err)
 				return err;
 

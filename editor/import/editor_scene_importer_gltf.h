@@ -154,8 +154,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		bool normalized;
 		int count;
 		GLTFType type;
-		float min;
-		float max;
+		real_t min;
+		real_t max;
 		int sparse_count;
 		int sparse_indices_buffer_view;
 		int sparse_indices_byte_offset;
@@ -244,15 +244,15 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	struct GLTFMesh {
 		Ref<ArrayMesh> mesh;
-		Vector<float> blend_weights;
+		Vector<real_t> blend_weights;
 	};
 
 	struct GLTFCamera {
 
 		bool perspective;
-		float fov_size;
-		float zfar;
-		float znear;
+		real_t fov_size;
+		real_t zfar;
+		real_t znear;
 
 		GLTFCamera() {
 			perspective = true;
@@ -275,7 +275,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		template <class T>
 		struct Channel {
 			Interpolation interpolation;
-			Vector<float> times;
+			Vector<real_t> times;
 			Vector<T> values;
 		};
 
@@ -284,7 +284,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
-			Vector<Channel<float>> weight_tracks;
+			Vector<Channel<real_t>> weight_tracks;
 		};
 
 		String name;
@@ -355,7 +355,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _decode_buffer_view(GLTFState &state, double *dst, const GLTFBufferViewIndex p_buffer_view, const int skip_every, const int skip_bytes, const int element_size, const int count, const GLTFType type, const int component_count, const int component_type, const int component_size, const bool normalized, const int byte_offset, const bool for_vertex);
 
 	Vector<double> _decode_accessor(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
-	Vector<float> _decode_accessor_as_floats(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<real_t> _decode_accessor_as_floats(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
 	Vector<int> _decode_accessor_as_ints(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
 	Vector<Vector2> _decode_accessor_as_vec2(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
 	Vector<Vector3> _decode_accessor_as_vec3(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
@@ -408,7 +408,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	void _assign_scene_names(GLTFState &state);
 
 	template <class T>
-	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp);
+	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values, const real_t p_time, const GLTFAnimation::Interpolation p_interp);
 
 	void _import_animation(GLTFState &state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps);
 

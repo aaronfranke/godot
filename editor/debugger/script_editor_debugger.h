@@ -114,8 +114,8 @@ private:
 	// Each debugger should have it's tree in the future I guess.
 	const Tree *editor_remote_tree = nullptr;
 
-	List<Vector<float>> perf_history;
-	Vector<float> perf_max;
+	List<Vector<real_t>> perf_history;
+	Vector<real_t> perf_max;
 	Vector<TreeItem *> perf_items;
 
 	Map<int, String> profiler_signature;

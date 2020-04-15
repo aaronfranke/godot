@@ -45,7 +45,7 @@ class Polygon2D : public Node2D {
 
 	struct Bone {
 		NodePath path;
-		Vector<float> weights;
+		Vector<real_t> weights;
 	};
 
 	Vector<Bone> bone_weights;
@@ -55,14 +55,14 @@ class Polygon2D : public Node2D {
 	Ref<Texture2D> normal_map;
 	Ref<Texture2D> specular_map;
 	Color specular_color;
-	float shininess;
+	real_t shininess;
 
 	Size2 tex_scale;
 	Vector2 tex_ofs;
 	bool tex_tile;
-	float tex_rot;
+	real_t tex_rot;
 	bool invert;
-	float invert_border;
+	real_t invert_border;
 	bool antialiased;
 
 	Vector2 offset;
@@ -125,17 +125,17 @@ public:
 	void set_specular_color(const Color &p_specular_color);
 	Color get_specular_color() const;
 
-	void set_shininess(float p_shininess);
-	float get_shininess() const;
+	void set_shininess(real_t p_shininess);
+	real_t get_shininess() const;
 
 	void set_texture_offset(const Vector2 &p_offset);
 	Vector2 get_texture_offset() const;
 
-	void set_texture_rotation(float p_rot);
-	float get_texture_rotation() const;
+	void set_texture_rotation(real_t p_rot);
+	real_t get_texture_rotation() const;
 
-	void set_texture_rotation_degrees(float p_rot);
-	float get_texture_rotation_degrees() const;
+	void set_texture_rotation_degrees(real_t p_rot);
+	real_t get_texture_rotation_degrees() const;
 
 	void set_texture_scale(const Size2 &p_scale);
 	Size2 get_texture_scale() const;
@@ -146,19 +146,19 @@ public:
 	void set_antialiased(bool p_antialiased);
 	bool get_antialiased() const;
 
-	void set_invert_border(float p_invert_border);
-	float get_invert_border() const;
+	void set_invert_border(real_t p_invert_border);
+	real_t get_invert_border() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
-	void add_bone(const NodePath &p_path = NodePath(), const Vector<float> &p_weights = Vector<float>());
+	void add_bone(const NodePath &p_path = NodePath(), const Vector<real_t> &p_weights = Vector<real_t>());
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
-	Vector<float> get_bone_weights(int p_index) const;
+	Vector<real_t> get_bone_weights(int p_index) const;
 	void erase_bone(int p_idx);
 	void clear_bones();
-	void set_bone_weights(int p_index, const Vector<float> &p_weights);
+	void set_bone_weights(int p_index, const Vector<real_t> &p_weights);
 	void set_bone_path(int p_index, const NodePath &p_path);
 
 	void set_skeleton(const NodePath &p_skeleton);

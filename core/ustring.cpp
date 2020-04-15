@@ -1280,7 +1280,7 @@ String String::num_real(double p_num) {
 
 	if ((int)p_num != p_num) {
 
-		double dec = p_num - (float)((int)p_num);
+		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
 		int decimals = MAX_DIGITS;
@@ -1295,7 +1295,7 @@ String String::num_real(double p_num) {
 			dec_max = dec_max * 10 + 9;
 			digit++;
 
-			if ((dec - (float)((int)dec)) < 1e-6)
+			if ((dec - (double)((int)dec)) < 1e-6)
 				break;
 
 			if (digit == decimals)
@@ -1923,8 +1923,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 					 * no need to worry about additional digits.
 					 */
 	static const double powersOf10[] = { /* Table giving binary powers of 10.  Entry */
-		10., /* is 10^2^i.  Used to convert decimal */
-		100., /* exponents into floating-point numbers. */
+		10, /* is 10^2^i.  Used to convert decimal */
+		100, /* exponents into floating-point numbers. */
 		1.0e4,
 		1.0e8,
 		1.0e16,
