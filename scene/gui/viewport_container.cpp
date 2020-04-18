@@ -105,7 +105,16 @@ void ViewportContainer::_notification(int p_what) {
 			if (!c)
 				continue;
 
-			c->set_size(get_size() / shrink);
+			Size2 target_size = get_size();
+			if (odd_size_only) {
+				Size2 odd_size = (((Control *)get_parent())->get_size() / 2).round() * 2 - Vector2(1, 1);
+				if (odd_size != target_size) {
+					set_size(odd_size);
+				}
+				c->set_size(odd_size / shrink);
+			} else {
+				c->set_size(target_size / shrink);
+			}
 		}
 	}
 

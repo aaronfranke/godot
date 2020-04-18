@@ -3786,6 +3786,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	spatial_editor = p_spatial_editor;
 	ViewportContainer *c = memnew(ViewportContainer);
+	c->odd_size_only = true;
 	viewport_container = c;
 	c->set_stretch(true);
 	add_child(c);

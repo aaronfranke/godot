@@ -45,6 +45,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool odd_size_only; // Only used by SpatialEditorPlugin.
 	void set_stretch(bool p_enable);
 	bool is_stretch_enabled() const;
 
