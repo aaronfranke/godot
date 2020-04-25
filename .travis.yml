@@ -143,6 +143,7 @@ before_script:
 
 script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
+      bash ./misc/scripts/format.sh &&
       sh ./misc/travis/clang-format.sh &&
       sh ./misc/travis/black-format.sh &&
       doc/tools/makerst.py --dry-run doc/classes modules;
