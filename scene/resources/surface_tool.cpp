@@ -214,7 +214,7 @@ void SurfaceTool::add_bones(const Vector<int> &p_bones) {
 	last_bones = p_bones;
 }
 
-void SurfaceTool::add_weights(const Vector<float> &p_weights) {
+void SurfaceTool::add_weights(const Vector<real_t> &p_weights) {
 
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_WEIGHTS));
@@ -338,9 +338,9 @@ Array SurfaceTool::commit_to_arrays() {
 			} break;
 			case Mesh::ARRAY_TANGENT: {
 
-				Vector<float> array;
+				Vector<real_t> array;
 				array.resize(varr_len * 4);
-				float *w = array.ptrw();
+				real_t *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {
@@ -397,9 +397,9 @@ Array SurfaceTool::commit_to_arrays() {
 			} break;
 			case Mesh::ARRAY_WEIGHTS: {
 
-				Vector<float> array;
+				Vector<real_t> array;
 				array.resize(varr_len * 4);
-				float *w = array.ptrw();
+				real_t *w = array.ptrw();
 
 				int idx = 0;
 				for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next(), idx += 4) {

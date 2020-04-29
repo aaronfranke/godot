@@ -284,7 +284,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 	Vector<int> indices;
 	point = 0;
@@ -497,7 +497,7 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 	Vector<int> indices;
 	point = 0;
@@ -748,7 +748,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 	Vector<int> indices;
 	point = 0;
@@ -964,7 +964,7 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 	Vector<int> indices;
 	point = 0;
@@ -1081,7 +1081,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 	Vector<int> indices;
 	point = 0;
@@ -1359,7 +1359,7 @@ PrismMesh::PrismMesh() {
 void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	Vector<Vector3> faces;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 
 	faces.resize(6);
@@ -1439,7 +1439,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
-	Vector<float> tangents;
+	Vector<real_t> tangents;
 	Vector<Vector2> uvs;
 	Vector<int> indices;
 	point = 0;

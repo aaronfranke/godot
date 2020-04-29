@@ -124,7 +124,7 @@ public:
 
 		size_t skeleton_transform_buffer_size;
 		GLuint skeleton_transform_buffer;
-		Vector<float> skeleton_transform_cpu_buffer;
+		Vector<real_t> skeleton_transform_cpu_buffer;
 
 	} resources;
 
@@ -748,7 +748,7 @@ public:
 		RS::MultimeshColorFormat color_format;
 		RS::MultimeshCustomDataFormat custom_data_format;
 
-		Vector<float> data;
+		Vector<real_t> data;
 
 		AABB aabb;
 
@@ -802,7 +802,7 @@ public:
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
-	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const Vector<float> &p_array);
+	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const Vector<real_t> &p_array);
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
@@ -869,7 +869,7 @@ public:
 
 		// TODO use float textures for storage
 
-		Vector<float> bone_data;
+		Vector<real_t> bone_data;
 
 		GLuint tex_id;
 
@@ -901,7 +901,7 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 
-	void _update_skeleton_transform_buffer(const Vector<float> &p_data, size_t p_size);
+	void _update_skeleton_transform_buffer(const Vector<real_t> &p_data, size_t p_size);
 
 	/* Light API */
 

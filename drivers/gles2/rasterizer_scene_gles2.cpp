@@ -1500,7 +1500,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 					//use transform buffer workflow
 					ERR_FAIL_COND(p_skeleton->use_2d);
 
-					Vector<float> &transform_buffer = storage->resources.skeleton_transform_cpu_buffer;
+					Vector<real_t> &transform_buffer = storage->resources.skeleton_transform_cpu_buffer;
 
 					if (!s->attribs[RS::ARRAY_BONES].enabled || !s->attribs[RS::ARRAY_WEIGHTS].enabled) {
 						break; // the whole instance has a skeleton, but this surface is not affected by it.

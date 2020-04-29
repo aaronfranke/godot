@@ -3334,7 +3334,7 @@ Color RasterizerStorageGLES2::multimesh_instance_get_custom_data(RID p_multimesh
 	return Color();
 }
 
-void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const Vector<float> &p_array) {
+void RasterizerStorageGLES2::multimesh_set_as_bulk_array(RID p_multimesh, const Vector<real_t> &p_array) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_COND(!multimesh->data.ptr());
@@ -3769,7 +3769,7 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
-void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const Vector<float> &p_data, size_t p_size) {
+void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const Vector<real_t> &p_data, size_t p_size) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, resources.skeleton_transform_buffer);
 
@@ -5472,7 +5472,7 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 
 	if (p_lines.size()) {
 
-		Vector<float> geometry;
+		Vector<real_t> geometry;
 		Vector<uint16_t> indices;
 		int lc = p_lines.size();
 
