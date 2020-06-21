@@ -10,6 +10,10 @@ while IFS= read -rd '' f; do
         continue
     elif [[ $f == *"svg" ]]; then
         continue
+    elif [[ $f == *"pot" ]]; then
+        continue
+    elif [[ $f == *"po" ]]; then
+        continue
     elif [[ $f == "thirdparty"* ]]; then
         continue
     fi
@@ -21,6 +25,8 @@ while IFS= read -rd '' f; do
     sed -i '1s/^\xEF\xBB\xBF//' "$f"
     # Ensures that files end with newline characters.
     tail -c1 < "$f" | read -r _ || echo >> "$f";
+    # Remove the character sequence "== true" if it has a leading space.
+    sed -z -i 's/\x20== true//g' "$f"
 done
 
 git diff > patch.patch
