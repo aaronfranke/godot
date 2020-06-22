@@ -607,13 +607,8 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return BOX_INT64(val);
 				}
 				case Variant::FLOAT: {
-#ifdef REAL_T_IS_DOUBLE
 					double val = p_var->operator double();
 					return BOX_DOUBLE(val);
-#else
-					float val = p_var->operator float();
-					return BOX_FLOAT(val);
-#endif
 				}
 				case Variant::STRING:
 					return (MonoObject *)mono_string_from_godot(p_var->operator String());
