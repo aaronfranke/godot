@@ -2,7 +2,7 @@ name: Static checks
 on: [push, pull_request]
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout

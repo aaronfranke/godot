@@ -1,5 +1,5 @@
 # Engine build CI
-name: Godot CI
+name: Builds
 
 on:
     # will build EVERY pull request
