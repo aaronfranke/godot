@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
           sudo rm -f /etc/apt/sources.list.d/*
@@ -145,7 +145,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
           sudo rm -f /etc/apt/sources.list.d/*
