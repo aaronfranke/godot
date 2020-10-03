@@ -2260,6 +2260,10 @@ void ProjectManager::_erase_missing_projects() {
 	erase_missing_ask->popup_centered();
 }
 
+void ProjectManager::_open_editor_settings() {
+	editor_settings_dialog->popup_edit_settings();
+}
+
 void ProjectManager::_show_about() {
 	about->popup_centered(Size2(780, 500) * EDSCALE);
 }
@@ -2443,6 +2447,9 @@ ProjectManager::ProjectManager() {
 
 	set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
+	editor_settings_dialog = memnew(EditorSettingsDialog);
+	add_child(editor_settings_dialog);
+
 	Panel *panel = memnew(Panel);
 	add_child(panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
@@ -2575,6 +2582,11 @@ ProjectManager::ProjectManager() {
 		erase_missing_btn->set_text(TTR("Remove Missing"));
 		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
 		tree_vb->add_child(erase_missing_btn);
+
+		editor_settings_btn = memnew(Button);
+		editor_settings_btn->set_text(TTR("Editor Settings"));
+		editor_settings_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_editor_settings));
+		tree_vb->add_child(editor_settings_btn);
 
 		tree_vb->add_spacer();
 

@@ -33,6 +33,7 @@
 
 #include "editor/editor_about.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
+#include "editor/settings_config_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
@@ -63,9 +64,11 @@ class ProjectManager : public Control {
 	Button *rename_btn;
 	Button *erase_btn;
 	Button *erase_missing_btn;
+	Button *editor_settings_btn;
 	Button *about_btn;
 
 	EditorAssetLibrary *asset_library;
+	EditorSettingsDialog *editor_settings_dialog;
 
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
@@ -104,6 +107,7 @@ class ProjectManager : public Control {
 	void _erase_missing_projects();
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
+	void _open_editor_settings();
 	void _show_about();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
