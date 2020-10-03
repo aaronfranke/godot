@@ -108,6 +108,7 @@ class ProjectManager : public Control {
 	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void _confirm_update_settings();
+	void _nonempty_confirmation_ok_pressed();
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);

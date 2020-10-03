@@ -66,6 +66,7 @@ class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
 
 public:
+	bool is_folder_empty = true;
 	enum Mode {
 		MODE_NEW,
 		MODE_IMPORT,
@@ -223,7 +224,7 @@ private:
 
 					// check if the specified install folder is empty, even though this is not an error, it is good to check here
 					d->list_dir_begin();
-					bool is_empty = true;
+					is_folder_empty = true;
 					String n = d->get_next();
 					while (n != String()) {
 						if (!n.begins_with(".")) {
@@ -231,14 +232,14 @@ private:
 							// and hidden files/folders to be present.
 							// For instance, this lets users initialize a Git repository
 							// and still be able to create a project in the directory afterwards.
-							is_empty = false;
+							is_folder_empty = false;
 							break;
 						}
 						n = d->get_next();
 					}
 					d->list_dir_end();
 
-					if (!is_empty) {
+					if (!is_folder_empty) {
 						set_message(TTR("Please choose an empty folder."), MESSAGE_WARNING, INSTALL_PATH);
 						memdelete(d);
 						get_ok()->set_disabled(true);
@@ -263,7 +264,7 @@ private:
 		} else {
 			// check if the specified folder is empty, even though this is not an error, it is good to check here
 			d->list_dir_begin();
-			bool is_empty = true;
+			is_folder_empty = true;
 			String n = d->get_next();
 			while (n != String()) {
 				if (!n.begins_with(".")) {
@@ -271,18 +272,18 @@ private:
 					// and hidden files/folders to be present.
 					// For instance, this lets users initialize a Git repository
 					// and still be able to create a project in the directory afterwards.
-					is_empty = false;
+					is_folder_empty = false;
 					break;
 				}
 				n = d->get_next();
 			}
 			d->list_dir_end();
 
-			if (!is_empty) {
-				set_message(TTR("Please choose an empty folder."), MESSAGE_ERROR);
+			if (!is_folder_empty) {
+				set_message(TTR("The selected path is not empty. Choosing an empty folder is highly recommended."), MESSAGE_WARNING);
 				memdelete(d);
-				get_ok()->set_disabled(true);
-				return "";
+				get_ok()->set_disabled(false);
+				return valid_path;
 			}
 		}
 
@@ -421,6 +422,11 @@ private:
 		}
 	}
 
+	void _nonempty_confirmation_ok_pressed() {
+		is_folder_empty = true;
+		ok_pressed();
+	}
+
 	void ok_pressed() {
 		String dir = project_path->get_text();
 
@@ -459,6 +465,17 @@ private:
 
 			} else {
 				if (mode == MODE_NEW) {
+					// Before we create a project, check that the target folder is empty.
+					// If not, we need to ask the user if they're sure they want to do this.
+					if (!is_folder_empty) {
+						ConfirmationDialog *cd = memnew(ConfirmationDialog);
+						cd->set_title(TTR("Warning: This folder is not empty."));
+						cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
+						cd->get_ok()->connect("pressed", this, "_nonempty_confirmation_ok_pressed");
+						get_parent()->add_child(cd);
+						cd->popup_centered();
+						return;
+					}
 					ProjectSettings::CustomMap initial_settings;
 					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "GLES3") {
 						initial_settings["rendering/quality/driver/driver_name"] = "GLES3";
@@ -651,6 +668,7 @@ protected:
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
 		ClassDB::bind_method("_install_path_selected", &ProjectDialog::_install_path_selected);
 		ClassDB::bind_method("_browse_install_path", &ProjectDialog::_browse_install_path);
+		ClassDB::bind_method("_nonempty_confirmation_ok_pressed", &ProjectDialog::_nonempty_confirmation_ok_pressed);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("projects_updated"));
 	}
