@@ -292,7 +292,6 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t i = *p_args[0];
 				r_ret = i < 0 ? -1 : (i > 0 ? +1 : 0);
 			} else if (p_args[0]->get_type() == Variant::REAL) {
-
 				double r = *p_args[0];
 				r_ret = r < 0.0 ? -1.0 : (r > 0.0 ? +1.0 : 0.0);
 			} else {
