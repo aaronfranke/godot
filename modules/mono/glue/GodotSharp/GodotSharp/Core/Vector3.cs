@@ -853,9 +853,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                x.ToString(),
-                y.ToString(),
-                z.ToString()
+                x.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                y.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                z.ToString(System.Globalization.CultureInfo.InvariantCulture)
             });
         }
 
@@ -863,9 +863,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                x.ToString(format),
-                y.ToString(format),
-                z.ToString(format)
+                x.ToString(format, System.Globalization.CultureInfo.InvariantCulture),
+                y.ToString(format, System.Globalization.CultureInfo.InvariantCulture),
+                z.ToString(format, System.Globalization.CultureInfo.InvariantCulture)
             });
         }
     }

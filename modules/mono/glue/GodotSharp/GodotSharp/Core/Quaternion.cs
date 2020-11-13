@@ -547,12 +547,24 @@ namespace Godot
 
         public override string ToString()
         {
-            return String.Format("({0}, {1}, {2}, {3})", x.ToString(), y.ToString(), z.ToString(), w.ToString());
+            return String.Format("({0}, {1}, {2}, {3})", new object[]
+            {
+                x.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                y.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                z.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                w.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            });
         }
 
         public string ToString(string format)
         {
-            return String.Format("({0}, {1}, {2}, {3})", x.ToString(format), y.ToString(format), z.ToString(format), w.ToString(format));
+            return String.Format("({0}, {1}, {2}, {3})", new object[]
+            {
+                x.ToString(format, System.Globalization.CultureInfo.InvariantCulture),
+                y.ToString(format, System.Globalization.CultureInfo.InvariantCulture),
+                z.ToString(format, System.Globalization.CultureInfo.InvariantCulture),
+                w.ToString(format, System.Globalization.CultureInfo.InvariantCulture)
+            });
         }
     }
 }

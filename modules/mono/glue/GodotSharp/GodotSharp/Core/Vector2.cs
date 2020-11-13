@@ -759,8 +759,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                x.ToString(),
-                y.ToString()
+                x.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                y.ToString(System.Globalization.CultureInfo.InvariantCulture)
             });
         }
 
@@ -768,8 +768,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                x.ToString(format),
-                y.ToString(format)
+                x.ToString(format, System.Globalization.CultureInfo.InvariantCulture),
+                y.ToString(format, System.Globalization.CultureInfo.InvariantCulture)
             });
         }
     }
