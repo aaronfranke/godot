@@ -1577,6 +1577,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								// Apply scale
 								sp->set_global_transform(t);
 							}
+							sp->_change_notify("basis");
+							sp->_change_notify("transform");
 						}
 
 						surface->update();
@@ -1685,6 +1687,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							t = original;
 							t.origin += motion;
 							sp->set_global_transform(t);
+							sp->_change_notify("basis");
+							sp->_change_notify("transform");
 						}
 
 						surface->update();
@@ -1783,6 +1787,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								// Apply rotation
 								sp->set_global_transform(t);
 							}
+							sp->_change_notify("basis");
+							sp->_change_notify("transform");
 						}
 
 						surface->update();

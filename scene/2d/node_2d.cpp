@@ -152,6 +152,7 @@ void Node2D::set_position(const Point2 &p_pos) {
 	pos = p_pos;
 	_update_transform();
 	_change_notify("position");
+	_change_notify("transform");
 }
 
 void Node2D::set_rotation(float p_radians) {
@@ -162,6 +163,7 @@ void Node2D::set_rotation(float p_radians) {
 	_update_transform();
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
+	_change_notify("transform");
 }
 
 void Node2D::set_rotation_degrees(float p_degrees) {
@@ -182,6 +184,7 @@ void Node2D::set_scale(const Size2 &p_scale) {
 	}
 	_update_transform();
 	_change_notify("scale");
+	_change_notify("transform");
 }
 
 Point2 Node2D::get_position() const {
@@ -310,6 +313,10 @@ void Node2D::set_transform(const Transform2D &p_transform) {
 		return;
 	}
 
+	_change_notify("position");
+	_change_notify("rotation");
+	_change_notify("rotation_degrees");
+	_change_notify("scale");
 	_notify_transform();
 }
 
@@ -426,13 +433,16 @@ void Node2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rotation_degrees", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", 0), "set_transform", "get_transform");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "", 0), "set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rotation", PROPERTY_HINT_NONE, "", 0), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rotation_degrees", PROPERTY_HINT_NONE, "", 0), "set_global_rotation_degrees", "get_global_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_scale", PROPERTY_HINT_NONE, "", 0), "set_global_scale", "get_global_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
+
+	ADD_GROUP("Raw Matrix", "");
+	// We don't really need to display the full Transform2D due to having the translation above, but there is no Basis2D type.
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_transform", "get_transform");
 
 	ADD_GROUP("Z Index", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");

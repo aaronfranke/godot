@@ -155,9 +155,11 @@ public:
 	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
+	void set_basis(const Basis &p_basis);
 	void set_transform(const Transform &p_transform);
 	void set_global_transform(const Transform &p_transform);
 
+	Basis get_basis() const;
 	Transform get_transform() const;
 	Transform get_global_transform() const;
 

@@ -222,6 +222,19 @@ void Spatial::_notification(int p_what) {
 	}
 }
 
+void Spatial::set_basis(const Basis &p_basis) {
+	data.local_transform = Transform(p_basis, data.local_transform.origin);
+	data.dirty |= DIRTY_VECTORS;
+	_change_notify("rotation");
+	_change_notify("rotation_degrees");
+	_change_notify("scale");
+	_change_notify("transform");
+	_propagate_transform_changed(this);
+	if (data.notify_local_transform) {
+		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	}
+}
+
 void Spatial::set_transform(const Transform &p_transform) {
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
@@ -229,6 +242,7 @@ void Spatial::set_transform(const Transform &p_transform) {
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
 	_change_notify("scale");
+	_change_notify("basis");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -241,6 +255,14 @@ void Spatial::set_global_transform(const Transform &p_transform) {
 	set_transform(xform);
 }
 
+Basis Spatial::get_basis() const {
+	if (data.dirty & DIRTY_LOCAL) {
+		_update_local_transform();
+	}
+
+	return data.local_transform.basis;
+}
+
 Transform Spatial::get_transform() const {
 	if (data.dirty & DIRTY_LOCAL) {
 		_update_local_transform();
@@ -248,6 +270,7 @@ Transform Spatial::get_transform() const {
 
 	return data.local_transform;
 }
+
 Transform Spatial::get_global_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform());
 
@@ -317,6 +340,7 @@ void Spatial::set_rotation(const Vector3 &p_euler_rad) {
 
 	data.rotation = p_euler_rad;
 	data.dirty |= DIRTY_LOCAL;
+	_change_notify("basis");
 	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -336,6 +360,7 @@ void Spatial::set_scale(const Vector3 &p_scale) {
 
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
+	_change_notify("basis");
 	_change_notify("transform");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -695,6 +720,8 @@ void Spatial::force_update_transform() {
 }
 
 void Spatial::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_basis", "local"), &Spatial::set_basis);
+	ClassDB::bind_method(D_METHOD("get_basis"), &Spatial::get_basis);
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Spatial::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Spatial::get_transform);
 	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &Spatial::set_translation);
@@ -767,8 +794,12 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
-	ADD_GROUP("Matrix", "");
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
+
+	ADD_GROUP("Raw Matrix", "");
+	// No need to display the full Transform, we already have the translation above.
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, "", 0), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "basis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_basis", "get_basis");
+
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "SpatialGizmo", 0), "set_gizmo", "get_gizmo");
