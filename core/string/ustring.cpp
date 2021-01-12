@@ -3762,28 +3762,36 @@ static int _humanize_digits(int p_num) {
 	}
 }
 
-String String::humanize_size(uint64_t p_size) {
+String String::humanize(const uint64_t p_value, const uint64_t p_base, const Vector<String> *p_prefixes) {
 	uint64_t _div = 1;
 	Vector<String> prefixes;
-	prefixes.push_back(RTR("B"));
-	prefixes.push_back(RTR("KiB"));
-	prefixes.push_back(RTR("MiB"));
-	prefixes.push_back(RTR("GiB"));
-	prefixes.push_back(RTR("TiB"));
-	prefixes.push_back(RTR("PiB"));
-	prefixes.push_back(RTR("EiB"));
+	if (p_prefixes && !p_prefixes->is_empty()) {
+		prefixes = *p_prefixes;
+	} else {
+		prefixes.push_back(RTR(""));
+		prefixes.push_back(RTR("k"));
+		prefixes.push_back(RTR("M"));
+		prefixes.push_back(RTR("G"));
+		prefixes.push_back(RTR("T"));
+		prefixes.push_back(RTR("P"));
+		prefixes.push_back(RTR("E"));
+	}
 
 	int prefix_idx = 0;
 
-	while (prefix_idx < prefixes.size() - 1 && p_size > (_div * 1024)) {
-		_div *= 1024;
+	while (prefix_idx < prefixes.size() - 1 && p_value > (_div * p_base)) {
+		_div *= p_base;
 		prefix_idx++;
 	}
 
-	const int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
+	const int digits = prefix_idx > 0 ? _humanize_digits(p_value / _div) : 0;
 	const double divisor = prefix_idx > 0 ? _div : 1;
 
-	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
+	return String::num(p_value / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
+}
+
+String String::humanize_size(const uint64_t p_size) {
+	return humanize(p_size, true).capitalize() + "iB";
 }
 
 bool String::is_abs_path() const {
