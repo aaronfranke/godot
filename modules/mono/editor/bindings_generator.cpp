@@ -757,6 +757,149 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 	}
 }
 
+void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
+	p_output.append("using System;\n\n");
+	p_output.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
+	// The class where we put the extensions doesn't matter, so just use "GD".
+	p_output.append(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
+
+#define ARRAY_APPEND_ARRAY(m_type)                                                                                          \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                                        \
+	p_output.append(INDENT2 "/// Returns a copy of the array with everything from the second array added.\n");              \
+	p_output.append(INDENT2 "/// </summary>\n");                                                                            \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to add to.</param>\n");                     \
+	p_output.append(INDENT2 "/// <param name=\"value\">The " #m_type " array to add.</param>\n");                           \
+	p_output.append(INDENT2 "/// <returns>A copy of the first array with the second array appended.</returns>\n");          \
+	p_output.append(INDENT2 "public static " #m_type "[] AppendArray(this " #m_type "[] instance, " #m_type "[] value)\n"); \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                                    \
+	p_output.append(INDENT3 "int len = instance.Length;\n");                                                                \
+	p_output.append(INDENT3 "Array.Resize(ref instance, len + value.Length); // This creates a copy.\n");                   \
+	p_output.append(INDENT3 "for (int i = 0; i < len; i++)\n");                                                             \
+	p_output.append(INDENT3 OPEN_BLOCK);                                                                                    \
+	p_output.append(INDENT4 "instance[i + len] = value[i];\n");                                                             \
+	p_output.append(INDENT3 CLOSE_BLOCK);                                                                                   \
+	p_output.append(INDENT4 "return instance;\n");                                                                          \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_INSERT(m_type)                                                                                                        \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                                                \
+	p_output.append(INDENT2 "/// Returns a copy of the array with the given value inserted at the given index.\n");                 \
+	p_output.append(INDENT2 "/// </summary>\n");                                                                                    \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to add to.</param>\n");                             \
+	p_output.append(INDENT2 "/// <param name=\"value\">The " #m_type " value to add.</param>\n");                                   \
+	p_output.append(INDENT2 "/// <param name=\"index\">The index to add at.</param>\n");                                            \
+	p_output.append(INDENT2 "/// <returns>A copy of the array with the given value inserted.</returns>\n");                         \
+	p_output.append(INDENT2 "public static " #m_type "[] Insert(this " #m_type "[] instance, " #m_type " value, int index = 0)\n"); \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                                            \
+	p_output.append(INDENT3 "int len = instance.Length;\n");                                                                        \
+	p_output.append(INDENT3 "Array.Resize(ref instance, len + 1); // This creates a copy.\n");                                      \
+	p_output.append(INDENT3 "for (int i = len; i > index; i--)\n");                                                                 \
+	p_output.append(INDENT3 OPEN_BLOCK);                                                                                            \
+	p_output.append(INDENT4 "instance[i] = instance[i - 1];\n");                                                                    \
+	p_output.append(INDENT3 CLOSE_BLOCK);                                                                                           \
+	p_output.append(INDENT3 "instance[index] = value;\n");                                                                          \
+	p_output.append(INDENT4 "return instance;\n");                                                                                  \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_IS_EMPTY(m_type)                                                                          \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                    \
+	p_output.append(INDENT2 "/// Returns true if this " #m_type " array is empty or doesn't exist.\n"); \
+	p_output.append(INDENT2 "/// </summary>\n");                                                        \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array check.</param>\n");     \
+	p_output.append(INDENT2 "/// <returns>Whether or not the array is empty.</returns>\n");             \
+	p_output.append(INDENT2 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                \
+	p_output.append(INDENT3 "return instance == null || instance.Length == 0;\n");                      \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_JOIN(m_type)                                                                                          \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                                \
+	p_output.append(INDENT2 "/// Converts this " #m_type " array to a string delimited by the given string.\n");    \
+	p_output.append(INDENT2 "/// </summary>\n");                                                                    \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n");            \
+	p_output.append(INDENT2 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n");         \
+	p_output.append(INDENT2 "/// <returns>A single string with all items.</returns>\n");                            \
+	p_output.append(INDENT2 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                            \
+	p_output.append(INDENT3 "return String.Join(delimiter, instance);\n");                                          \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_PUSH_BACK(m_type)                                                                                        \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                                   \
+	p_output.append(INDENT2 "/// Returns a copy of the array with the value added to the end.\n");                     \
+	p_output.append(INDENT2 "/// </summary>\n");                                                                       \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to add to.</param>\n");                \
+	p_output.append(INDENT2 "/// <param name=\"value\">The " #m_type " value to add at the end.</param>\n");           \
+	p_output.append(INDENT2 "/// <returns>A copy of the array with the given value appended.</returns>\n");            \
+	p_output.append(INDENT2 "public static " #m_type "[] PushBack(this " #m_type "[] instance, " #m_type " value)\n"); \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                               \
+	p_output.append(INDENT3 "int len = instance.Length;\n");                                                           \
+	p_output.append(INDENT3 "Array.Resize(ref instance, len + 1); // This creates a copy.\n");                         \
+	p_output.append(INDENT3 "instance[len] = value;\n");                                                               \
+	p_output.append(INDENT3 "return instance;\n");                                                                     \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_REMOVE(m_type)                                                                                 \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                         \
+	p_output.append(INDENT2 "/// Returns a copy of the array with the value at the given index removed.\n"); \
+	p_output.append(INDENT2 "/// </summary>\n");                                                             \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to remove from.</param>\n"); \
+	p_output.append(INDENT2 "/// <param name=\"index\">The index of the element to remove.</param>\n");      \
+	p_output.append(INDENT2 "/// <returns>A copy of the array with the element removed.</returns>\n");       \
+	p_output.append(INDENT2 "public static " #m_type "[] Remove(this " #m_type "[] instance, int index)\n"); \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                     \
+	p_output.append(INDENT3 "int len = instance.Length;\n");                                                 \
+	p_output.append(INDENT3 #m_type " value = instance[index];\n");                                          \
+	p_output.append(INDENT3 "for (int i = index; i < len - 1; i++)\n");                                      \
+	p_output.append(INDENT3 OPEN_BLOCK);                                                                     \
+	p_output.append(INDENT4 "instance[i] = instance[i + 1];\n");                                             \
+	p_output.append(INDENT3 CLOSE_BLOCK);                                                                    \
+	p_output.append(INDENT3 "Array.Resize(ref instance, len - 1); // This creates a copy.\n");               \
+	p_output.append(INDENT3 "return instance;\n");                                                           \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_STRINGIFY(m_type)                                                                          \
+	p_output.append("\n" INDENT2 "/// <summary>\n");                                                     \
+	p_output.append(INDENT2 "/// Converts this " #m_type " array to a string with brackets.\n");         \
+	p_output.append(INDENT2 "/// </summary>\n");                                                         \
+	p_output.append(INDENT2 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
+	p_output.append(INDENT2 "/// <returns>A single string with all items.</returns>\n");                 \
+	p_output.append(INDENT2 "public static string Stringify(this " #m_type "[] instance)\n");            \
+	p_output.append(INDENT2 OPEN_BLOCK);                                                                 \
+	p_output.append(INDENT3 "return \"[\" + instance.Join() + \"]\";\n");                                \
+	p_output.append(INDENT2 CLOSE_BLOCK);
+
+#define ARRAY_ALL(m_type)      \
+	ARRAY_APPEND_ARRAY(m_type) \
+	ARRAY_INSERT(m_type)       \
+	ARRAY_IS_EMPTY(m_type)     \
+	ARRAY_JOIN(m_type)         \
+	ARRAY_PUSH_BACK(m_type)    \
+	ARRAY_REMOVE(m_type)       \
+	ARRAY_STRINGIFY(m_type)
+
+	ARRAY_ALL(byte);
+	ARRAY_ALL(int);
+	ARRAY_ALL(long);
+	ARRAY_ALL(float);
+	ARRAY_ALL(double);
+	ARRAY_ALL(string);
+	ARRAY_ALL(Color);
+	ARRAY_ALL(Vector2);
+	ARRAY_ALL(Vector3);
+
+#undef ARRAY_ALL
+#undef ARRAY_APPEND_ARRAY
+#undef ARRAY_INSERT
+#undef ARRAY_JOIN
+#undef ARRAY_PUSH_BACK
+#undef ARRAY_REMOVE
+#undef ARRAY_STRINGIFY
+
+	p_output.append(INDENT1 CLOSE_BLOCK); // End of GD class.
+	p_output.append(CLOSE_BLOCK); // End of namespace.
+}
+
 void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	// Constants (in partial GD class)
 
@@ -893,6 +1036,19 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		Error save_err = _save_file(output_file, constants_source);
 		if (save_err != OK)
 			return save_err;
+
+		compile_items.push_back(output_file);
+	}
+
+	// Generate source file for array extensions
+	{
+		StringBuilder extensions_source;
+		_generate_array_extensions(extensions_source);
+		String output_file = path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
+		Error save_err = _save_file(output_file, extensions_source);
+		if (save_err != OK) {
+			return save_err;
+		}
 
 		compile_items.push_back(output_file);
 	}
