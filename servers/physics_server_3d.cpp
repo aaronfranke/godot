@@ -399,7 +399,7 @@ void PhysicsShapeQueryResult3D::_bind_methods() {
 ///////////////////////////////////////
 
 void PhysicsServer3D::_bind_methods() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	ClassDB::bind_method(D_METHOD("shape_create", "type"), &PhysicsServer3D::shape_create);
 	ClassDB::bind_method(D_METHOD("shape_set_data", "shape", "data"), &PhysicsServer3D::shape_set_data);

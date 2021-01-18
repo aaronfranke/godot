@@ -34,7 +34,7 @@
 #include "gd_navigation_server.h"
 #include "servers/navigation_server_3d.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 #include "navigation_mesh_generator.h"
 #endif
 
@@ -46,7 +46,7 @@
 	@author AndreaCatania
 */
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif
 
@@ -57,7 +57,7 @@ NavigationServer3D *new_server() {
 void register_gdnavigation_types() {
 	NavigationServer3DManager::set_default_server(new_server);
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	_nav_mesh_generator = memnew(NavigationMeshGenerator);
 	ClassDB::register_class<NavigationMeshGenerator>();
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
@@ -74,7 +74,7 @@ void register_gdnavigation_types() {
 }
 
 void unregister_gdnavigation_types() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	if (_nav_mesh_generator) {
 		memdelete(_nav_mesh_generator);
 	}

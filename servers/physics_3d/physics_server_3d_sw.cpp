@@ -1294,7 +1294,7 @@ void PhysicsServer3DSW::init() {
 };
 
 void PhysicsServer3DSW::step(real_t p_step) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	if (!active) {
 		return;
@@ -1318,7 +1318,7 @@ void PhysicsServer3DSW::step(real_t p_step) {
 }
 
 void PhysicsServer3DSW::flush_queries() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	if (!active) {
 		return;

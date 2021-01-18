@@ -186,7 +186,7 @@
 
 #include "scene/main/shader_globals_override.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
@@ -397,7 +397,7 @@ void register_scene_types() {
 
 	/* REGISTER 3D */
 
-	// Needed even with _3D_DISABLED as used in animation code.
+	// Needed even with ENABLE_3D as used in animation code.
 	ClassDB::register_class<Node3D>();
 	ClassDB::register_virtual_class<Node3DGizmo>();
 	ClassDB::register_class<Skin>();
@@ -432,7 +432,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	ClassDB::register_virtual_class<VisualInstance3D>();
 	ClassDB::register_virtual_class<GeometryInstance3D>();
 	ClassDB::register_class<Camera3D>();
@@ -678,7 +678,7 @@ void register_scene_types() {
 	ClassDB::register_class<SurfaceTool>();
 	ClassDB::register_class<MeshDataTool>();
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	ClassDB::register_virtual_class<PrimitiveMesh>();
 	ClassDB::register_class<BoxMesh>();
 	ClassDB::register_class<CapsuleMesh>();
@@ -770,7 +770,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<AudioStreamPlayer>();
 	ClassDB::register_class<AudioStreamPlayer2D>();
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	ClassDB::register_class<AudioStreamPlayer3D>();
 #endif
 	ClassDB::register_virtual_class<VideoStream>();
@@ -1011,9 +1011,9 @@ void unregister_scene_types() {
 	resource_loader_shader.unref();
 
 	//StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	BaseMaterial3D::finish_shaders();
-#endif // _3D_DISABLED
+#endif // ENABLE_3D
 
 	ParticlesMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();

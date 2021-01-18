@@ -479,7 +479,7 @@ void Viewport::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_READY: {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 			if (listeners.size() && !listener) {
 				Listener3D *first = nullptr;
 				for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
@@ -570,7 +570,7 @@ void Viewport::_notification(int p_what) {
 			}
 
 			if (physics_object_picking && (to_screen_rect == Rect2i() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 				Vector2 last_pos(1e20, 1e20);
 				CollisionObject3D *last_object = nullptr;
 				ObjectID last_id;
@@ -748,7 +748,7 @@ void Viewport::_notification(int p_what) {
 						}
 					}
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 					bool captured = false;
 
 					if (physics_object_capture.is_valid()) {
@@ -1010,7 +1010,7 @@ void Viewport::_listener_transform_changed_notify() {
 }
 
 void Viewport::_listener_set(Listener3D *p_listener) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	if (listener == p_listener) {
 		return;
@@ -1035,7 +1035,7 @@ void Viewport::_listener_remove(Listener3D *p_listener) {
 	}
 }
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 	if (listeners.size() > 0) {
 		for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
@@ -1062,12 +1062,12 @@ void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 #endif
 
 void Viewport::_camera_transform_changed_notify() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 #endif
 }
 
 void Viewport::_camera_set(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	if (camera == p_camera) {
 		return;
@@ -1109,7 +1109,7 @@ void Viewport::_camera_remove(Camera3D *p_camera) {
 	}
 }
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 void Viewport::_camera_make_next_current(Camera3D *p_exclude) {
 	for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 		if (p_exclude == E->get()) {
@@ -1191,7 +1191,7 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 			return;
 		}
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
 			p_node->notification(Node3D::NOTIFICATION_ENTER_WORLD);
 		} else {
@@ -1202,7 +1202,7 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 					return;
 				}
 			}
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 		}
 #endif
 	}
@@ -1229,7 +1229,7 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 			return;
 		}
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 		if (Object::cast_to<Node3D>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
 			p_node->notification(Node3D::NOTIFICATION_EXIT_WORLD);
 		} else {
@@ -1240,7 +1240,7 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 					return;
 				}
 			}
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 		}
 #endif
 	}
@@ -1314,7 +1314,7 @@ Camera3D *Viewport::get_camera() const {
 }
 
 void Viewport::enable_camera_override(bool p_enable) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	if (p_enable == camera_override) {
 		return;
 	}
@@ -2586,7 +2586,7 @@ void Viewport::_drop_physics_mouseover() {
 		physics_2d_mouseover.erase(physics_2d_mouseover.front());
 	}
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	if (physics_object_over.is_valid()) {
 		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
 		if (co) {

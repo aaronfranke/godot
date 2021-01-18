@@ -34,7 +34,7 @@
 #include "csg_shape.h"
 
 void register_csg_types() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	ClassDB::register_virtual_class<CSGShape3D>();
 	ClassDB::register_virtual_class<CSGPrimitive3D>();

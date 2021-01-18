@@ -38,14 +38,14 @@
 	@author AndreaCatania
 */
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 PhysicsServer3D *_createBulletPhysicsCallback() {
 	return memnew(BulletPhysicsServer3D);
 }
 #endif
 
 void register_bullet_types() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	PhysicsServer3DManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServer3DManager::set_default_server("Bullet", 1);
 

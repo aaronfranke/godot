@@ -47,7 +47,7 @@
 #include "gltf_state.h"
 #include "gltf_texture.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
 	Ref<EditorSceneImporterGLTF> import_gltf;
@@ -58,7 +58,7 @@ static void _editor_init() {
 #endif
 
 void register_gltf_types() {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 #ifdef TOOLS_ENABLED
 	ClassDB::APIType prev_api = ClassDB::get_current_api();
 	ClassDB::set_current_api(ClassDB::API_EDITOR);

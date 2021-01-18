@@ -198,43 +198,43 @@ struct SpatialIndexer {
 };
 
 void World3D::_register_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_add_camera(p_camera);
 #endif
 }
 
 void World3D::_update_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_update_camera(p_camera);
 #endif
 }
 
 void World3D::_remove_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_remove_camera(p_camera);
 #endif
 }
 
 void World3D::_register_notifier(VisibilityNotifier3D *p_notifier, const AABB &p_rect) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_notifier_add(p_notifier, p_rect);
 #endif
 }
 
 void World3D::_update_notifier(VisibilityNotifier3D *p_notifier, const AABB &p_rect) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_notifier_update(p_notifier, p_rect);
 #endif
 }
 
 void World3D::_remove_notifier(VisibilityNotifier3D *p_notifier) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_notifier_remove(p_notifier);
 #endif
 }
 
 void World3D::_update(uint64_t p_frame) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	indexer->_update(p_frame);
 #endif
 }
@@ -338,10 +338,10 @@ World3D::World3D() {
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/3d/default_angular_damp", 0.1));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_angular_damp", PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
-#ifdef _3D_DISABLED
-	indexer = nullptr;
-#else
+#ifdef ENABLE_3D
 	indexer = memnew(SpatialIndexer);
+#else
+	indexer = nullptr;
 #endif
 }
 
@@ -349,7 +349,7 @@ World3D::~World3D() {
 	PhysicsServer3D::get_singleton()->free(space);
 	RenderingServer::get_singleton()->free(scenario);
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	memdelete(indexer);
 #endif
 }

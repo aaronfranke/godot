@@ -32,7 +32,7 @@
 
 #include "core/os/mutex.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 #include "navigation_mesh_generator.h"
 #endif
 
@@ -284,7 +284,7 @@ void GdNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p
 	ERR_FAIL_COND(r_mesh.is_null());
 	ERR_FAIL_COND(p_node == nullptr);
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	NavigationMeshGenerator::get_singleton()->clear(r_mesh);
 	NavigationMeshGenerator::get_singleton()->bake(r_mesh, p_node);
 #endif

@@ -35,11 +35,11 @@
 #include "scene/3d/node_3d.h"
 #include "scene/resources/skin.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 typedef int BoneId;
 
 class PhysicalBone3D;
-#endif // _3D_DISABLED
+#endif // ENABLE_3D
 
 class Skeleton3D;
 
@@ -91,10 +91,10 @@ private:
 		bool global_pose_override_reset;
 		Transform global_pose_override;
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 		PhysicalBone3D *physical_bone;
 		PhysicalBone3D *cache_parent_physical_bone;
-#endif // _3D_DISABLED
+#endif // ENABLE_3D
 
 		List<ObjectID> nodes_bound;
 
@@ -105,10 +105,10 @@ private:
 			custom_pose_enable = false;
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 			physical_bone = nullptr;
 			cache_parent_physical_bone = nullptr;
-#endif // _3D_DISABLED
+#endif // ENABLE_3D
 		}
 	};
 
@@ -203,7 +203,7 @@ public:
 	Transform bone_transform_to_world_transform(Transform p_transform);
 	Transform world_transform_to_bone_transform(Transform p_transform);
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	// Physical bone API
 
 	void set_animate_physical_bones(bool p_animate);
@@ -225,7 +225,7 @@ public:
 	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
-#endif // _3D_DISABLED
+#endif // ENABLE_3D
 
 public:
 	Skeleton3D();

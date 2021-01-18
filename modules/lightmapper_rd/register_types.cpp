@@ -34,7 +34,7 @@
 #include "lightmapper_rd.h"
 #include "scene/3d/lightmapper.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 static Lightmapper *create_lightmapper_rd() {
 	return memnew(LightmapperRD);
 }
@@ -53,7 +53,7 @@ void register_lightmapper_rd_types() {
 	GLOBAL_DEF("rendering/gpu_lightmapper/quality/high_quality_probe_ray_count", 512);
 	GLOBAL_DEF("rendering/gpu_lightmapper/quality/ultra_quality_probe_ray_count", 2048);
 	GLOBAL_DEF("rendering/gpu_lightmapper/performance/max_rays_per_probe_pass", 64);
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 	ClassDB::register_class<LightmapperRD>();
 	Lightmapper::create_gpu = create_lightmapper_rd;
 #endif

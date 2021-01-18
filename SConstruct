@@ -130,7 +130,7 @@ opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
-opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
+opts.Add(BoolVariable("enable_3d", "Enable 3D nodes, can be disabled for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
@@ -567,15 +567,14 @@ if selected_platform in platform_list:
 
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
-    if env["disable_3d"]:
-        if env["tools"]:
-            print(
-                "Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), "
-                "only with 'tools=no' (export template)."
-            )
-            Exit(255)
-        else:
-            env.Append(CPPDEFINES=["_3D_DISABLED"])
+    if env["enable_3d"]:
+        env.Append(CPPDEFINES=["ENABLE_3D"])
+    elif env["tools"]:
+        print(
+            "Build option 'enable_3d=no' cannot be used with 'tools=yes' (editor), "
+            "only with 'tools=no' (export template)."
+        )
+        Exit(255)
     if env["disable_advanced_gui"]:
         if env["tools"]:
             print(

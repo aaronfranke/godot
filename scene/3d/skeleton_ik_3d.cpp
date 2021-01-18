@@ -34,7 +34,7 @@
 
 #include "skeleton_ik_3d.h"
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::find_child(const BoneId p_bone_id) {
 	for (int i = children.size() - 1; 0 <= i; --i) {
@@ -568,4 +568,4 @@ void SkeletonIK3D::_solve_chain() {
 	FabrikInverseKinematic::solve(task, interpolation, override_tip_basis, use_magnet, magnet_position);
 }
 
-#endif // _3D_DISABLED
+#endif // ENABLE_3D

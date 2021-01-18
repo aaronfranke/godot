@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 #include "navigation_mesh_generator.h"
 

@@ -31,7 +31,7 @@
 #ifndef NAVIGATION_MESH_GENERATOR_H
 #define NAVIGATION_MESH_GENERATOR_H
 
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 #include "scene/3d/navigation_region_3d.h"
 

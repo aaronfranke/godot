@@ -2092,7 +2092,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas) {
 // render to mono camera
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	Camera *camera = camera_owner.getornull(p_camera);
 	ERR_FAIL_COND(!camera);
@@ -2778,7 +2778,7 @@ void RendererSceneCull::_render_scene(RID p_render_buffers, const Transform p_ca
 }
 
 void RendererSceneCull::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
-#ifndef _3D_DISABLED
+#ifdef ENABLE_3D
 
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
