@@ -69,7 +69,7 @@ struct Vector3i {
 
 	_FORCE_INLINE_ Vector3i abs() const;
 	_FORCE_INLINE_ Vector3i sign() const;
-	Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
+	Vector3i clamp(const Vector3i &p_min = Vector3i(0, 0, 0), const Vector3i &p_max = Vector3i(1, 1, 1)) const;
 
 	/* Operators */
 

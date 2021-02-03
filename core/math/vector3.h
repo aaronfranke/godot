@@ -113,7 +113,7 @@ struct Vector3 {
 	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
-	Vector3 clamp(const Vector3 &p_min, const Vector3 &p_max) const;
+	Vector3 clamp(const Vector3 &p_min = Vector3(0, 0, 0), const Vector3 &p_max = Vector3(1, 1, 1)) const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;

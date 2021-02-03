@@ -67,9 +67,9 @@
 		<method name="clamp" qualifiers="const">
 			<return type="Vector2i">
 			</return>
-			<argument index="0" name="min" type="Vector2i">
+			<argument index="0" name="min" type="Vector2i" default="Vector2i( 0, 0 )">
 			</argument>
-			<argument index="1" name="max" type="Vector2i">
+			<argument index="1" name="max" type="Vector2i" default="Vector2i( 1, 1 )">
 			</argument>
 			<description>
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.

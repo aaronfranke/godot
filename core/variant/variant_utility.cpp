@@ -383,11 +383,11 @@ struct VariantUtilityFunctions {
 		return value;
 	}
 
-	static inline double clampf(double x, double min, double max) {
+	static inline double clampf(double x, double min = 0.0, double max = 1.0) {
 		return CLAMP(x, min, max);
 	}
 
-	static inline int64_t clampi(int64_t x, int64_t min, int64_t max) {
+	static inline int64_t clampi(int64_t x, int64_t min = 0, int64_t max = 1) {
 		return CLAMP(x, min, max);
 	}
 
@@ -865,6 +865,35 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	};                                                                                                           \
 	register_utility_function<Func_##m_func>(#m_func, m_args)
 
+#define FUNCBINDRDEF(m_func, m_args, m_category, m_default_args)                                                 \
+	class Func_##m_func {                                                                                        \
+	public:                                                                                                      \
+		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
+			call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args, r_error);                               \
+		}                                                                                                        \
+		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
+			validated_call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args);                              \
+		}                                                                                                        \
+		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
+			ptr_call_helperr(VariantUtilityFunctions::m_func, ret, p_args);                                      \
+		}                                                                                                        \
+		static int get_argument_count() {                                                                        \
+			return get_arg_count_helperr(VariantUtilityFunctions::m_func);                                       \
+		}                                                                                                        \
+		static Variant::Type get_argument_type(int p_arg) {                                                      \
+			return get_arg_type_helperr(VariantUtilityFunctions::m_func, p_arg);                                 \
+		}                                                                                                        \
+		static Variant::Type get_return_type() {                                                                 \
+			return get_ret_type_helperr(VariantUtilityFunctions::m_func);                                        \
+		}                                                                                                        \
+		static bool has_return_type() {                                                                          \
+			return true;                                                                                         \
+		}                                                                                                        \
+		static bool is_vararg() { return false; }                                                                \
+		static Variant::UtilityFunctionType get_type() { return m_category; }                                    \
+	};                                                                                                           \
+	register_utility_function<Func_##m_func>(#m_func, m_args, m_default_args)
+
 #define FUNCBINDVR(m_func, m_args, m_category)                                                                          \
 	class Func_##m_func {                                                                                               \
 	public:                                                                                                             \
@@ -1099,6 +1128,7 @@ struct VariantUtilityFunctionInfo {
 	Variant::ValidatedUtilityFunction validated_call_utility;
 	Variant::PTRUtilityFunction ptr_call_utility;
 	Vector<String> argnames;
+	Vector<Variant> default_arguments;
 	bool is_vararg;
 	bool returns_value;
 	int argcount;
@@ -1111,7 +1141,7 @@ static OAHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
 static List<StringName> utility_function_name_table;
 
 template <class T>
-static void register_utility_function(const String &p_name, const Vector<String> &argnames) {
+static void register_utility_function(const String &p_name, const Vector<String> &argnames, const Vector<Variant> &p_def_arg = Vector<Variant>()) {
 	String name = p_name;
 	if (name.begins_with("_")) {
 		name = name.substr(1, name.length() - 1);
@@ -1124,6 +1154,7 @@ static void register_utility_function(const String &p_name, const Vector<String>
 	bfi.validated_call_utility = T::validated_call;
 	bfi.ptr_call_utility = T::ptrcall;
 	bfi.is_vararg = T::is_vararg();
+	bfi.default_arguments = p_def_arg;
 	bfi.argnames = argnames;
 	bfi.argcount = T::get_argument_count();
 	if (!bfi.is_vararg) {
@@ -1219,8 +1250,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(minf, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR3(clamp, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(clampi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(clampf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDRDEF(clampi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH, varray(0, 1));
+	FUNCBINDRDEF(clampf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH, varray(0.0, 1.0));
 
 	FUNCBINDR(nearest_po2, sarray("value"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1277,7 +1308,7 @@ void Variant::call_utility_function(const StringName &p_name, Variant *r_ret, co
 		return;
 	}
 
-	if (unlikely(!bfi->is_vararg && p_argcount < bfi->argcount)) {
+	if (unlikely(!bfi->is_vararg && p_argcount < bfi->argcount - bfi->default_arguments.size())) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
 		r_error.expected = bfi->argcount;
@@ -1291,7 +1322,18 @@ void Variant::call_utility_function(const StringName &p_name, Variant *r_ret, co
 		return;
 	}
 
-	bfi->call_utility(r_ret, p_args, p_argcount, r_error);
+	Vector<const Variant *> args;
+	int default_arg_index = bfi->default_arguments.size() - bfi->argcount;
+	for (int i = 0; i < bfi->argcount; i++) {
+		if (i < p_argcount) {
+			args.push_back(p_args[i]);
+		} else {
+			args.push_back(&bfi->default_arguments.get(default_arg_index));
+		}
+		default_arg_index++;
+	}
+
+	bfi->call_utility(r_ret, (const Variant **)args.ptr(), p_argcount, r_error);
 }
 
 bool Variant::has_utility_function(const StringName &p_name) {

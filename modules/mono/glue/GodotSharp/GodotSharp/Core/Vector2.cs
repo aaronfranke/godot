@@ -164,15 +164,17 @@ namespace Godot
         /// components of `min` and `max` using
         /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
         /// </summary>
-        /// <param name="min">The vector with minimum allowed values.</param>
-        /// <param name="max">The vector with maximum allowed values.</param>
+        /// <param name="min">The vector with minimum allowed values. Default is (0, 0).</param>
+        /// <param name="max">The vector with maximum allowed values. Default is (1, 1).</param>
         /// <returns>The vector with all components clamped.</returns>
-        public Vector2 Clamp(Vector2 min, Vector2 max)
+        public Vector2 Clamp(Vector2? min = null, Vector2? max = null)
         {
+            Vector2 minimum = min ?? new Vector2(0, 0);
+            Vector2 maximum = max ?? new Vector2(1, 1);
             return new Vector2
             (
-                Mathf.Clamp(x, min.x, max.x),
-                Mathf.Clamp(y, min.y, max.y)
+                Mathf.Clamp(x, minimum.x, maximum.x),
+                Mathf.Clamp(y, minimum.y, maximum.y)
             );
         }
 

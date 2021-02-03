@@ -132,10 +132,10 @@ namespace Godot
         /// Clamps a `value` so that it is not less than `min` and not more than `max`.
         /// </summary>
         /// <param name="value">The value to clamp.</param>
-        /// <param name="min">The minimum allowed value.</param>
-        /// <param name="max">The maximum allowed value.</param>
+        /// <param name="min">The minimum allowed value. Default is 0.</param>
+        /// <param name="max">The maximum allowed value. Default is 1.</param>
         /// <returns>The clamped value.</returns>
-        public static int Clamp(int value, int min, int max)
+        public static int Clamp(int value, int min = 0, int max = 1)
         {
             return value < min ? min : value > max ? max : value;
         }
@@ -144,10 +144,10 @@ namespace Godot
         /// Clamps a `value` so that it is not less than `min` and not more than `max`.
         /// </summary>
         /// <param name="value">The value to clamp.</param>
-        /// <param name="min">The minimum allowed value.</param>
-        /// <param name="max">The maximum allowed value.</param>
+        /// <param name="min">The minimum allowed value. Default is 0.</param>
+        /// <param name="max">The maximum allowed value. Default is 1.</param>
         /// <returns>The clamped value.</returns>
-        public static real_t Clamp(real_t value, real_t min, real_t max)
+        public static real_t Clamp(real_t value, real_t min = 0.0f, real_t max = 1.0f)
         {
             return value < min ? min : value > max ? max : value;
         }
