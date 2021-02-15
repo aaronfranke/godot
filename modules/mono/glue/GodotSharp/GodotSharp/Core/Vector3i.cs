@@ -89,6 +89,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the unsigned minimum angle to the given vector, in radians.
+        /// </summary>
+        /// <param name="to">The other vector to compare this vector to.</param>
+        /// <returns>The unsigned angle between the two vectors, in radians.</returns>
+        public real_t AngleTo(Vector3i to)
+        {
+            return Mathf.Atan2(Cross(to).Length(), Dot(to));
+        }
+
+        /// <summary>
         /// Returns a new vector with all components clamped between the
         /// components of `min` and `max` using
         /// <see cref="Mathf.Clamp(int, int, int)"/>.
@@ -103,6 +113,21 @@ namespace Godot
                 Mathf.Clamp(x, min.x, max.x),
                 Mathf.Clamp(y, min.y, max.y),
                 Mathf.Clamp(z, min.z, max.z)
+            );
+        }
+
+        /// <summary>
+        /// Returns the cross product of this vector and `b`.
+        /// </summary>
+        /// <param name="b">The other vector.</param>
+        /// <returns>The cross product vector.</returns>
+        public Vector3i Cross(Vector3i b)
+        {
+            return new Vector3i
+            (
+                y * b.z - z * b.y,
+                z * b.x - x * b.z,
+                x * b.y - y * b.x
             );
         }
 
@@ -227,6 +252,23 @@ namespace Godot
             v.y = Mathf.Sign(v.y);
             v.z = Mathf.Sign(v.z);
             return v;
+        }
+
+        /// <summary>
+        /// Returns the signed angle to the given vector, in radians.
+        /// The sign of the angle is positive in a counter-clockwise
+        /// direction and negative in a clockwise direction when viewed
+        /// from the side specified by the `axis`.
+        /// </summary>
+        /// <param name="to">The other vector to compare this vector to.</param>
+        /// <param name="axis">The reference axis to use for the angle sign.</param>
+        /// <returns>The signed angle between the two vectors, in radians.</returns>
+        public real_t SignedAngleTo(Vector3i to, Vector3i axis)
+        {
+            Vector3i crossTo = Cross(to);
+            real_t unsignedAngle = Mathf.Atan2(crossTo.Length(), Dot(to));
+            int sign = crossTo.Dot(axis);
+            return (sign < 0) ? -unsignedAngle : unsignedAngle;
         }
 
         // Constants

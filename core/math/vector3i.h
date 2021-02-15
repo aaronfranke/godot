@@ -31,6 +31,7 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -65,11 +66,19 @@ struct Vector3i {
 	int min_axis() const;
 	int max_axis() const;
 
+	_FORCE_INLINE_ double length() const;
+	_FORCE_INLINE_ int64_t length_squared() const;
+
 	_FORCE_INLINE_ void zero();
+
+	_FORCE_INLINE_ Vector3i cross(const Vector3i &p_b) const;
+	_FORCE_INLINE_ int64_t dot(const Vector3i &p_b) const;
 
 	_FORCE_INLINE_ Vector3i abs() const;
 	_FORCE_INLINE_ Vector3i sign() const;
 	Vector3i clamp(const Vector3i &p_min, const Vector3i &p_max) const;
+	_FORCE_INLINE_ double angle_to(const Vector3i &p_to) const;
+	_FORCE_INLINE_ double signed_angle_to(const Vector3i &p_to, const Vector3i &p_axis) const;
 
 	/* Operators */
 
@@ -110,12 +119,52 @@ struct Vector3i {
 	}
 };
 
+Vector3i Vector3i::cross(const Vector3i &p_b) const {
+	Vector3i ret(
+			(y * p_b.z) - (z * p_b.y),
+			(z * p_b.x) - (x * p_b.z),
+			(x * p_b.y) - (y * p_b.x));
+
+	return ret;
+}
+
+int64_t Vector3i::dot(const Vector3i &p_b) const {
+	return x * int64_t(p_b.x) + y * int64_t(p_b.y) + z * int64_t(p_b.z);
+}
+
+double Vector3i::length() const {
+	int64_t x2 = x * int64_t(x);
+	int64_t y2 = y * int64_t(y);
+	int64_t z2 = z * int64_t(z);
+
+	return Math::sqrt(double(x2 + y2 + z2));
+}
+
+int64_t Vector3i::length_squared() const {
+	int64_t x2 = x * int64_t(x);
+	int64_t y2 = y * int64_t(y);
+	int64_t z2 = z * int64_t(z);
+
+	return x2 + y2 + z2;
+}
+
 Vector3i Vector3i::abs() const {
 	return Vector3i(ABS(x), ABS(y), ABS(z));
 }
 
 Vector3i Vector3i::sign() const {
 	return Vector3i(SGN(x), SGN(y), SGN(z));
+}
+
+double Vector3i::angle_to(const Vector3i &p_to) const {
+	return Math::atan2(cross(p_to).length(), dot(p_to));
+}
+
+double Vector3i::signed_angle_to(const Vector3i &p_to, const Vector3i &p_axis) const {
+	Vector3i cross_to = cross(p_to);
+	double unsigned_angle = Math::atan2(cross_to.length(), dot(p_to));
+	int32_t sign = cross_to.dot(p_axis);
+	return (sign < 0) ? -unsigned_angle : unsigned_angle;
 }
 
 /* Operators */

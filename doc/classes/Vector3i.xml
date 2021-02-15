@@ -58,6 +58,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="angle_to" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector3i">
+			</argument>
+			<description>
+				Returns the unsigned minimum angle to the given vector, in radians.
+			</description>
+		</method>
 		<method name="clamp" qualifiers="const">
 			<return type="Vector3i">
 			</return>
@@ -67,6 +76,42 @@
 			</argument>
 			<description>
 				Returns a new vector with all components clamped between the components of [code]min[/code] and [code]max[/code], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="cross" qualifiers="const">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="with" type="Vector3i">
+			</argument>
+			<description>
+				Returns the cross product of this vector and [code]b[/code].
+			</description>
+		</method>
+		<method name="dot" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="with" type="Vector3i">
+			</argument>
+			<description>
+				Returns the dot product of this vector and [code]b[/code]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
+				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
+				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
+			</description>
+		</method>
+		<method name="length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the length (magnitude) of this vector.
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="max_axis" qualifiers="const">
@@ -236,6 +281,17 @@
 			</return>
 			<description>
 				Returns the vector with each component set to one or negative one, depending on the signs of the components.
+			</description>
+		</method>
+		<method name="signed_angle_to" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector3i">
+			</argument>
+			<argument index="1" name="axis" type="Vector3i">
+			</argument>
+			<description>
+				Returns the signed angle to the given vector, in radians. The sign of the angle is positive in a counter-clockwise direction and negative in a clockwise direction when viewed from the side specified by the [code]axis[/code].
 			</description>
 		</method>
 	</methods>
