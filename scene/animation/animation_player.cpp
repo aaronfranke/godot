@@ -301,7 +301,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 					}
 				} else {
-					// no property, just use spatialnode
+					// no property, just use node_3d
 					p_anim->node_cache[i]->skeleton = nullptr;
 				}
 			}

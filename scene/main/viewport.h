@@ -38,9 +38,7 @@
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
 
-class Camera3D;
 class Camera2D;
-class Listener3D;
 class Control;
 class CanvasItem;
 class CanvasLayer;
@@ -48,7 +46,12 @@ class Panel;
 class Label;
 class Timer;
 class Viewport;
+
+#ifndef _3D_DISABLED
 class CollisionObject3D;
+class Camera3D;
+class Listener3D;
+#endif // _3D_DISABLED
 
 class ViewportTexture : public Texture2D {
 	GDCLASS(ViewportTexture, Texture2D);
@@ -189,8 +192,13 @@ private:
 
 	Viewport *parent = nullptr;
 
+#ifndef _3D_DISABLED
 	Listener3D *listener = nullptr;
 	Set<Listener3D *> listeners;
+
+	Camera3D *camera = nullptr;
+	Set<Camera3D *> cameras;
+#endif // _3D_DISABLED
 
 	struct CameraOverrideData {
 		Transform3D transform;
@@ -209,9 +217,6 @@ private:
 			return rid != RID();
 		}
 	} camera_override;
-
-	Camera3D *camera = nullptr;
-	Set<Camera3D *> cameras;
 	Set<CanvasLayer *> canvas_layers;
 
 	RID viewport;
@@ -268,7 +273,9 @@ private:
 
 	} physics_last_mouse_state;
 
+#ifndef _3D_DISABLED
 	void _collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+#endif // _3D_DISABLED
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
@@ -431,6 +438,7 @@ private:
 
 	bool _gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_check);
 
+#ifndef _3D_DISABLED
 	friend class Listener3D;
 	void _listener_transform_changed_notify();
 	void _listener_set(Listener3D *p_listener);
@@ -444,6 +452,7 @@ private:
 	bool _camera_add(Camera3D *p_camera); //true if first
 	void _camera_remove(Camera3D *p_camera);
 	void _camera_make_next_current(Camera3D *p_exclude);
+#endif // _3D_DISABLED
 
 	friend class CanvasLayer;
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
@@ -485,8 +494,10 @@ protected:
 public:
 	uint64_t get_processed_events_count() const { return event_count; }
 
+#ifndef _3D_DISABLED
 	Listener3D *get_listener() const;
 	Camera3D *get_camera() const;
+#endif // _3D_DISABLED
 
 	void enable_camera_override(bool p_enable);
 	bool is_camera_override_enabled() const;

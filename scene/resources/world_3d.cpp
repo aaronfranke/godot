@@ -112,9 +112,11 @@ Ref<CameraEffects> World3D::get_camera_effects() const {
 	return camera_effects;
 }
 
+#ifndef _3D_DISABLED
 PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
 	return PhysicsServer3D::get_singleton()->space_get_direct_state(space);
 }
+#endif // _3D_DISABLED
 
 void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_space"), &World3D::get_space);
@@ -126,7 +128,9 @@ void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_environment"), &World3D::get_fallback_environment);
 	ClassDB::bind_method(D_METHOD("set_camera_effects", "effects"), &World3D::set_camera_effects);
 	ClassDB::bind_method(D_METHOD("get_camera_effects"), &World3D::get_camera_effects);
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
+#endif // _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
@@ -137,9 +141,12 @@ void World3D::_bind_methods() {
 }
 
 World3D::World3D() {
+#ifndef _3D_DISABLED
 	space = PhysicsServer3D::get_singleton()->space_create();
+#endif // _3D_DISABLED
 	scenario = RenderingServer::get_singleton()->scenario_create();
 
+#ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->space_set_active(space, true);
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY, GLOBAL_DEF("physics/3d/default_gravity", 9.8));
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF("physics/3d/default_gravity_vector", Vector3(0, -1, 0)));
@@ -152,10 +159,10 @@ World3D::World3D() {
 	NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.3));
 	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.3));
+#endif // _3D_DISABLED
 }
 
 World3D::~World3D() {
-	PhysicsServer3D::get_singleton()->free(space);
 	RenderingServer::get_singleton()->free(scenario);
 	NavigationServer3D::get_singleton()->free(navigation_map);
 }

@@ -758,8 +758,10 @@ void SceneTree::set_pause(bool p_enabled) {
 		return;
 	}
 	paused = p_enabled;
+#ifndef _3D_DISABLED
 	NavigationServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
+#endif // _3D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);

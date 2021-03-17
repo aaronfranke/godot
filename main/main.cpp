@@ -116,10 +116,12 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
-static PhysicsServer3D *physics_server = nullptr;
 static PhysicsServer2D *physics_2d_server = nullptr;
-static NavigationServer3D *navigation_server = nullptr;
+#ifndef _3D_DISABLED
+static PhysicsServer3D *physics_server = nullptr;
+#endif // _3D_DISABLED
 static NavigationServer2D *navigation_2d_server = nullptr;
+static NavigationServer3D *navigation_server = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -206,6 +208,7 @@ static String get_full_version_string() {
 // to have less code in main.cpp.
 void initialize_physics() {
 	/// 3D Physics Server
+#ifndef _3D_DISABLED
 	physics_server = PhysicsServer3DManager::new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
 	if (!physics_server) {
@@ -214,6 +217,7 @@ void initialize_physics() {
 	}
 	ERR_FAIL_COND(!physics_server);
 	physics_server->init();
+#endif // _3D_DISABLED
 
 	/// 2D Physics server
 	physics_2d_server = PhysicsServer2DManager::new_server(
@@ -227,8 +231,10 @@ void initialize_physics() {
 }
 
 void finalize_physics() {
+#ifndef _3D_DISABLED
 	physics_server->finish();
 	memdelete(physics_server);
+#endif // _3D_DISABLED
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
@@ -243,8 +249,8 @@ void finalize_display() {
 
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server != nullptr);
-
 	navigation_server = NavigationServer3DManager::new_default_server();
+
 	navigation_2d_server = memnew(NavigationServer2D);
 }
 
@@ -2488,8 +2494,10 @@ bool Main::iteration() {
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
+#ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
@@ -2503,8 +2511,10 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+#ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);

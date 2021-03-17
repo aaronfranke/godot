@@ -60,10 +60,12 @@
 #include "navigation_server_3d.h"
 #include "physics_2d/physics_server_2d_sw.h"
 #include "physics_2d/physics_server_2d_wrap_mt.h"
+#include "physics_server_2d.h"
+#ifndef _3D_DISABLED
 #include "physics_3d/physics_server_3d_sw.h"
 #include "physics_3d/physics_server_3d_wrap_mt.h"
-#include "physics_server_2d.h"
 #include "physics_server_3d.h"
+#endif // _3D_DISABLED
 #include "rendering/renderer_compositor.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
@@ -76,6 +78,7 @@
 
 ShaderTypes *shader_types = nullptr;
 
+#ifndef _3D_DISABLED
 PhysicsServer3D *_createGodotPhysics3DCallback() {
 	bool using_threads = GLOBAL_GET("physics/3d/run_on_thread");
 
@@ -83,6 +86,7 @@ PhysicsServer3D *_createGodotPhysics3DCallback() {
 
 	return memnew(PhysicsServer3DWrapMT(physics_server, using_threads));
 }
+#endif // _3D_DISABLED
 
 PhysicsServer2D *_createGodotPhysics2DCallback() {
 	bool using_threads = GLOBAL_GET("physics/2d/run_on_thread");
@@ -128,7 +132,9 @@ void register_server_types() {
 	TextServer::initialize_hex_code_box_fonts();
 
 	ClassDB::register_virtual_class<PhysicsServer2D>();
+#ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<PhysicsServer3D>();
+#endif // _3D_DISABLED
 	ClassDB::register_virtual_class<NavigationServer2D>();
 	ClassDB::register_virtual_class<NavigationServer3D>();
 	ClassDB::register_class<XRServer>();
@@ -214,10 +220,12 @@ void register_server_types() {
 	ClassDB::register_class<PhysicsTestMotionResult2D>();
 	ClassDB::register_class<PhysicsShapeQueryParameters2D>();
 
+#ifndef _3D_DISABLED
 	ClassDB::register_class<PhysicsShapeQueryParameters3D>();
 	ClassDB::register_virtual_class<PhysicsDirectBodyState3D>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState3D>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult3D>();
+#endif // _3D_DISABLED
 
 	// Physics 2D
 	GLOBAL_DEF(PhysicsServer2DManager::setting_property_name, "DEFAULT");
@@ -227,11 +235,13 @@ void register_server_types() {
 	PhysicsServer2DManager::set_default_server("GodotPhysics2D");
 
 	// Physics 3D
+#ifndef _3D_DISABLED
 	GLOBAL_DEF(PhysicsServer3DManager::setting_property_name, "DEFAULT");
 	ProjectSettings::get_singleton()->set_custom_property_info(PhysicsServer3DManager::setting_property_name, PropertyInfo(Variant::STRING, PhysicsServer3DManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
 	PhysicsServer3DManager::register_server("GodotPhysics3D", &_createGodotPhysics3DCallback);
 	PhysicsServer3DManager::set_default_server("GodotPhysics3D");
+#endif // _3D_DISABLED
 }
 
 void unregister_server_types() {
@@ -244,7 +254,9 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton()));
+#ifndef _3D_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton()));
+#endif // _3D_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TextServerManager", TextServerManager::get_singleton()));

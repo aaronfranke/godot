@@ -235,6 +235,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 	for (int i = 0; i < tc; i++) {
 		switch (animation->track_get_type(i)) {
 			case Animation::TYPE_TRANSFORM3D: {
+#ifndef _3D_DISABLED
 				Vector3 loc, scale;
 				Quaternion rot;
 				animation->transform_track_interpolate(i, p_time, &loc, &rot, &scale);
@@ -242,7 +243,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				tr.basis.scale(scale);
 
 				set_track_transform(i, tr);
-
+#endif // _3D_DISABLED
 			} break;
 			case Animation::TYPE_VALUE: {
 				if (animation->value_track_get_update_mode(i) == Animation::UPDATE_CONTINUOUS || (animation->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE && p_delta == 0)) {

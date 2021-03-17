@@ -36,13 +36,14 @@
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
-
 #include "scene/2d/collision_object_2d.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/world_environment.h"
+#endif // _3D_DISABLED
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
@@ -200,6 +201,7 @@ void Viewport::_collision_object_input_event(CollisionObject3D *p_object, Camera
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
 }
+#endif // _3D_DISABLED
 
 void Viewport::_sub_window_update_order() {
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
@@ -435,6 +437,7 @@ void Viewport::_notification(int p_what) {
 				contact_2d_debug = RenderingServer::get_singleton()->canvas_item_create();
 				RenderingServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, find_world_2d()->get_canvas());
 				//3D
+#ifndef _3D_DISABLED
 				PhysicsServer3D::get_singleton()->space_set_debug_contacts(find_world_3d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = RenderingServer::get_singleton()->multimesh_create();
 				RenderingServer::get_singleton()->multimesh_allocate_data(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), RS::MULTIMESH_TRANSFORM_3D, true);
@@ -444,6 +447,7 @@ void Viewport::_notification(int p_what) {
 				RenderingServer::get_singleton()->instance_set_base(contact_3d_debug_instance, contact_3d_debug_multimesh);
 				RenderingServer::get_singleton()->instance_set_scenario(contact_3d_debug_instance, find_world_3d()->get_scenario());
 				//RenderingServer::get_singleton()->instance_geometry_set_flag(contact_3d_debug_instance, RS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS, true);
+#endif // _3D_DISABLED
 			}
 
 		} break;
@@ -528,6 +532,7 @@ void Viewport::_notification(int p_what) {
 				}
 			}
 
+#ifndef _3D_DISABLED
 			if (get_tree()->is_debugging_collisions_hint() && contact_3d_debug_multimesh.is_valid()) {
 				Vector<Vector3> points = PhysicsServer3D::get_singleton()->space_get_contacts(find_world_3d()->get_space());
 				int point_count = PhysicsServer3D::get_singleton()->space_get_contact_count(find_world_3d()->get_space());
@@ -540,6 +545,7 @@ void Viewport::_notification(int p_what) {
 					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
 				}
 			}
+#endif // _3D_DISABLED
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 			_drop_physics_mouseover();
@@ -576,8 +582,8 @@ void Viewport::_process_picking() {
 	Vector2 last_pos(1e20, 1e20);
 	CollisionObject3D *last_object = nullptr;
 	ObjectID last_id;
-#endif
 	PhysicsDirectSpaceState3D::RayResult result;
+#endif
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 	if (physics_has_last_mousepos) {
@@ -989,12 +995,11 @@ Transform2D Viewport::get_global_canvas_transform() const {
 	return global_canvas_transform;
 }
 
+#ifndef _3D_DISABLED
 void Viewport::_listener_transform_changed_notify() {
 }
 
 void Viewport::_listener_set(Listener3D *p_listener) {
-#ifndef _3D_DISABLED
-
 	if (listener == p_listener) {
 		return;
 	}
@@ -1003,7 +1008,6 @@ void Viewport::_listener_set(Listener3D *p_listener) {
 
 	_update_listener();
 	_listener_transform_changed_notify();
-#endif
 }
 
 bool Viewport::_listener_add(Listener3D *p_listener) {
@@ -1018,7 +1022,6 @@ void Viewport::_listener_remove(Listener3D *p_listener) {
 	}
 }
 
-#ifndef _3D_DISABLED
 void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 	if (listeners.size() > 0) {
 		for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
@@ -1042,16 +1045,11 @@ void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 		}
 	}
 }
-#endif
 
 void Viewport::_camera_transform_changed_notify() {
-#ifndef _3D_DISABLED
-#endif
 }
 
 void Viewport::_camera_set(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
-
 	if (camera == p_camera) {
 		return;
 	}
@@ -1076,7 +1074,6 @@ void Viewport::_camera_set(Camera3D *p_camera) {
 
 	_update_listener();
 	_camera_transform_changed_notify();
-#endif
 }
 
 bool Viewport::_camera_add(Camera3D *p_camera) {
@@ -1092,7 +1089,6 @@ void Viewport::_camera_remove(Camera3D *p_camera) {
 	}
 }
 
-#ifndef _3D_DISABLED
 void Viewport::_camera_make_next_current(Camera3D *p_exclude) {
 	for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 		if (p_exclude == E->get()) {
@@ -1286,6 +1282,7 @@ Ref<World3D> Viewport::find_world_3d() const {
 	}
 }
 
+#ifndef _3D_DISABLED
 Listener3D *Viewport::get_listener() const {
 	return listener;
 }
@@ -1293,6 +1290,7 @@ Listener3D *Viewport::get_listener() const {
 Camera3D *Viewport::get_camera() const {
 	return camera;
 }
+#endif // _3D_DISABLED
 
 void Viewport::enable_camera_override(bool p_enable) {
 #ifndef _3D_DISABLED
@@ -3508,7 +3506,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_own_world_3d", "enable"), &Viewport::set_use_own_world_3d);
 	ClassDB::bind_method(D_METHOD("is_using_own_world_3d"), &Viewport::is_using_own_world_3d);
 
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_camera"), &Viewport::get_camera);
+#endif // _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener);
 	ClassDB::bind_method(D_METHOD("is_audio_listener"), &Viewport::is_audio_listener);

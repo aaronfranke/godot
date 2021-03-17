@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef _3D_DISABLED
+
 #include "physics_server_3d.h"
 
 #include "core/config/project_settings.h"
@@ -826,3 +828,5 @@ PhysicsServer3D *PhysicsServer3DManager::new_server(const String &p_name) {
 		return physics_servers[id].create_callback();
 	}
 }
+
+#endif // _3D_DISABLED

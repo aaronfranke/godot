@@ -31,9 +31,11 @@
 #include "mesh.h"
 
 #include "core/templates/pair.h"
+#ifndef _3D_DISABLED
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/surface_tool.h"
+#endif // _3D_DISABLED
 
 #include <stdlib.h>
 
@@ -221,6 +223,7 @@ Vector<Face3> Mesh::get_faces() const {
 */
 }
 
+#ifndef _3D_DISABLED
 Ref<Shape3D> Mesh::create_convex_shape() const {
 	Vector<Vector3> vertices;
 
@@ -256,6 +259,43 @@ Ref<Shape3D> Mesh::create_trimesh_shape() const {
 	shape->set_faces(face_points);
 	return shape;
 }
+
+Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
+	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape3D>>());
+
+	const Vector<Face3> faces = get_faces();
+
+	Vector<Vector<Face3>> decomposed = convex_composition_function(faces);
+
+	Vector<Ref<Shape3D>> ret;
+
+	for (int i = 0; i < decomposed.size(); i++) {
+		Set<Vector3> points;
+		for (int j = 0; j < decomposed[i].size(); j++) {
+			points.insert(decomposed[i][j].vertex[0]);
+			points.insert(decomposed[i][j].vertex[1]);
+			points.insert(decomposed[i][j].vertex[2]);
+		}
+
+		Vector<Vector3> convex_points;
+		convex_points.resize(points.size());
+		{
+			Vector3 *w = convex_points.ptrw();
+			int idx = 0;
+			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
+				w[idx++] = E->get();
+			}
+		}
+
+		Ref<ConvexPolygonShape3D> shape;
+		shape.instance();
+		shape->set_points(convex_points);
+		ret.push_back(shape);
+	}
+
+	return ret;
+}
+#endif // _3D_DISABLED
 
 Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	Array arrays;
@@ -541,42 +581,6 @@ void Mesh::_bind_methods() {
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
-}
-
-Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
-	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape3D>>());
-
-	const Vector<Face3> faces = get_faces();
-
-	Vector<Vector<Face3>> decomposed = convex_composition_function(faces);
-
-	Vector<Ref<Shape3D>> ret;
-
-	for (int i = 0; i < decomposed.size(); i++) {
-		Set<Vector3> points;
-		for (int j = 0; j < decomposed[i].size(); j++) {
-			points.insert(decomposed[i][j].vertex[0]);
-			points.insert(decomposed[i][j].vertex[1]);
-			points.insert(decomposed[i][j].vertex[2]);
-		}
-
-		Vector<Vector3> convex_points;
-		convex_points.resize(points.size());
-		{
-			Vector3 *w = convex_points.ptrw();
-			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
-			}
-		}
-
-		Ref<ConvexPolygonShape3D> shape;
-		shape.instance();
-		shape->set_points(convex_points);
-		ret.push_back(shape);
-	}
-
-	return ret;
 }
 
 int Mesh::get_builtin_bind_pose_count() const {
@@ -1382,6 +1386,7 @@ AABB ArrayMesh::get_custom_aabb() const {
 	return custom_aabb;
 }
 
+#ifndef _3D_DISABLED
 void ArrayMesh::regen_normal_maps() {
 	if (surfaces.size() == 0) {
 		return;
@@ -1400,10 +1405,12 @@ void ArrayMesh::regen_normal_maps() {
 		surfs.write[i]->commit(Ref<ArrayMesh>(this));
 	}
 }
+#endif // _3D_DISABLED
 
 //dirty hack
 bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, const uint8_t *p_cache_data, bool *r_use_cache, uint8_t **r_mesh_cache, int *r_mesh_cache_size, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) = NULL;
 
+#ifndef _3D_DISABLED
 struct ArrayMeshLightmapSurface {
 	Ref<Material> material;
 	LocalVector<SurfaceTool::Vertex> vertices;
@@ -1610,6 +1617,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 
 	return OK;
 }
+#endif // _3D_DISABLED
 
 void ArrayMesh::set_shadow_mesh(const Ref<ArrayMesh> &p_mesh) {
 	shadow_mesh = p_mesh;
@@ -1643,12 +1651,14 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
+	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
 	ClassDB::bind_method(D_METHOD("create_convex_shape"), &ArrayMesh::create_convex_shape);
-	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
+#endif // _3D_DISABLED
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("get_faces"), &ArrayMesh::get_faces);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);

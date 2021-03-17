@@ -45,7 +45,6 @@ class PackedScene;
 class Node;
 class Window;
 class Material;
-class Mesh;
 class SceneDebugger;
 
 class SceneTreeTimer : public RefCounted {

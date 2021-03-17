@@ -130,6 +130,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#ifndef _3D_DISABLED
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -142,6 +143,7 @@
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/surface_tool.h"
 #include "scene/resources/3d/world_margin_shape_3d.h"
+#endif // _3D_DISABLED
 #include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/camera_effects.h"
@@ -705,18 +707,16 @@ void register_scene_types() {
 	ClassDB::register_class<ParticlesMaterial>();
 	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
 	ParticlesMaterial::init_shaders();
+	ClassDB::register_virtual_class<Mesh>();
+	ClassDB::register_class<ArrayMesh>();
 
+#ifndef _3D_DISABLED
 	ClassDB::register_class<ProceduralSkyMaterial>();
 	ClassDB::register_class<PanoramaSkyMaterial>();
 	ClassDB::register_class<PhysicalSkyMaterial>();
-
-	ClassDB::register_virtual_class<Mesh>();
-	ClassDB::register_class<ArrayMesh>();
 	ClassDB::register_class<MultiMesh>();
 	ClassDB::register_class<SurfaceTool>();
 	ClassDB::register_class<MeshDataTool>();
-
-#ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<PrimitiveMesh>();
 	ClassDB::register_class<BoxMesh>();
 	ClassDB::register_class<CapsuleMesh>();
@@ -753,6 +753,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<VelocityTracker3D>();
+	ClassDB::register_class<MeshTexture>();
 #endif
 
 	ClassDB::register_class<PhysicsMaterial>();
@@ -766,7 +767,6 @@ void register_scene_types() {
 	ClassDB::register_class<StreamTexture2D>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
-	ClassDB::register_class<MeshTexture>();
 	ClassDB::register_class<CurveTexture>();
 	ClassDB::register_class<GradientTexture>();
 	ClassDB::register_class<ProxyTexture>();
