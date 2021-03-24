@@ -305,6 +305,7 @@ private:
 	};
 	Vector<_HoverResult> hovering_results;
 
+#ifndef _2D_DISABLED
 	struct BoneList {
 		Transform2D xform;
 		real_t length = 0;
@@ -327,6 +328,7 @@ private:
 
 	HashMap<BoneKey, BoneList> bone_list;
 	MenuButton *skeleton_menu = nullptr;
+#endif // _2D_DISABLED
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -642,7 +644,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+#ifndef _2D_DISABLED
 	virtual String get_plugin_name() const override { return TTRC("2D"); }
+#else
+	virtual String get_plugin_name() const override { return TTRC("UI"); }
+#endif // _2D_DISABLED
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
