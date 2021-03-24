@@ -687,7 +687,9 @@ void EditorNode::_notification(int p_what) {
 
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
+#ifndef _2D_DISABLED
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
+#endif // _2D_DISABLED
 			get_tree()->get_root()->set_snap_2d_transforms_to_pixel(false);
 			get_tree()->get_root()->set_snap_2d_vertices_to_pixel(false);
 			get_tree()->set_auto_accept_quit(false);
@@ -2203,7 +2205,6 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 		} break;
-
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 			ERR_FAIL_COND(saving_resource.is_null());
@@ -3561,7 +3562,11 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		tb->set_theme_type_variation("MainScreenButton");
 		tb->set_name(p_editor->get_name());
 		tb->set_text(p_editor->get_name());
-
+#ifdef _2D_DISABLED
+		if (p_editor->get_name() == "2D") {
+			tb->set_text("UI");
+		}
+#endif // _2D_DISABLED
 		Ref<Texture2D> icon = p_editor->get_icon();
 		if (icon.is_null() && singleton->theme->has_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
 			icon = singleton->theme->get_icon(p_editor->get_name(), EditorStringName(EditorIcons));
@@ -6322,10 +6327,12 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 				// If the parent node was lost, attempt to restore the original global transform.
 				{
+#ifndef _2D_DISABLED
 					Node2D *node_2d = Object::cast_to<Node2D>(additive_node_entry.node);
 					if (node_2d) {
 						node_2d->set_transform(additive_node_entry.transform_2d);
 					}
+#endif // _2D_DISABLED
 
 					Node3D *node_3d = Object::cast_to<Node3D>(additive_node_entry.node);
 					if (node_3d) {
@@ -6714,7 +6721,9 @@ EditorNode::EditorNode() {
 
 		// No physics by default if in editor.
 		PhysicsServer3D::get_singleton()->set_active(false);
+#ifndef _2D_DISABLED
 		PhysicsServer2D::get_singleton()->set_active(false);
+#endif // _2D_DISABLED
 
 		// No scripting by default if in editor (except for tool).
 		ScriptServer::set_scripting_enabled(false);
@@ -7131,7 +7140,9 @@ EditorNode::EditorNode() {
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
+#ifndef _2D_DISABLED
 	scene_root->set_as_audio_listener_2d(true);
+#endif // _2D_DISABLED
 
 	main_screen_vbox = memnew(VBoxContainer);
 	main_screen_vbox->set_name("MainScreen");
