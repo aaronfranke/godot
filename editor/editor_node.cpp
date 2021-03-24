@@ -113,6 +113,7 @@
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
 #include "editor/plugin_config_dialog.h"
+#ifndef _2D_DISABLED
 #include "editor/plugins/2d/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/2d/collision_shape_2d_editor_plugin.h"
 #include "editor/plugins/2d/cpu_particles_2d_editor_plugin.h"
@@ -125,6 +126,7 @@
 #include "editor/plugins/2d/skeleton_2d_editor_plugin.h"
 #include "editor/plugins/2d/sprite_2d_editor_plugin.h"
 #include "editor/plugins/2d/tiles/tiles_editor_plugin.h"
+#endif // _2D_DISABLED
 #include "editor/plugins/animation_blend_space_1d_editor.h"
 #include "editor/plugins/animation_blend_space_2d_editor.h"
 #include "editor/plugins/animation_blend_tree_editor_plugin.h"
@@ -1824,7 +1826,6 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 		} break;
-
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 			ERR_FAIL_COND(saving_resource.is_null());
@@ -2534,7 +2535,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			file_export_lib->set_title(TTR("Export Mesh Library"));
 
 		} break;
-
 		case FILE_EXTERNAL_OPEN_SCENE: {
 			if (unsaved_cache && !p_confirmed) {
 				confirmation->get_ok_button()->set_text(TTR("Open"));
@@ -3051,6 +3051,11 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		tb->set_toggle_mode(true);
 		tb->connect("pressed", callable_mp(singleton, &EditorNode::_editor_select), varray(singleton->main_editor_buttons.size()));
 		tb->set_text(p_editor->get_name());
+#ifdef _2D_DISABLED
+		if (p_editor->get_name() == "2D") {
+			tb->set_text("UI");
+		}
+#endif // _2D_DISABLED
 		Ref<Texture2D> icon = p_editor->get_icon();
 
 		if (icon.is_valid()) {
@@ -5643,7 +5648,9 @@ EditorNode::EditorNode() {
 	NavigationServer3D::get_singleton()->set_active(false); // no nav by default if editor
 
 	PhysicsServer3D::get_singleton()->set_active(false); // no physics by default if editor
+#ifndef _2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(false); // no physics by default if editor
+#endif // _2D_DISABLED
 	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
 	EditorHelp::generate_doc(); //before any editor classes are created
@@ -6771,6 +6778,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ShaderFileEditorPlugin(this)));
 	add_editor_plugin(memnew(VisualShaderEditorPlugin(this)));
 
+#ifndef _2D_DISABLED
 	add_editor_plugin(memnew(Sprite2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Skeleton2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CPUParticles2DEditorPlugin(this)));
@@ -6782,7 +6790,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(Polygon2DEditorPlugin(this)));
 	add_editor_plugin(memnew(LightOccluder2DEditorPlugin(this)));
 	add_editor_plugin(memnew(NavigationPolygonEditorPlugin(this)));
+	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
+#endif // _2D_DISABLED
 	add_editor_plugin(memnew(Camera3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ThemeEditorPlugin(this)));
 	add_editor_plugin(memnew(MultiMeshEditorPlugin(this)));
@@ -6795,7 +6805,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ItemListEditorPlugin(this)));
 	add_editor_plugin(memnew(Polygon3DEditorPlugin(this)));
-	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin(this)));
 	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
 	add_editor_plugin(memnew(VoxelGIEditorPlugin(this)));

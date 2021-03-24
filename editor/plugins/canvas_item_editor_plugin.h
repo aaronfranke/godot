@@ -42,6 +42,7 @@
 #include "scene/main/canvas_item.h"
 
 class CanvasItemEditorViewport;
+class Node2D;
 
 class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
@@ -303,6 +304,7 @@ private:
 	};
 	Vector<_HoverResult> hovering_results;
 
+#ifndef _2D_DISABLED
 	struct BoneList {
 		Transform2D xform;
 		float length = 0.f;
@@ -324,6 +326,8 @@ private:
 	};
 
 	Map<BoneKey, BoneList> bone_list;
+	MenuButton *skeleton_menu;
+#endif // _2D_DISABLED
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -356,7 +360,6 @@ private:
 	Button *group_button;
 	Button *ungroup_button;
 
-	MenuButton *skeleton_menu;
 	Button *override_camera_button;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;

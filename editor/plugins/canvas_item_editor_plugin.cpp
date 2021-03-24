@@ -41,12 +41,14 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/2d/light_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
-#include "scene/2d/sprite_2d.h"
 #include "scene/2d/touch_screen_button.h"
+#endif // _2D_DISABLED
+#include "scene/2d/sprite_2d.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/subviewport_container.h"
@@ -3764,6 +3766,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			anchor_mode_button->set_visible(false);
 		}
 
+#ifndef _2D_DISABLED
 		// Update the viewport if bones changes
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 			Object *b = ObjectDB::get_instance(E->key().from);
@@ -3790,6 +3793,7 @@ void CanvasItemEditor::_notification(int p_what) {
 				viewport->update();
 			}
 		}
+#endif // _2D_DISABLED
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -3815,7 +3819,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		smart_snap_button->set_icon(get_theme_icon("Snap", "EditorIcons"));
 		grid_snap_button->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
 		snap_config_menu->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
+#ifndef _2D_DISABLED
 		skeleton_menu->set_icon(get_theme_icon("Bone", "EditorIcons"));
+#endif // _2D_DISABLED
 		override_camera_button->set_icon(get_theme_icon("Camera2D", "EditorIcons"));
 		pan_button->set_icon(get_theme_icon("ToolPan", "EditorIcons"));
 		ruler_button->set_icon(get_theme_icon("Ruler", "EditorIcons"));
@@ -4414,6 +4420,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_dialog->popup_centered(Size2(220, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
+#ifndef _2D_DISABLED
 			List<Node *> selection = editor_selection->get_selected_node_list();
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				// Add children nodes so they are processed
@@ -4427,6 +4434,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				}
 				bone_2d->_editor_set_show_bone_gizmo(!bone_2d->_editor_get_show_bone_gizmo());
 			}
+#endif // _2D_DISABLED
 		} break;
 		case SHOW_HELPERS: {
 			show_helpers = !show_helpers;
@@ -4774,6 +4782,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
+#ifndef _2D_DISABLED
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
 
@@ -4805,7 +4814,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
 			}
 			undo_redo->commit_action();
-
+#endif // _2D_DISABLED
 		} break;
 	}
 }
@@ -5186,7 +5195,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	ruler_tool_active = false;
 	ruler_tool_origin = Point2();
 
+#ifndef _2D_DISABLED
 	bone_last_frame = 0;
+#endif // _2D_DISABLED
 
 	tool = TOOL_SELECT;
 	undo_redo = p_editor->get_undo_redo();
@@ -5452,6 +5463,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	hb->add_child(memnew(VSeparator));
 
+#ifndef _2D_DISABLED
 	skeleton_menu = memnew(MenuButton);
 	skeleton_menu->set_shortcut_context(this);
 	hb->add_child(skeleton_menu);
@@ -5464,6 +5476,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bone2D Node(s) from Node(s)"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
 	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+#endif // _2D_DISABLED
 
 	hb->add_child(memnew(VSeparator));
 
@@ -5607,7 +5620,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), KEY_KP_DIVIDE);
 	pan_view_shortcut = ED_SHORTCUT("canvas_item_editor/pan_view", TTR("Pan View"), KEY_SPACE);
 
+#ifndef _2D_DISABLED
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
+#endif // _2D_DISABLED
 	singleton = this;
 
 	set_process_unhandled_key_input(true);
@@ -5897,7 +5912,12 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 			if (texture != nullptr && texture.is_valid()) {
 				Node *child;
-				if (default_type == "Light2D") {
+				if (default_type == "TextureRect") {
+					child = memnew(TextureRect);
+				} else if (default_type == "NinePatchRect") {
+					child = memnew(NinePatchRect);
+#ifndef _2D_DISABLED
+				} else if (default_type == "Light2D") {
 					child = memnew(Light2D);
 				} else if (default_type == "GPUParticles2D") {
 					child = memnew(GPUParticles2D);
@@ -5905,10 +5925,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 					child = memnew(Polygon2D);
 				} else if (default_type == "TouchScreenButton") {
 					child = memnew(TouchScreenButton);
-				} else if (default_type == "TextureRect") {
-					child = memnew(TextureRect);
-				} else if (default_type == "NinePatchRect") {
-					child = memnew(NinePatchRect);
+#endif // _2D_DISABLED
 				} else {
 					child = memnew(Sprite2D); // default
 				}

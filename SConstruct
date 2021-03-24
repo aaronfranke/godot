@@ -640,11 +640,8 @@ if selected_platform in platform_list:
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
     if env["disable_2d"]:
-        if env["tools"]:
-            print(
-                "Build option 'disable_2d=yes' cannot be used with 'tools=yes' (editor), "
-                "only with 'tools=no' (export template)."
-            )
+        if env["tests"]:
+            print("Build option 'disable_2d=yes' cannot be used with 'tests=yes', only with 'tests=no'.")
             Exit(255)
         else:
             env.Append(CPPDEFINES=["_2D_DISABLED"])
