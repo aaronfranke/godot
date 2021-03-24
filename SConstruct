@@ -989,8 +989,8 @@ env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
 
 if env["disable_2d"]:
-    if env.editor_build:
-        print("Build option 'disable_2d=yes' cannot be used for editor builds, but only for export templates.")
+    if env["tests"]:
+        print("Build option 'disable_2d=yes' cannot be used with 'tests=yes.")
         Exit(255)
     else:
         env.Append(CPPDEFINES=["_2D_DISABLED"])
