@@ -30,7 +30,12 @@
 
 #pragma once
 
+<<<<<<<< HEAD:modules/navigation_2d/editor/navigation_region_2d_editor_plugin.h
 #include "editor/plugins/abstract_polygon_2d_editor.h"
+========
+#include "editor/plugins/2d/abstract_polygon_2d_editor.h"
+
+>>>>>>>> 10b6f1591a1 (Move 2D-only editor plugins to their own folder):editor/plugins/2d/navigation_polygon_editor_plugin.h
 #include "editor/plugins/editor_plugin.h"
 
 class AcceptDialog;
