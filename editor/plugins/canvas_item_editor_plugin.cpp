@@ -46,10 +46,12 @@
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
-#include "scene/2d/sprite_2d.h"
 #include "scene/2d/touch_screen_button.h"
+#endif // _2D_DISABLED
+#include "scene/2d/sprite_2d.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/separator.h"
@@ -3887,7 +3889,9 @@ void CanvasItemEditor::_update_editor_settings() {
 	smart_snap_button->set_icon(get_editor_theme_icon(SNAME("Snap")));
 	grid_snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 	snap_config_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+#ifndef _2D_DISABLED
 	skeleton_menu->set_icon(get_editor_theme_icon(SNAME("Bone")));
+#endif // _2D_DISABLED
 	override_camera_button->set_icon(get_editor_theme_icon(SNAME("Camera2D")));
 	pan_button->set_icon(get_editor_theme_icon(SNAME("ToolPan")));
 	ruler_button->set_icon(get_editor_theme_icon(SNAME("Ruler")));
@@ -3981,6 +3985,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			// Activate / Deactivate the pivot tool
 			pivot_button->set_disabled(nb_having_pivot == 0);
 
+#ifndef _2D_DISABLED
 			// Update the viewport if bones changes
 			for (KeyValue<BoneKey, BoneList> &E : bone_list) {
 				Object *b = ObjectDB::get_instance(E.key.from);
@@ -4007,6 +4012,7 @@ void CanvasItemEditor::_notification(int p_what) {
 					viewport->queue_redraw();
 				}
 			}
+#endif // _2D_DISABLED
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4395,6 +4401,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
+#ifndef _2D_DISABLED
 			List<Node *> selection = editor_selection->get_selected_node_list();
 			for (Node *E : selection) {
 				// Add children nodes so they are processed
@@ -4408,6 +4415,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				}
 				bone_2d->_editor_set_show_bone_gizmo(!bone_2d->_editor_get_show_bone_gizmo());
 			}
+#endif // _2D_DISABLED
 		} break;
 		case SHOW_HELPERS: {
 			show_helpers = !show_helpers;
@@ -4651,6 +4659,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
+#ifndef _2D_DISABLED
 			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = get_tree()->get_edited_scene_root();
 
@@ -4689,6 +4698,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
 			}
 			undo_redo->commit_action();
+#endif // _2D_DISABLED
 		} break;
 	}
 }
@@ -5386,6 +5396,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
+#ifndef _2D_DISABLED
 	skeleton_menu = memnew(MenuButton);
 	skeleton_menu->set_flat(false);
 	skeleton_menu->set_theme_type_variation("FlatMenuButton");
@@ -5400,6 +5411,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bone2D Node(s) from Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::B), SKELETON_MAKE_BONES);
 	p->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
+#endif // _2D_DISABLED
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5568,7 +5580,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), Key::KP_DIVIDE);
 
+#ifndef _2D_DISABLED
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
+#endif // _2D_DISABLED
 
 	// Store the singleton instance.
 	singleton = this;
@@ -5776,6 +5790,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	if (Object::cast_to<Control>(child)) {
 		Size2 texture_size = texture->get_size();
 		undo_redo->add_do_property(child, "size", texture_size);
+#ifndef _2D_DISABLED
 	} else if (Object::cast_to<Polygon2D>(child)) {
 		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list = {
@@ -5785,6 +5800,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 			Vector2(0, texture_size.height)
 		};
 		undo_redo->add_do_property(child, "polygon", list);
+#endif // _2D_DISABLED
 	}
 
 	// Compute the global position
@@ -5792,8 +5808,12 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
 	// Adjust position for Control and TouchScreenButton
-	if (Object::cast_to<Control>(child) || Object::cast_to<TouchScreenButton>(child)) {
-		target_position -= texture->get_size() / 2;
+	if (Object::cast_to<Control>(child)
+#ifndef _2D_DISABLED
+			|| Object::cast_to<TouchScreenButton>(child)
+#endif // _2D_DISABLED
+	) {
+		target_position -= texture->get_size() * 0.5f;
 	}
 
 	// there's nothing to be used as source position so snapping will work as absolute if enabled

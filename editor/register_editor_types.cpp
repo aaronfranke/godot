@@ -115,7 +115,7 @@
 #include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/register_exporters.h"
 
-// 2D
+#ifndef _2D_DISABLED
 #include "editor/plugins/2d/cast_2d_editor_plugin.h"
 #include "editor/plugins/2d/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/2d/collision_shape_2d_editor_plugin.h"
@@ -131,6 +131,7 @@
 #include "editor/plugins/2d/skeleton_2d_editor_plugin.h"
 #include "editor/plugins/2d/sprite_2d_editor_plugin.h"
 #include "editor/plugins/2d/tiles/tiles_editor_plugin.h"
+#endif // _2D_DISABLED
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
@@ -246,7 +247,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<ThemeEditorPlugin>();
 	EditorPlugins::add_by_type<VoxelGIEditorPlugin>();
 
-	// 2D
+#ifndef _2D_DISABLED
 	EditorPlugins::add_by_type<CollisionPolygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<CollisionShape2DEditorPlugin>();
 	EditorPlugins::add_by_type<CPUParticles2DEditorPlugin>();
@@ -264,6 +265,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+#endif // _2D_DISABLED
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");
