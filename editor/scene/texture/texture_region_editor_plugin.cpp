@@ -392,9 +392,11 @@ void TextureRegionEditor::_commit_drag() {
 		} else if (res_atlas_texture.is_valid()) {
 			undo_redo->add_do_method(res_atlas_texture.ptr(), "set_region", res_atlas_texture->get_region());
 			undo_redo->add_undo_method(res_atlas_texture.ptr(), "set_region", rect_prev);
+#ifndef _2D_DISABLED
 		} else if (node_sprite_2d) {
 			undo_redo->add_do_method(node_sprite_2d, "set_region_rect", node_sprite_2d->get_region_rect());
 			undo_redo->add_undo_method(node_sprite_2d, "set_region_rect", rect_prev);
+#endif // _2D_DISABLED
 		} else if (node_sprite_3d) {
 			undo_redo->add_do_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
 			undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", rect_prev);
@@ -476,9 +478,11 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 								} else if (res_atlas_texture.is_valid()) {
 									undo_redo->add_do_method(res_atlas_texture.ptr(), "set_region", rect);
 									undo_redo->add_undo_method(res_atlas_texture.ptr(), "set_region", res_atlas_texture->get_region());
+#ifndef _2D_DISABLED
 								} else if (node_sprite_2d) {
 									undo_redo->add_do_method(node_sprite_2d, "set_region_rect", rect);
 									undo_redo->add_undo_method(node_sprite_2d, "set_region_rect", node_sprite_2d->get_region_rect());
+#endif // _2D_DISABLED
 								} else if (node_sprite_3d) {
 									undo_redo->add_do_method(node_sprite_3d, "set_region_rect", rect);
 									undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
@@ -801,12 +805,14 @@ void TextureRegionEditor::_zoom_out() {
 }
 
 void TextureRegionEditor::_apply_rect(const Rect2 &p_rect) {
-	if (node_sprite_2d) {
+	if (node_ninepatch) {
+		node_ninepatch->set_region_rect(p_rect);
+#ifndef _2D_DISABLED
+	} else if (node_sprite_2d) {
 		node_sprite_2d->set_region_rect(p_rect);
+#endif // _2D_DISABLED
 	} else if (node_sprite_3d) {
 		node_sprite_3d->set_region_rect(p_rect);
-	} else if (node_ninepatch) {
-		node_ninepatch->set_region_rect(p_rect);
 	} else if (res_stylebox.is_valid()) {
 		res_stylebox->set_region_rect(p_rect);
 	} else if (res_atlas_texture.is_valid()) {
@@ -940,17 +946,23 @@ void TextureRegionEditor::_notification(int p_what) {
 }
 
 void TextureRegionEditor::_node_removed(Node *p_node) {
-	if (p_node == node_sprite_2d || p_node == node_sprite_3d || p_node == node_ninepatch) {
+	if (
+#ifndef _2D_DISABLED
+			p_node == node_sprite_2d ||
+#endif // _2D_DISABLED
+			p_node == node_sprite_3d || p_node == node_ninepatch) {
 		_clear_edited_object();
 		hide();
 	}
 }
 
 void TextureRegionEditor::_clear_edited_object() {
+#ifndef _2D_DISABLED
 	if (node_sprite_2d) {
 		node_sprite_2d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
 		node_sprite_2d->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
+#endif // _2D_DISABLED
 	if (node_sprite_3d) {
 		node_sprite_3d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
 		node_sprite_3d->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &TextureRegionEditor::_edit_region));
@@ -968,7 +980,9 @@ void TextureRegionEditor::_clear_edited_object() {
 		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_edit_region));
 	}
 
+#ifndef _2D_DISABLED
 	node_sprite_2d = nullptr;
+#endif // _2D_DISABLED
 	node_sprite_3d = nullptr;
 	node_ninepatch = nullptr;
 	res_stylebox = Ref<StyleBoxTexture>();
@@ -979,7 +993,9 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	_clear_edited_object();
 
 	if (p_obj) {
+#ifndef _2D_DISABLED
 		node_sprite_2d = Object::cast_to<Sprite2D>(p_obj);
+#endif // _2D_DISABLED
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
 		node_ninepatch = Object::cast_to<NinePatchRect>(p_obj);
 
@@ -1010,9 +1026,11 @@ void TextureRegionEditor::edit(Object *p_obj) {
 }
 
 Ref<Texture2D> TextureRegionEditor::_get_edited_object_texture() const {
+#ifndef _2D_DISABLED
 	if (node_sprite_2d) {
 		return node_sprite_2d->get_texture();
 	}
+#endif // _2D_DISABLED
 	if (node_sprite_3d) {
 		return node_sprite_3d->get_texture();
 	}
@@ -1038,8 +1056,10 @@ Rect2 TextureRegionEditor::_get_edited_object_region() const {
 		region = res_stylebox->get_region_rect();
 	} else if (res_atlas_texture.is_valid()) {
 		region = res_atlas_texture->get_region();
+#ifndef _2D_DISABLED
 	} else if (node_sprite_2d) {
 		region = node_sprite_2d->get_region_rect();
+#endif // _2D_DISABLED
 	} else if (node_sprite_3d) {
 		region = node_sprite_3d->get_region_rect();
 	}
@@ -1074,8 +1094,10 @@ void TextureRegionEditor::_edit_region() {
 	CanvasItem::TextureFilter filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
 	if (node_ninepatch) {
 		filter = node_ninepatch->get_texture_filter_in_tree();
+#ifndef _2D_DISABLED
 	} else if (node_sprite_2d) {
 		filter = node_sprite_2d->get_texture_filter_in_tree();
+#endif // _2D_DISABLED
 	} else if (node_sprite_3d) {
 		StandardMaterial3D::TextureFilter filter_3d = node_sprite_3d->get_texture_filter();
 

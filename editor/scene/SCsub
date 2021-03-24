@@ -5,7 +5,15 @@ Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
 
-SConscript("2d/SCsub")
+if env["disable_2d"]:
+    # HACK: CanvasItemEditor(Viewport) has a strong dependency on Sprite2D for drag-and-drop previews,
+    # Node2D for various uses, and LineBuilder for building lines, so always compile for editor builds.
+    # However, these just serve as internal classes, we don't need to expose them, since 2D is supposed to be disabled.
+    env.add_source_files(env.editor_sources, "../../scene/2d/line_builder.cpp")
+    env.add_source_files(env.editor_sources, "../../scene/2d/node_2d.cpp")
+    env.add_source_files(env.editor_sources, "../../scene/2d/sprite_2d.cpp")
+else:
+    SConscript("2d/SCsub")
 SConscript("3d/SCsub")
 SConscript("gui/SCsub")
 SConscript("texture/SCsub")
