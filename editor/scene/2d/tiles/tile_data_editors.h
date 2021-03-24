@@ -300,6 +300,7 @@ public:
 	TileDataOcclusionShapeEditor();
 };
 
+#ifndef PHYSICS_2D_DISABLED
 class TileDataCollisionEditor : public TileDataDefaultEditor {
 	GDCLASS(TileDataCollisionEditor, TileDataDefaultEditor);
 
@@ -333,6 +334,7 @@ public:
 	TileDataCollisionEditor();
 	~TileDataCollisionEditor();
 };
+#endif // PHYSICS_2D_DISABLED
 
 class TileDataTerrainsEditor : public TileDataEditor {
 	GDCLASS(TileDataTerrainsEditor, TileDataEditor);
@@ -383,6 +385,7 @@ public:
 	~TileDataTerrainsEditor();
 };
 
+#ifndef NAVIGATION_2D_DISABLED
 class TileDataNavigationEditor : public TileDataDefaultEditor {
 	GDCLASS(TileDataNavigationEditor, TileDataDefaultEditor);
 
@@ -413,3 +416,4 @@ public:
 
 	TileDataNavigationEditor();
 };
+#endif // NAVIGATION_2D_DISABLED
