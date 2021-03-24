@@ -1574,6 +1574,7 @@ TileDataOcclusionShapeEditor::TileDataOcclusionShapeEditor() {
 	add_child(polygon_editor);
 }
 
+#ifndef PHYSICS_2D_DISABLED
 void TileDataCollisionEditor::_property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field) {
 	dummy_object->set(p_property, p_value);
 }
@@ -1853,6 +1854,7 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
+#endif // PHYSICS_2D_DISABLED
 
 void TileDataTerrainsEditor::_update_terrain_selector() {
 	ERR_FAIL_COND(tile_set.is_null());
@@ -2910,6 +2912,7 @@ TileDataTerrainsEditor::~TileDataTerrainsEditor() {
 	memdelete(dummy_object);
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 Variant TileDataNavigationEditor::_get_painted_value() {
 	Ref<NavigationPolygon> nav_polygon;
 	nav_polygon.instantiate();
@@ -3037,3 +3040,4 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
+#endif // NAVIGATION_2D_DISABLED

@@ -67,8 +67,15 @@ void EditorMainScreen::_notification(int p_what) {
 
 				if (icon.is_valid()) {
 					tb->set_button_icon(icon);
-				} else if (has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
-					tb->set_button_icon(get_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons)));
+				} else {
+					const String &plugin_name = p_editor->get_plugin_name();
+					if (has_theme_icon(plugin_name, EditorStringName(EditorIcons))) {
+						tb->set_button_icon(get_theme_icon(plugin_name, EditorStringName(EditorIcons)));
+#ifdef _2D_DISABLED
+					} else if (plugin_name == "UI" && has_theme_icon("2D", EditorStringName(EditorIcons))) {
+						tb->set_button_icon(get_theme_icon("2D", EditorStringName(EditorIcons)));
+#endif // _2D_DISABLED
+					}
 				}
 			}
 		} break;

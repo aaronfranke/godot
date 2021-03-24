@@ -48,7 +48,9 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
+#endif // NAVIGATION_2D_DISABLED
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
 	ERR_FAIL_COND(p_id < 0);
@@ -731,6 +733,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	Color disabled_color = get_theme_color("font_disabled_color", EditorStringName(Editor));
 
+#ifndef PHYSICS_2D_DISABLED
 	// --- Physics ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));
 	for (int i = 0; i < tile_set->get_physics_layers_count(); i++) {
@@ -758,7 +761,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		item->set_selectable(0, false);
 		item->set_custom_color(0, disabled_color);
 	}
+#endif // PHYSICS_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 	// --- Navigation ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Navigation"));
 	for (int i = 0; i < tile_set->get_navigation_layers_count(); i++) {
@@ -786,6 +791,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		item->set_selectable(0, false);
 		item->set_custom_color(0, disabled_color);
 	}
+#endif // NAVIGATION_2D_DISABLED
 
 	// --- Custom Data ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Custom Data"));
@@ -2779,6 +2785,7 @@ void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 
 void EditorPropertyTilePolygon::_polygons_changed() {
 	if (String(count_property).is_empty()) {
+#ifndef NAVIGATION_2D_DISABLED
 		if (base_type == "NavigationPolygon") {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
@@ -2800,6 +2807,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			}
 			emit_changed(get_edited_property(), navigation_polygon);
 		}
+#endif // NAVIGATION_2D_DISABLED
 	} else {
 		// Multiple array of vertices or OccluderPolygon2D.
 		Vector<String> changed_properties = { count_property };
@@ -2840,6 +2848,7 @@ void EditorPropertyTilePolygon::update_property() {
 	generic_tile_polygon_editor->clear_polygons();
 
 	if (String(count_property).is_empty()) {
+#ifndef NAVIGATION_2D_DISABLED
 		if (base_type == "NavigationPolygon") {
 			// Single NavigationPolygon.
 			Ref<NavigationPolygon> navigation_polygon = get_edited_property_value();
@@ -2850,6 +2859,7 @@ void EditorPropertyTilePolygon::update_property() {
 				}
 			}
 		}
+#endif // NAVIGATION_2D_DISABLED
 	} else {
 		int count = get_edited_object()->get(count_property);
 		if (base_type.is_empty()) {

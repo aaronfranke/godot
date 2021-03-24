@@ -40,7 +40,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
@@ -48,6 +47,10 @@
 #include "scene/gui/view_panner.h"
 #include "scene/resources/mesh.h"
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/collision_polygon_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 #define PRECISION 1
 
@@ -380,6 +383,7 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 }
 
 void Sprite2DEditor::_create_collision_polygon_2d_node() {
+#ifndef PHYSICS_2D_DISABLED
 	if (computed_outline_lines.is_empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create collision polygon."));
 		err_dialog->popup_centered();
@@ -399,6 +403,7 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
 		ur->commit_action();
 	}
+#endif // PHYSICS_2D_DISABLED
 }
 
 void Sprite2DEditor::_create_light_occluder_2d_node() {
@@ -582,7 +587,9 @@ void Sprite2DEditor::_notification(int p_what) {
 
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
+#ifndef PHYSICS_2D_DISABLED
 			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_COLLISION_POLY_2D, get_editor_theme_icon(SNAME("CollisionPolygon2D")));
+#endif // PHYSICS_2D_DISABLED
 			options->get_popup()->set_item_icon(MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D, get_editor_theme_icon(SNAME("LightOccluder2D")));
 
 			resize_region_rect->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));

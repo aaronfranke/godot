@@ -992,12 +992,9 @@ sys.modules.pop("detect")
 if env.editor_build:
     unsupported_opts = []
     for disable_opt in [
-        "disable_2d",
         "disable_3d",
         "disable_advanced_gui",
-        "disable_physics_2d",
         "disable_physics_3d",
-        "disable_navigation_2d",
         "disable_navigation_3d",
     ]:
         if env[disable_opt]:

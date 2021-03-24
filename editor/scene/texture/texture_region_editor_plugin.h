@@ -83,7 +83,9 @@ class TextureRegionEditor : public AcceptDialog {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
+#ifndef _2D_DISABLED
 	Sprite2D *node_sprite_2d = nullptr;
+#endif // _2D_DISABLED
 	Sprite3D *node_sprite_3d = nullptr;
 	NinePatchRect *node_ninepatch = nullptr;
 	Ref<StyleBoxTexture> res_stylebox;

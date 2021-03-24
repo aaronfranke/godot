@@ -50,7 +50,9 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/gpu_particles_2d.h"
+#endif // _2D_DISABLED
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/color_picker.h"
@@ -3421,7 +3423,12 @@ void EditorPropertyResource::_update_preferred_shader() {
 		const StringName &ed_property = parent_property->get_edited_property();
 
 		// Set preferred shader based on edited parent type.
-		if ((Object::cast_to<GPUParticles2D>(ed_object) || Object::cast_to<GPUParticles3D>(ed_object)) && ed_property == SNAME("process_material")) {
+#ifndef _2D_DISABLED
+		const bool is_particles = Object::cast_to<GPUParticles2D>(ed_object) || Object::cast_to<GPUParticles3D>(ed_object);
+#else
+		const bool is_particles = Object::cast_to<GPUParticles3D>(ed_object);
+#endif // _2D_DISABLED
+		if (is_particles && ed_property == SNAME("process_material")) {
 			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
 		} else if (Object::cast_to<FogVolume>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_FOG);

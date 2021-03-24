@@ -541,6 +541,7 @@ void EditorNode::_update_from_settings() {
 	_update_translations();
 
 #ifdef DEBUG_ENABLED
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color"));
@@ -549,7 +550,9 @@ void EditorNode::_update_from_settings() {
 	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
 	NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
+#endif // NAVIGATION_2D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
@@ -560,6 +563,7 @@ void EditorNode::_update_from_settings() {
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
+#endif // NAVIGATION_3D_DISABLED
 #endif // DEBUG_ENABLED
 }
 
@@ -853,7 +857,9 @@ void EditorNode::_notification(int p_what) {
 
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
+#ifndef _2D_DISABLED
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
+#endif // _2D_DISABLED
 			get_tree()->get_root()->set_snap_2d_transforms_to_pixel(false);
 			get_tree()->get_root()->set_snap_2d_vertices_to_pixel(false);
 			get_tree()->set_auto_accept_quit(false);
@@ -4953,7 +4959,7 @@ void EditorNode::get_preload_scene_modification_table(
 				new_additive_node_entry.owner = p_node->get_owner();
 				new_additive_node_entry.index = p_node->get_index();
 
-				Node2D *node_2d = Object::cast_to<Node2D>(p_node);
+				CanvasItem *node_2d = Object::cast_to<CanvasItem>(p_node);
 				if (node_2d) {
 					new_additive_node_entry.transform_2d = node_2d->get_transform();
 				}
@@ -7175,10 +7181,12 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 				// If the parent node was lost, attempt to restore the original global transform.
 				{
+#ifndef _2D_DISABLED
 					Node2D *node_2d = Object::cast_to<Node2D>(additive_node_entry.node);
 					if (node_2d) {
 						node_2d->set_transform(additive_node_entry.transform_2d);
 					}
+#endif // _2D_DISABLED
 
 					Node3D *node_3d = Object::cast_to<Node3D>(additive_node_entry.node);
 					if (node_3d) {
@@ -8265,7 +8273,9 @@ EditorNode::EditorNode() {
 	scene_root->set_embedding_subwindows(true);
 	scene_root->set_disable_3d(true);
 	scene_root->set_disable_input(true);
+#ifndef _2D_DISABLED
 	scene_root->set_as_audio_listener_2d(true);
+#endif // _2D_DISABLED
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
 	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();

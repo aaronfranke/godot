@@ -74,18 +74,6 @@
 #include "editor/inspector/input_event_editor_plugin.h"
 #include "editor/inspector/sub_viewport_preview_editor_plugin.h"
 #include "editor/inspector/tool_button_editor_plugin.h"
-#include "editor/scene/2d/camera_2d_editor_plugin.h"
-#include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
-#include "editor/scene/2d/line_2d_editor_plugin.h"
-#include "editor/scene/2d/particles_2d_editor_plugin.h"
-#include "editor/scene/2d/path_2d_editor_plugin.h"
-#include "editor/scene/2d/physics/cast_2d_editor_plugin.h"
-#include "editor/scene/2d/physics/collision_polygon_2d_editor_plugin.h"
-#include "editor/scene/2d/physics/collision_shape_2d_editor_plugin.h"
-#include "editor/scene/2d/polygon_2d_editor_plugin.h"
-#include "editor/scene/2d/skeleton_2d_editor_plugin.h"
-#include "editor/scene/2d/sprite_2d_editor_plugin.h"
-#include "editor/scene/2d/tiles/tiles_editor_plugin.h"
 #include "editor/scene/3d/bone_map_editor_plugin.h"
 #include "editor/scene/3d/camera_3d_editor_plugin.h"
 #include "editor/scene/3d/gpu_particles_collision_sdf_editor_plugin.h"
@@ -133,6 +121,26 @@
 #include "editor/scene/2d/parallax_background_editor_plugin.h"
 #include "editor/scene/3d/skeleton_ik_3d_editor_plugin.h"
 #endif
+
+#ifndef _2D_DISABLED
+#include "editor/scene/2d/camera_2d_editor_plugin.h"
+#include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
+#include "editor/scene/2d/line_2d_editor_plugin.h"
+#include "editor/scene/2d/particles_2d_editor_plugin.h"
+#include "editor/scene/2d/path_2d_editor_plugin.h"
+#include "editor/scene/2d/physics/cast_2d_editor_plugin.h"
+#include "editor/scene/2d/physics/collision_polygon_2d_editor_plugin.h"
+#include "editor/scene/2d/physics/collision_shape_2d_editor_plugin.h"
+#include "editor/scene/2d/polygon_2d_editor_plugin.h"
+#include "editor/scene/2d/skeleton_2d_editor_plugin.h"
+#include "editor/scene/2d/sprite_2d_editor_plugin.h"
+#include "editor/scene/2d/tiles/tiles_editor_plugin.h"
+#ifndef PHYSICS_2D_DISABLED
+#include "editor/scene/2d/physics/cast_2d_editor_plugin.h"
+#include "editor/scene/2d/physics/collision_polygon_2d_editor_plugin.h"
+#include "editor/scene/2d/physics/collision_shape_2d_editor_plugin.h"
+#endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
@@ -261,17 +269,19 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
 #endif
 
-	// 2D
+#ifndef _2D_DISABLED
 	EditorPlugins::add_by_type<Camera2DEditorPlugin>();
+#ifndef PHYSICS_2D_DISABLED
+	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<CollisionPolygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<CollisionShape2DEditorPlugin>();
+#endif // PHYSICS_2D_DISABLED
 	EditorPlugins::add_by_type<CPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<LightOccluder2DEditorPlugin>();
 	EditorPlugins::add_by_type<Line2DEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
-	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
@@ -279,6 +289,7 @@ void register_editor_types() {
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif
+#endif // _2D_DISABLED
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");

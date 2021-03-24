@@ -1089,12 +1089,14 @@ static void _find_anim_sprites(Node *p_node, List<Node *> *r_nodes, Ref<SpriteFr
 		return;
 	}
 
+#ifndef _2D_DISABLED
 	{
 		AnimatedSprite2D *as = Object::cast_to<AnimatedSprite2D>(p_node);
 		if (as && as->get_sprite_frames() == p_sfames) {
 			r_nodes->push_back(p_node);
 		}
 	}
+#endif // _2D_DISABLED
 
 	{
 		AnimatedSprite3D *as = Object::cast_to<AnimatedSprite3D>(p_node);
@@ -1951,9 +1953,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	}
 
 	bool show_node_edit = false;
-	AnimatedSprite2D *as2d = Object::cast_to<AnimatedSprite2D>(selected);
-	AnimatedSprite3D *as3d = Object::cast_to<AnimatedSprite3D>(selected);
-	if (as2d || as3d) {
+	if (selected->has_method("get_sprite_frames")) {
 		if (frames != selected->call("get_sprite_frames")) {
 			_remove_sprite_node();
 		} else {
@@ -2675,10 +2675,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
 	Ref<SpriteFrames> s;
+#ifndef _2D_DISABLED
 	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);
 	if (animated_sprite) {
 		s = animated_sprite->get_sprite_frames();
-	} else {
+	} else
+#endif // _2D_DISABLED
+	{
 		AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
 		if (animated_sprite_3d) {
 			s = animated_sprite_3d->get_sprite_frames();
@@ -2691,10 +2694,12 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 }
 
 bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
+#ifndef _2D_DISABLED
 	AnimatedSprite2D *animated_sprite_2d = Object::cast_to<AnimatedSprite2D>(p_object);
 	if (animated_sprite_2d && *animated_sprite_2d->get_sprite_frames()) {
 		return true;
 	}
+#endif // _2D_DISABLED
 	AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
 	if (animated_sprite_3d && *animated_sprite_3d->get_sprite_frames()) {
 		return true;
