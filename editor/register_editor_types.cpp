@@ -122,7 +122,7 @@
 #include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
 #endif
 
-// 2D
+#ifndef _2D_DISABLED
 #include "editor/plugins/2d/cast_2d_editor_plugin.h"
 #include "editor/plugins/2d/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/2d/collision_shape_2d_editor_plugin.h"
@@ -136,6 +136,7 @@
 #include "editor/plugins/2d/skeleton_2d_editor_plugin.h"
 #include "editor/plugins/2d/sprite_2d_editor_plugin.h"
 #include "editor/plugins/2d/tiles/tiles_editor_plugin.h"
+#endif // _2D_DISABLED
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
@@ -262,7 +263,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<SkeletonIK3DEditorPlugin>();
 #endif
 
-	// 2D
+#ifndef _2D_DISABLED
 	EditorPlugins::add_by_type<Camera2DEditorPlugin>();
 	EditorPlugins::add_by_type<CollisionPolygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<CollisionShape2DEditorPlugin>();
@@ -280,6 +281,7 @@ void register_editor_types() {
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif
+#endif // _2D_DISABLED
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");
