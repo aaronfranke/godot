@@ -113,6 +113,18 @@
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
 #include "editor/plugin_config_dialog.h"
+#include "editor/plugins/2d/collision_polygon_2d_editor_plugin.h"
+#include "editor/plugins/2d/collision_shape_2d_editor_plugin.h"
+#include "editor/plugins/2d/cpu_particles_2d_editor_plugin.h"
+#include "editor/plugins/2d/gpu_particles_2d_editor_plugin.h"
+#include "editor/plugins/2d/light_occluder_2d_editor_plugin.h"
+#include "editor/plugins/2d/line_2d_editor_plugin.h"
+#include "editor/plugins/2d/navigation_polygon_editor_plugin.h"
+#include "editor/plugins/2d/path_2d_editor_plugin.h"
+#include "editor/plugins/2d/polygon_2d_editor_plugin.h"
+#include "editor/plugins/2d/skeleton_2d_editor_plugin.h"
+#include "editor/plugins/2d/sprite_2d_editor_plugin.h"
+#include "editor/plugins/2d/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/animation_blend_space_1d_editor.h"
 #include "editor/plugins/animation_blend_space_2d_editor.h"
 #include "editor/plugins/animation_blend_tree_editor_plugin.h"
@@ -123,48 +135,37 @@
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/camera_3d_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/collision_polygon_3d_editor_plugin.h"
-#include "editor/plugins/collision_shape_2d_editor_plugin.h"
-#include "editor/plugins/cpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/font_editor_plugin.h"
-#include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
 #include "editor/plugins/item_list_editor_plugin.h"
-#include "editor/plugins/light_occluder_2d_editor_plugin.h"
 #include "editor/plugins/lightmap_gi_editor_plugin.h"
-#include "editor/plugins/line_2d_editor_plugin.h"
 #include "editor/plugins/material_editor_plugin.h"
 #include "editor/plugins/mesh_editor_plugin.h"
 #include "editor/plugins/mesh_instance_3d_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/multimesh_editor_plugin.h"
-#include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/ot_features_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
-#include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
-#include "editor/plugins/polygon_2d_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/plugins/shader_file_editor_plugin.h"
-#include "editor/plugins/skeleton_2d_editor_plugin.h"
 #include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
-#include "editor/plugins/sprite_2d_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
@@ -173,7 +174,6 @@
 #include "editor/plugins/texture_layered_editor_plugin.h"
 #include "editor/plugins/texture_region_editor_plugin.h"
 #include "editor/plugins/theme_editor_plugin.h"
-#include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
@@ -6771,6 +6771,18 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(ShaderFileEditorPlugin(this)));
 	add_editor_plugin(memnew(VisualShaderEditorPlugin(this)));
 
+	add_editor_plugin(memnew(Sprite2DEditorPlugin(this)));
+	add_editor_plugin(memnew(Skeleton2DEditorPlugin(this)));
+	add_editor_plugin(memnew(CPUParticles2DEditorPlugin(this)));
+	add_editor_plugin(memnew(GPUParticles2DEditorPlugin(this)));
+	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin(this)));
+	add_editor_plugin(memnew(TilesEditorPlugin(this)));
+	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
+	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
+	add_editor_plugin(memnew(Polygon2DEditorPlugin(this)));
+	add_editor_plugin(memnew(LightOccluder2DEditorPlugin(this)));
+	add_editor_plugin(memnew(NavigationPolygonEditorPlugin(this)));
+	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Camera3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ThemeEditorPlugin(this)));
 	add_editor_plugin(memnew(MultiMeshEditorPlugin(this)));
@@ -6778,30 +6790,19 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(AnimationTreeEditorPlugin(this)));
 	add_editor_plugin(memnew(MeshLibraryEditorPlugin(this)));
 	add_editor_plugin(memnew(StyleBoxEditorPlugin(this)));
-	add_editor_plugin(memnew(Sprite2DEditorPlugin(this)));
-	add_editor_plugin(memnew(Skeleton2DEditorPlugin(this)));
-	add_editor_plugin(memnew(GPUParticles2DEditorPlugin(this)));
 	add_editor_plugin(memnew(GPUParticles3DEditorPlugin(this)));
-	add_editor_plugin(memnew(CPUParticles2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CPUParticles3DEditorPlugin(this)));
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ItemListEditorPlugin(this)));
 	add_editor_plugin(memnew(Polygon3DEditorPlugin(this)));
 	add_editor_plugin(memnew(CollisionPolygon2DEditorPlugin(this)));
-	add_editor_plugin(memnew(TilesEditorPlugin(this)));
 	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
 	add_editor_plugin(memnew(VoxelGIEditorPlugin(this)));
 	add_editor_plugin(memnew(LightmapGIEditorPlugin(this)));
 	add_editor_plugin(memnew(OccluderInstance3DEditorPlugin(this)));
-	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Path3DEditorPlugin(this)));
-	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
-	add_editor_plugin(memnew(Polygon2DEditorPlugin(this)));
-	add_editor_plugin(memnew(LightOccluder2DEditorPlugin(this)));
-	add_editor_plugin(memnew(NavigationPolygonEditorPlugin(this)));
 	add_editor_plugin(memnew(GradientEditorPlugin(this)));
-	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CurveEditorPlugin(this)));
 	add_editor_plugin(memnew(FontEditorPlugin(this)));
 	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin(this)));

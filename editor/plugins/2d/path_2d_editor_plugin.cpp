@@ -30,11 +30,11 @@
 
 #include "path_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {

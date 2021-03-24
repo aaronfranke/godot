@@ -30,7 +30,7 @@
 
 #include "collision_shape_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/resources/2d/capsule_shape_2d.h"
 #include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
