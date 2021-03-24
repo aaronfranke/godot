@@ -212,6 +212,7 @@ private:
 	};
 	Vector<_HoverResult> hovering_results;
 
+#ifndef _2D_DISABLED
 	struct BoneList {
 		Transform2D xform;
 		real_t length = 0;
@@ -234,6 +235,7 @@ private:
 
 	HashMap<BoneKey, BoneList> bone_list;
 	MenuButton *skeleton_menu = nullptr;
+#endif // _2D_DISABLED
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -517,7 +519,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+#ifndef _2D_DISABLED
 	virtual String get_plugin_name() const override { return "2D"; }
+#else
+	virtual String get_plugin_name() const override { return "UI"; }
+#endif // _2D_DISABLED
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -577,9 +583,11 @@ class CanvasItemEditorViewport : public Control {
 
 	bool _is_any_texture_selected() const;
 	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
-	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
+#ifndef _2D_DISABLED
+	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+#endif // _2D_DISABLED
 	void _create_script_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();

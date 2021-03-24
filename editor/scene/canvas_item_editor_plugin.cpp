@@ -61,11 +61,6 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation_preview_button.h"
 #include "editor/translations/editor_translation_preview_menu.h"
-#include "scene/2d/audio_stream_player_2d.h"
-#include "scene/2d/mesh_instance_2d.h"
-#include "scene/2d/physics/touch_screen_button.h"
-#include "scene/2d/polygon_2d.h"
-#include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/debugger/canvas_item_manipulator.h"
 #include "scene/debugger/debugger_helpers.h"
@@ -87,6 +82,14 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifndef _2D_DISABLED
+#include "scene/2d/audio_stream_player_2d.h"
+#include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/physics/touch_screen_button.h"
+#include "scene/2d/polygon_2d.h"
+#include "scene/2d/skeleton_2d.h"
+#endif // _2D_DISABLED
 
 class SnapDialog : public ConfirmationDialog {
 	GDCLASS(SnapDialog, ConfirmationDialog);
@@ -995,6 +998,7 @@ void CanvasItemEditor::_reset_transform(TransformType p_type) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Reset Transform"));
 	for (Node *node : selection) {
+#ifndef _2D_DISABLED
 		Node2D *res_node = Object::cast_to<Node2D>(node);
 		if (res_node) {
 			switch (p_type) {
@@ -1013,6 +1017,7 @@ void CanvasItemEditor::_reset_transform(TransformType p_type) {
 			}
 			continue;
 		}
+#endif // _2D_DISABLED
 		Control *res_control = Object::cast_to<Control>(node);
 		if (res_control) {
 			switch (p_type) {
@@ -2561,7 +2566,9 @@ void CanvasItemEditor::_update_editor_settings() {
 	smart_snap_button->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
 	grid_snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 	snap_config_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiDropdown")));
+#ifndef _2D_DISABLED
 	skeleton_menu->set_button_icon(get_editor_theme_icon(SNAME("Bone")));
+#endif // _2D_DISABLED
 	pan_button->set_button_icon(get_editor_theme_icon(SNAME("ToolPan")));
 	ruler_button->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
 	pivot_button->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
@@ -2700,6 +2707,7 @@ void CanvasItemEditor::_notification(int p_what) {
 			// Activate / Deactivate the pivot tool.
 			pivot_button->set_disabled(selection.is_empty());
 
+#ifndef _2D_DISABLED
 			// Update the viewport if bones changes
 			for (KeyValue<BoneKey, BoneList> &E : bone_list) {
 				Object *b = ObjectDB::get_instance(E.key.from);
@@ -2726,6 +2734,7 @@ void CanvasItemEditor::_notification(int p_what) {
 					viewport->queue_redraw();
 				}
 			}
+#endif // _2D_DISABLED
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -2996,7 +3005,20 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			continue;
 		}
 
-		if (Object::cast_to<Node2D>(ci)) {
+		if (Object::cast_to<Control>(ci)) {
+			Control *ctrl = Object::cast_to<Control>(ci);
+
+			if (key_pos) {
+				te->insert_node_value_key(ctrl, "position", p_on_existing);
+			}
+			if (key_rot) {
+				te->insert_node_value_key(ctrl, "rotation", p_on_existing);
+			}
+			if (key_scale) {
+				te->insert_node_value_key(ctrl, "size", p_on_existing);
+			}
+#ifndef _2D_DISABLED
+		} else if (Object::cast_to<Node2D>(ci)) {
 			Node2D *n2d = Object::cast_to<Node2D>(ci);
 
 			if (key_pos && p_location) {
@@ -3043,19 +3065,7 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 					}
 				}
 			}
-
-		} else if (Object::cast_to<Control>(ci)) {
-			Control *ctrl = Object::cast_to<Control>(ci);
-
-			if (key_pos) {
-				te->insert_node_value_key(ctrl, "position", p_on_existing);
-			}
-			if (key_rot) {
-				te->insert_node_value_key(ctrl, "rotation", p_on_existing);
-			}
-			if (key_scale) {
-				te->insert_node_value_key(ctrl, "size", p_on_existing);
-			}
+#endif // _2D_DISABLED
 		}
 	}
 	te->commit_insert_queue();
@@ -3188,6 +3198,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
+#ifndef _2D_DISABLED
 			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			for (Node *E : selection) {
 				// Add children nodes so they are processed
@@ -3201,6 +3212,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				}
 				bone_2d->_editor_set_show_bone_gizmo(!bone_2d->_editor_get_show_bone_gizmo());
 			}
+#endif // _2D_DISABLED
 		} break;
 		case SHOW_HELPERS: {
 			show_helpers = !show_helpers;
@@ -3326,6 +3338,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
+#ifndef _2D_DISABLED
 				if (Object::cast_to<Node2D>(ci)) {
 					Node2D *n2d = Object::cast_to<Node2D>(ci);
 					PoseClipboard pc;
@@ -3335,6 +3348,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					pc.id = n2d->get_instance_id();
 					pose_clipboard.push_back(pc);
 				}
+#endif // _2D_DISABLED
 			}
 
 		} break;
@@ -3344,6 +3358,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 			undo_redo->create_action(TTR("Paste Pose"));
+#ifndef _2D_DISABLED
 			for (const PoseClipboard &E : pose_clipboard) {
 				Node2D *n2d = ObjectDB::get_instance<Node2D>(E.id);
 				if (!n2d) {
@@ -3356,6 +3371,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(n2d, "set_rotation", n2d->get_rotation());
 				undo_redo->add_undo_method(n2d, "set_scale", n2d->get_scale());
 			}
+#endif // _2D_DISABLED
 			undo_redo->commit_action();
 
 		} break;
@@ -3426,6 +3442,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
+#ifndef _2D_DISABLED
 			HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = get_tree()->get_edited_scene_root();
 
@@ -3465,7 +3482,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
 			}
 			undo_redo->commit_action();
-
+#endif // _2D_DISABLED
 		} break;
 		case AUTO_RESAMPLE_CANVAS_ITEMS: {
 			auto_resampling_enabled = !auto_resampling_enabled;
@@ -3926,7 +3943,11 @@ void CanvasItemEditor::center_at(const Point2 &p_pos) {
 }
 
 CanvasItemEditor::CanvasItemEditor() {
+#ifdef _2D_DISABLED
+	set_name(TTRC("UI"));
+#else
 	set_name(TTRC("2D"));
+#endif
 	set_icon_name("2D");
 	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
@@ -4300,6 +4321,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	skeleton_menu_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	main_flow->add_child(skeleton_menu_hbox);
 
+#ifndef _2D_DISABLED
 	skeleton_menu = memnew(MenuButton);
 	skeleton_menu->set_flat(false);
 	skeleton_menu->set_theme_type_variation("FlatMenuButton");
@@ -4314,6 +4336,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTRC("Make Bone2D Node(s) from Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::B), SKELETON_MAKE_BONES);
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
+#endif // _2D_DISABLED
 
 	main_flow->add_child(memnew(VSeparator));
 
@@ -4500,7 +4523,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	reset_transform_rotation_shortcut = ED_SHORTCUT("canvas_item_editor/reset_transform_rotation", TTRC("Reset Rotation"), KeyModifierMask::ALT + Key::E);
 	reset_transform_scale_shortcut = ED_SHORTCUT("canvas_item_editor/reset_transform_scale", TTRC("Reset Scale"), KeyModifierMask::ALT + Key::R);
 
+#ifndef _2D_DISABLED
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
+#endif // _2D_DISABLED
 
 	// Store the singleton instance.
 	singleton = this;
@@ -4603,6 +4628,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 			add_preview = true;
 		}
 
+#ifndef _2D_DISABLED
 		Ref<Mesh> mesh = res;
 		if (mesh.is_valid()) {
 			MeshInstance2D *mesh_instance = memnew(MeshInstance2D);
@@ -4620,6 +4646,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 			preview_node->add_child(sprite);
 			add_preview = true;
 		}
+#endif // _2D_DISABLED
 
 		Ref<Script> script = res;
 		if (script.is_valid()) {
@@ -4668,14 +4695,22 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 
 	// Adjust position for Control and TouchScreenButton.
 	Ref<Texture2D> texture = ResourceCache::get_ref(p_path);
-	if (Object::cast_to<Control>(p_child) || Object::cast_to<TouchScreenButton>(p_child) || Object::cast_to<Polygon2D>(p_child)) {
+	if (Object::cast_to<Control>(p_child)
+#ifndef _2D_DISABLED
+			|| Object::cast_to<TouchScreenButton>(p_child) || Object::cast_to<Polygon2D>(p_child)
+#endif // _2D_DISABLED
+	) {
 		target_position -= texture->get_size() / 2;
 	}
 	canvas_item_editor->add_node_to_scene(p_parent, p_child, target_position);
 
 	// Use undo_redo for properties to support live editing.
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	if (Object::cast_to<TouchScreenButton>(p_child) || Object::cast_to<TextureButton>(p_child)) {
+	if (
+#ifndef _2D_DISABLED
+			Object::cast_to<TouchScreenButton>(p_child) ||
+#endif // _2D_DISABLED
+			Object::cast_to<TextureButton>(p_child)) {
 		undo_redo->add_do_property(p_child, "texture_normal", texture);
 	} else {
 		undo_redo->add_do_property(p_child, "texture", texture);
@@ -4685,6 +4720,7 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 	if (Object::cast_to<Control>(p_child)) {
 		Size2 texture_size = texture->get_size();
 		undo_redo->add_do_property(p_child, "size", texture_size);
+#ifndef _2D_DISABLED
 	} else if (Object::cast_to<Polygon2D>(p_child)) {
 		Size2 texture_size = texture->get_size();
 		Vector<Vector2> list = {
@@ -4694,9 +4730,11 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 			Vector2(0, texture_size.height)
 		};
 		undo_redo->add_do_property(p_child, "polygon", list);
+#endif // _2D_DISABLED
 	}
 }
 
+#ifndef _2D_DISABLED
 void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	AudioStreamPlayer2D *child = memnew(AudioStreamPlayer2D);
 
@@ -4715,7 +4753,9 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_property(child, "stream", ResourceCache::get_ref(p_path));
 }
+#endif // _2D_DISABLED
 
+#ifndef _2D_DISABLED
 void CanvasItemEditorViewport::_create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	MeshInstance2D *child = memnew(MeshInstance2D);
 
@@ -4734,6 +4774,7 @@ void CanvasItemEditorViewport::_create_mesh_node(Node *p_parent, const String &p
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_property(child, "mesh", ResourceCache::get_ref(p_path));
 }
+#endif // _2D_DISABLED
 
 bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	Ref<PackedScene> sdata = ResourceLoader::load(p_path);
@@ -4903,6 +4944,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			_create_texture_node(target_node, child, path, drop_pos);
 		}
 
+#ifndef _2D_DISABLED
 		Ref<AudioStream> audio = res;
 		if (audio.is_valid()) {
 			_create_audio_node(target_node, path, drop_pos);
@@ -4912,6 +4954,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (mesh.is_valid()) {
 			_create_mesh_node(target_node, path, drop_pos);
 		}
+#endif // _2D_DISABLED
 
 		Ref<Script> script = res;
 		if (script.is_valid()) {
