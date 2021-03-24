@@ -35,7 +35,9 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/themes/editor_scale.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/animated_sprite_2d.h"
+#endif // _2D_DISABLED
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/animation/animation_player.h"
@@ -398,7 +400,11 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 		if (vframes > 1) {
 			size.y /= vframes;
 		}
+#ifndef _2D_DISABLED
 	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
+#else
+	} else if (Object::cast_to<AnimatedSprite3D>(object)) {
+#endif // _2D_DISABLED
 		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
 		if (sf.is_null()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
@@ -488,8 +494,11 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 		region.position.x += region.size.x * coords.x;
 		region.position.y += region.size.y * coords.y;
-
+#ifndef _2D_DISABLED
 	} else if (Object::cast_to<AnimatedSprite2D>(object) || Object::cast_to<AnimatedSprite3D>(object)) {
+#else
+	} else if (Object::cast_to<AnimatedSprite3D>(object)) {
+#endif // _2D_DISABLED
 		Ref<SpriteFrames> sf = object->call("get_sprite_frames");
 		if (sf.is_null()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
