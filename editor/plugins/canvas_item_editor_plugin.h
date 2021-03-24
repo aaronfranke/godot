@@ -278,6 +278,7 @@ private:
 	};
 	Vector<_HoverResult> hovering_results;
 
+#ifndef _2D_DISABLED
 	struct BoneList {
 		Transform2D xform;
 		real_t length = 0;
@@ -300,6 +301,7 @@ private:
 
 	HashMap<BoneKey, BoneList> bone_list;
 	MenuButton *skeleton_menu = nullptr;
+#endif // _2D_DISABLED
 
 	struct PoseClipboard {
 		Vector2 pos;

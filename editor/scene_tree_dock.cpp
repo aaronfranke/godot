@@ -1481,7 +1481,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				undo_redo->commit_action();
 			}
 		} break;
+#ifndef _2D_DISABLED
 		case TOOL_CREATE_2D_SCENE:
+#endif // _2D_DISABLED
 		case TOOL_CREATE_3D_SCENE:
 		case TOOL_CREATE_USER_INTERFACE:
 		case TOOL_CREATE_FAVORITE: {
@@ -1508,9 +1510,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			} else {
 				switch (p_tool) {
+#ifndef _2D_DISABLED
 					case TOOL_CREATE_2D_SCENE:
 						new_node = memnew(Node2D);
 						break;
+#endif // _2D_DISABLED
 					case TOOL_CREATE_3D_SCENE:
 						new_node = memnew(Node3D);
 						break;
@@ -1639,11 +1643,13 @@ void SceneTreeDock::_notification(int p_what) {
 			beginner_node_shortcuts = memnew(VBoxContainer);
 			node_shortcuts->add_child(beginner_node_shortcuts);
 
+#ifndef _2D_DISABLED
 			button_2d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_2d);
 			button_2d->set_text(TTR("2D Scene"));
 			button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
 			button_2d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_2D_SCENE, false));
+#endif // _2D_DISABLED
 
 			button_3d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_3d);
@@ -2457,9 +2463,11 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		}
 
 		if (p_keep_global_xform) {
+#ifndef _2D_DISABLED
 			if (Object::cast_to<Node2D>(node)) {
 				undo_redo->add_do_method(node, "set_global_transform", Object::cast_to<Node2D>(node)->get_global_transform());
 			}
+#endif // _2D_DISABLED
 			if (Object::cast_to<Node3D>(node)) {
 				undo_redo->add_do_method(node, "set_global_transform", Object::cast_to<Node3D>(node)->get_global_transform());
 			}
@@ -2502,9 +2510,11 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		}
 
 		if (p_keep_global_xform) {
+#ifndef _2D_DISABLED
 			if (Object::cast_to<Node2D>(node)) {
 				undo_redo->add_undo_method(node, "set_transform", Object::cast_to<Node2D>(node)->get_transform());
 			}
+#endif // _2D_DISABLED
 			if (Object::cast_to<Node3D>(node)) {
 				undo_redo->add_undo_method(node, "set_transform", Object::cast_to<Node3D>(node)->get_transform());
 			}
