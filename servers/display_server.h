@@ -139,11 +139,16 @@ public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 
 	enum MouseMode {
-		MOUSE_MODE_VISIBLE,
-		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED,
-		MOUSE_MODE_CONFINED,
-		MOUSE_MODE_CONFINED_HIDDEN,
+		MOUSE_MODE_VISIBLE = 0,
+		MOUSE_MODE_HIDDEN = 1,
+		// CAPTURED_BIT is useful internally but not necessary to expose.
+		MOUSE_MODE_CAPTURED_BIT = 2,
+		// Captured should normally imply hidden, so CAPTURED becomes 3.
+		MOUSE_MODE_CAPTURED = MOUSE_MODE_CAPTURED_BIT | MOUSE_MODE_HIDDEN,
+		// Confined and hidden would be 5 (MOUSE_MODE_HIDDEN | MOUSE_MODE_CONFINED).
+		MOUSE_MODE_CONFINED = 4,
+		// This value should never be set, but it's useful for bitwise checking via &.
+		MOUSE_MODE_GRABBED = MOUSE_MODE_CAPTURED_BIT | MOUSE_MODE_CONFINED,
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);

@@ -84,7 +84,7 @@ void DisplayServerWindows::alert(const String &p_alert, const String &p_title) {
 }
 
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
-	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (p_mode & MOUSE_MODE_GRABBED) {
 		// Mouse is grabbed (captured or confined).
 		WindowData &wd = windows[MAIN_WINDOW_ID];
 
@@ -93,7 +93,7 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
-		if (p_mode == MOUSE_MODE_CAPTURED) {
+		if (p_mode & MOUSE_MODE_CAPTURED_BIT) {
 			center = window_get_size() / 2;
 			POINT pos = { (int)center.x, (int)center.y };
 			ClientToScreen(wd.hWnd, &pos);
@@ -106,7 +106,7 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		ClipCursor(nullptr);
 	}
 
-	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (p_mode & MOUSE_MODE_HIDDEN) {
 		if (hCursor == nullptr) {
 			hCursor = SetCursor(nullptr);
 		} else {
@@ -141,7 +141,7 @@ void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
 		return; //no window focused?
 	}
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED) {
+	if (mouse_mode & MOUSE_MODE_CAPTURED_BIT) {
 		old_x = p_to.x;
 		old_y = p_to.y;
 	} else {
@@ -717,7 +717,7 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 #endif
 	// Don't let the mouse leave the window when moved
-	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (mouse_mode & MOUSE_MODE_CONFINED) {
 		RECT rect;
 		GetClientRect(wd.hWnd, &rect);
 		ClientToScreen(wd.hWnd, (POINT *)&rect.left);
@@ -843,7 +843,7 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	MoveWindow(wd.hWnd, rect.left, rect.top, w, h, TRUE);
 
 	// Don't let the mouse leave the window when resizing to a smaller resolution
-	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (mouse_mode & MOUSE_MODE_CONFINED) {
 		RECT crect;
 		GetClientRect(wd.hWnd, &crect);
 		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
@@ -1192,7 +1192,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
-	if (mouse_mode != MOUSE_MODE_VISIBLE && mouse_mode != MOUSE_MODE_CONFINED) {
+	if (mouse_mode & MOUSE_MODE_HIDDEN) {
 		cursor_shape = p_shape;
 		return;
 	}
@@ -1380,7 +1380,7 @@ void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorSh
 		cursors_cache.insert(p_shape, params);
 
 		if (p_shape == cursor_shape) {
-			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			if (!(mouse_mode & MOUSE_MODE_HIDDEN)) {
 				SetCursor(cursors[p_shape]);
 			}
 		}
@@ -1946,7 +1946,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_INPUT: {
-			if (mouse_mode != MOUSE_MODE_CAPTURED || !use_raw_input) {
+			if (!use_raw_input || !(mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				break;
 			}
 
@@ -2076,7 +2076,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_position(Vector2(coords.x, coords.y));
 					mm->set_global_position(Vector2(coords.x, coords.y));
 
-					if (mouse_mode == MOUSE_MODE_CAPTURED) {
+					if (mouse_mode & MOUSE_MODE_CAPTURED_BIT) {
 						Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 						old_x = c.x;
 						old_y = c.y;
@@ -2112,7 +2112,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 		case WM_POINTERENTER: {
-			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+			if (use_raw_input && (mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				break;
 			}
 
@@ -2138,7 +2138,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			return 0;
 		} break;
 		case WM_POINTERUPDATE: {
-			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+			if (use_raw_input && (mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				break;
 			}
 
@@ -2172,7 +2172,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (outside) {
 				//mouse enter
 
-				if (mouse_mode != MOUSE_MODE_CAPTURED) {
+				if (!(mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 				}
 
@@ -2191,7 +2191,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
-			if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
+			if (!windows[window_id].window_has_focus && (mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				break;
 			}
 
@@ -2223,7 +2223,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_position(Vector2(coords.x, coords.y));
 			mm->set_global_position(Vector2(coords.x, coords.y));
 
-			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+			if (mouse_mode & MOUSE_MODE_CAPTURED_BIT) {
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 				old_x = c.x;
 				old_y = c.y;
@@ -2263,7 +2263,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+			if (use_raw_input && (mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				break;
 			}
 
@@ -2278,7 +2278,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (outside) {
 				//mouse enter
 
-				if (mouse_mode != MOUSE_MODE_CAPTURED) {
+				if (!(mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 				}
 
@@ -2297,7 +2297,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
-			if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
+			if (!windows[window_id].window_has_focus && (mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				break;
 			}
 
@@ -2329,7 +2329,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
-			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+			if (mouse_mode & MOUSE_MODE_CAPTURED_BIT) {
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 				old_x = c.x;
 				old_y = c.y;
@@ -2500,17 +2500,17 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
-			if (mouse_mode == MOUSE_MODE_CAPTURED && !use_raw_input) {
+			if (!use_raw_input && (mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 				mb->set_position(Vector2(old_x, old_y));
 			}
 
 			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 				if (mb->is_pressed()) {
-					if (++pressrc > 0 && mouse_mode != MOUSE_MODE_CAPTURED)
+					if (++pressrc > 0 && !(mouse_mode & MOUSE_MODE_CAPTURED_BIT))
 						SetCapture(hWnd);
 				} else {
 					if (--pressrc <= 0) {
-						if (mouse_mode != MOUSE_MODE_CAPTURED) {
+						if (!(mouse_mode & MOUSE_MODE_CAPTURED_BIT)) {
 							ReleaseCapture();
 						}
 						pressrc = 0;
@@ -2659,7 +2659,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					gr_mem = alt_mem;
 			}
 
-			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+			if (mouse_mode & MOUSE_MODE_CAPTURED_BIT) {
 				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
 				if (wParam == VK_F4 && alt_mem && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
@@ -2737,7 +2737,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SETCURSOR: {
 			if (LOWORD(lParam) == HTCLIENT) {
-				if (windows[window_id].window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
+				if (windows[window_id].window_has_focus && bool(mouse_mode & MOUSE_MODE_HIDDEN)) {
 					//Hide the cursor
 					if (hCursor == nullptr) {
 						hCursor = SetCursor(nullptr);

@@ -584,7 +584,7 @@ void Viewport::_process_picking() {
 	if (!physics_object_picking) {
 		return;
 	}
-	if (to_screen_rect != Rect2i() && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	if (to_screen_rect != Rect2i() && (Input::get_singleton()->get_mouse_mode() & Input::MOUSE_MODE_CAPTURED_BIT)) {
 		return;
 	}
 
@@ -3103,7 +3103,7 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 	}
 
 	if (physics_object_picking && !is_input_handled()) {
-		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
+		if (!(Input::get_singleton()->get_mouse_mode() & Input::MOUSE_MODE_CAPTURED_BIT) &&
 				(Object::cast_to<InputEventMouseButton>(*ev) ||
 						Object::cast_to<InputEventMouseMotion>(*ev) ||
 						Object::cast_to<InputEventScreenDrag>(*ev) ||

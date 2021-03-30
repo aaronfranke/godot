@@ -304,7 +304,7 @@ void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ 
 			CoreDispatcherPriority::High,
 			ref new DispatchedHandler(
 					[mode, notifier, this]() {
-						if (mode == OS::MOUSE_MODE_CAPTURED) {
+						if (mode & OS::MOUSE_MODE_CAPTURED_BIT) {
 							this->MouseMovedToken = MouseDevice::GetForCurrentView()->MouseMoved +=
 									ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &App::OnMouseMoved);
 
@@ -333,7 +333,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		os->input_event(screen_drag);
 	} else {
 		// In case the mouse grabbed, MouseMoved will handle this
-		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED) {
+		if (os->get_mouse_mode() & OS::MouseMode::MOUSE_MODE_CAPTURED_BIT) {
 			return;
 		}
 
@@ -352,7 +352,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 	// In case the mouse isn't grabbed, PointerMoved will handle this
-	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED) {
+	if (!(os->get_mouse_mode() & OS::MouseMode::MOUSE_MODE_GRABBED)) {
 		return;
 	}
 

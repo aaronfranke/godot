@@ -407,7 +407,7 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 
 // Mouse mode
 void DisplayServerJavaScript::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the HTML5 platform.");
+	ERR_FAIL_COND_MSG(p_mode & MOUSE_MODE_CONFINED, "MOUSE_MODE_CONFINED is not supported for the HTML5 platform.");
 	if (p_mode == mouse_get_mode()) {
 		return;
 	}
@@ -416,15 +416,15 @@ void DisplayServerJavaScript::mouse_set_mode(MouseMode p_mode) {
 		godot_js_display_cursor_set_visible(1);
 		emscripten_exit_pointerlock();
 
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		godot_js_display_cursor_set_visible(0);
-		emscripten_exit_pointerlock();
-
-	} else if (p_mode == MOUSE_MODE_CAPTURED) {
+	} else if (p_mode & MOUSE_MODE_CAPTURED_BIT) {
 		godot_js_display_cursor_set_visible(1);
 		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(canvas_id, false);
 		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
 		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
+
+	} else if (p_mode & MOUSE_MODE_HIDDEN) {
+		godot_js_display_cursor_set_visible(0);
+		emscripten_exit_pointerlock();
 	}
 }
 
