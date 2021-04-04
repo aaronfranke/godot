@@ -609,6 +609,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/grid_division_level_bias", -0.2);
 	hints["editors/3d/grid_division_level_bias"] = PropertyInfo(Variant::FLOAT, "editors/3d/grid_division_level_bias", PROPERTY_HINT_RANGE, "-1.0,0.5,0.1", PROPERTY_USAGE_DEFAULT);
 
+	_initial_set("editors/3d/grid_offsets", Vector3());
+	hints["editors/3d/grid_offsets"] = PropertyInfo(Variant::VECTOR3, "editors/3d/grid_offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
+
 	_initial_set("editors/3d/grid_xz_plane", true);
 	_initial_set("editors/3d/grid_xy_plane", false);
 	_initial_set("editors/3d/grid_yz_plane", false);

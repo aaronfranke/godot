@@ -5840,6 +5840,8 @@ void Node3DEditor::_init_grid() {
 	if (camera_position == Vector3()) {
 		return; // Camera3D is invalid, don't draw the grid.
 	}
+	Vector3 grid_offsets = EditorSettings::get_singleton()->get("editors/3d/grid_offsets");
+	camera_position -= grid_offsets;
 
 	bool orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
 
@@ -5921,6 +5923,8 @@ void Node3DEditor::_init_grid() {
 		grid_mat[c]->set_shader_param("grid_size", grid_fade_size);
 		grid_mat[c]->set_shader_param("orthogonal", orthogonal);
 
+		Vector3 offset;
+		offset[c] = grid_offsets[c];
 		// In each iteration of this loop, draw one line in each direction (so two lines per loop, in each if statement).
 		for (int i = -grid_size; i <= grid_size; i++) {
 			Color line_color;
@@ -5936,7 +5940,7 @@ void Node3DEditor::_init_grid() {
 			real_t position_b = center_b + i * small_step_size;
 
 			// Don't draw lines over the origin if it's enabled.
-			if (!(origin_enabled && Math::is_zero_approx(position_a))) {
+			if (!(origin_enabled && Math::is_zero_approx(position_a) && offset.is_equal_approx(Vector3()))) {
 				Vector3 line_bgn = Vector3();
 				Vector3 line_end = Vector3();
 				line_bgn[a] = position_a;
@@ -5951,7 +5955,7 @@ void Node3DEditor::_init_grid() {
 				grid_normals[c].push_back(normal);
 			}
 
-			if (!(origin_enabled && Math::is_zero_approx(position_b))) {
+			if (!(origin_enabled && Math::is_zero_approx(position_b) && offset.is_equal_approx(Vector3()))) {
 				Vector3 line_bgn = Vector3();
 				Vector3 line_end = Vector3();
 				line_bgn[b] = position_b;
