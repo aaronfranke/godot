@@ -759,12 +759,14 @@ void Node3DEditorViewport::_update_name() {
 	view_menu->set_size(Vector2(0, 0)); // resets the button size
 }
 
-void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
+void Node3DEditorViewport::_compute_edit(const Point2 &p_point, bool p_auto_center) {
 	_edit.click_ray = _get_ray(Vector2(p_point.x, p_point.y));
 	_edit.click_ray_pos = _get_ray_pos(Vector2(p_point.x, p_point.y));
 	_edit.plane = TRANSFORM_VIEW;
+	if (p_auto_center) {
+		_edit.center = spatial_editor->get_gizmo_transform().origin;
+	}
 	spatial_editor->update_transform_gizmo();
-	_edit.center = spatial_editor->get_gizmo_transform().origin;
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -1119,6 +1121,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	_edit.center = spatial_editor->get_gizmo_target_center();
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
@@ -1288,7 +1291,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 						//handle rotate
 						_edit.mode = TRANSFORM_ROTATE;
-						_compute_edit(b->get_position());
+						_compute_edit(b->get_position(), false);
 						break;
 					}
 
@@ -3346,6 +3349,14 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		dd = 0.0001;
 	}
 
+	if (camera->is_position_in_frustum(spatial_editor->get_gizmo_target_center())) {
+		xform.origin = spatial_editor->get_gizmo_target_center();
+	} else {
+		// When not in frustum, place the gizmo in the middle of the screen.
+		xform.origin = camera->project_position(viewport->get_size() / 2, gizmo_d);
+	}
+	spatial_editor->set_gizmo_transform(xform);
+
 	float gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
 	// This prevents the gizmo from growing very large and going outside the viewport.
@@ -4594,6 +4605,7 @@ void Node3DEditor::update_transform_gizmo() {
 
 	Vector3 pcenter = center.position + center.size * 0.5;
 	gizmo.visible = !first;
+	gizmo.target_center = pcenter;
 	gizmo.transform.origin = pcenter;
 	gizmo.transform.basis = gizmo_basis;
 
