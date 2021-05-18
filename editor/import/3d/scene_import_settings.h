@@ -33,7 +33,7 @@
 
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_inspector.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"

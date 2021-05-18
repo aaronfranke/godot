@@ -32,8 +32,8 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "editor/import/scene_importer_mesh.h"
-#include "editor/import/scene_importer_mesh_node_3d.h"
+#include "editor/import/3d/scene_importer_mesh.h"
+#include "editor/import/3d/scene_importer_mesh_node_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"

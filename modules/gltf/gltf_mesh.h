@@ -32,8 +32,8 @@
 #define GLTF_MESH_H
 
 #include "core/io/resource.h"
-#include "editor/import/resource_importer_scene.h"
-#include "editor/import/scene_importer_mesh.h"
+#include "editor/import/3d/resource_importer_scene.h"
+#include "editor/import/3d/scene_importer_mesh.h"
 #include "scene/resources/mesh.h"
 
 class GLTFMesh : public Resource {

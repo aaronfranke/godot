@@ -56,7 +56,7 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "drivers/png/png_driver_common.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif // MODULE_CSG_ENABLED

@@ -35,7 +35,7 @@
 #include "core/io/json.h"
 #include "core/object/object.h"
 #include "core/templates/vector.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "modules/csg/csg_shape.h"
 #include "modules/gridmap/grid_map.h"
 #include "scene/3d/mesh_instance_3d.h"

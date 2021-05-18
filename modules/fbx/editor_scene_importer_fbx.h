@@ -42,7 +42,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 #include "core/variant/dictionary.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "editor/project_settings_editor.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"

@@ -34,7 +34,7 @@
 #include "core/math/disjoint_set.h"
 #include "core/math/math_defs.h"
 #include "core/os/os.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "modules/gltf/gltf_state.h"
 #include "modules/regex/regex.h"
 #include "scene/3d/bone_attachment_3d.h"
