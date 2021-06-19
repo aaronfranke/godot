@@ -231,6 +231,7 @@ class Node3DEditorViewport : public Control {
 
 public:
 	enum {
+		GIZMO_OFFSCREEN_LINE_LAYER = 28,
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
 		GIZMO_GRID_LAYER = 25,
@@ -288,6 +289,8 @@ private:
 	bool auto_orthogonal;
 	bool lock_rotation;
 	float gizmo_scale;
+	RID gizmo_offscreen_line;
+	RID gizmo_offscreen_line_instance;
 
 	bool freelook_active;
 	real_t freelook_speed;

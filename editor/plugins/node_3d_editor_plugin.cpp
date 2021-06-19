@@ -3354,6 +3354,43 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	} else {
 		// When not in frustum, place the gizmo in the middle of the screen.
 		xform.origin = camera->project_position(viewport->get_size() / 2, gizmo_d);
+		// Create a line from the gizmo to the object.
+		// First delete the old one if it exists.
+		RenderingServer *rs = RenderingServer::get_singleton();
+		if (gizmo_offscreen_line.is_valid()) {
+			rs->free(gizmo_offscreen_line_instance);
+			rs->free(gizmo_offscreen_line);
+		}
+		// Create the new line.
+		// This code is mostly copied from the 3D grid code.
+		// Something below here is broken... I think.
+		PackedVector3Array vertices = PackedVector3Array();
+		vertices.push_back(xform.origin);
+		vertices.push_back(spatial_editor->get_gizmo_target_center());
+		PackedColorArray colors = PackedColorArray();
+		colors.push_back(Color(0.4f, 1.0f, 1.0f));
+		colors.push_back(Color(0.4f, 1.0f, 1.0f));
+		// Create a mesh from the pushed vector points and colors.
+		gizmo_offscreen_line = RenderingServer::get_singleton()->mesh_create();
+		Array d;
+		d.resize(RS::ARRAY_MAX);
+		d[RenderingServer::ARRAY_VERTEX] = vertices;
+		d[RenderingServer::ARRAY_COLOR] = colors;
+		d[RenderingServer::ARRAY_NORMAL] = vertices; // This is probably wrong.
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(gizmo_offscreen_line, RenderingServer::PRIMITIVE_LINES, d);
+		// I have no idea what I'm doing with the material here.
+		Ref<ShaderMaterial> mat;
+		mat.instance();
+		Ref<Shader> shader = memnew(Shader);
+		shader->set_code("shader_type spatial; render_mode unshaded; void fragment() {}");
+		mat->set_shader(shader);
+		RenderingServer::get_singleton()->mesh_surface_set_material(gizmo_offscreen_line, 0, mat->get_rid());
+		// I have no idea what I'm doing with the rest of this either.
+		gizmo_offscreen_line_instance = RenderingServer::get_singleton()->instance_create2(gizmo_offscreen_line, get_tree()->get_root()->get_world_3d()->get_scenario());
+		RenderingServer::get_singleton()->instance_set_visible(gizmo_offscreen_line_instance, true);
+		RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(gizmo_offscreen_line_instance, RS::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(gizmo_offscreen_line_instance, 1 << Node3DEditorViewport::GIZMO_OFFSCREEN_LINE_LAYER);
+		RS::get_singleton()->instance_geometry_set_flag(gizmo_offscreen_line_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	}
 	spatial_editor->set_gizmo_transform(xform);
 
