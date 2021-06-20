@@ -297,11 +297,11 @@ bool InputEventKey::is_pressed() const {
 	return pressed;
 }
 
-void InputEventKey::set_keycode(uint32_t p_keycode) {
+void InputEventKey::set_keycode(Key p_keycode) {
 	keycode = p_keycode;
 }
 
-uint32_t InputEventKey::get_keycode() const {
+Key InputEventKey::get_keycode() const {
 	return keycode;
 }
 
@@ -376,7 +376,7 @@ String InputEventKey::to_string() {
 Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode) {
 	Ref<InputEventKey> ie;
 	ie.instantiate();
-	ie->set_keycode(p_keycode & KEY_CODE_MASK);
+	ie->set_keycode(Key(p_keycode & KEY_CODE_MASK));
 	ie->set_unicode(p_keycode & KEY_CODE_MASK);
 
 	if (p_keycode & KEY_MASK_SHIFT) {

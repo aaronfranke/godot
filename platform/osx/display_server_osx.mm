@@ -732,7 +732,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 		ke.pressed = true;
 		ke.echo = false;
 		ke.raw = false; // IME input event
-		ke.keycode = 0;
+		ke.keycode = KEY_NONE;
 		ke.physical_keycode = 0;
 		ke.unicode = codepoint;
 
@@ -1075,9 +1075,9 @@ static bool isNumpadKey(unsigned int key) {
 
 // Translates a OS X keycode to a Godot keycode
 //
-static int translateKey(unsigned int key) {
+static Key translateKey(unsigned int key) {
 	// Keyboard symbol translation table
-	static const unsigned int table[128] = {
+	static const Key table[128] = {
 		/* 00 */ KEY_A,
 		/* 01 */ KEY_S,
 		/* 02 */ KEY_D,
@@ -1217,7 +1217,7 @@ static int translateKey(unsigned int key) {
 
 struct _KeyCodeMap {
 	UniChar kchar;
-	int kcode;
+	Key kcode;
 };
 
 static const _KeyCodeMap _keycodes[55] = {
@@ -1278,7 +1278,7 @@ static const _KeyCodeMap _keycodes[55] = {
 	{ '/', KEY_SLASH }
 };
 
-static int remapKey(unsigned int key, unsigned int state) {
+static Key remapKey(unsigned int key, unsigned int state) {
 	if (isNumpadKey(key)) {
 		return translateKey(key);
 	}
@@ -3395,7 +3395,7 @@ void DisplayServerOSX::_process_key_events() {
 				_get_key_modifier_state(ke.osx_state, k);
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
-				k->set_keycode(0);
+				k->set_keycode(KEY_NONE);
 				k->set_physical_keycode(0);
 				k->set_unicode(ke.unicode);
 

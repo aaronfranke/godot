@@ -1518,7 +1518,7 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1531,7 +1531,7 @@ Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		ie.instantiate();
 
 		ie->set_unicode(p_keycode & KEY_CODE_MASK);
-		ie->set_keycode(p_keycode & KEY_CODE_MASK);
+		ie->set_keycode(Key(p_keycode & KEY_CODE_MASK));
 		ie->set_shift_pressed(bool(p_keycode & KEY_MASK_SHIFT));
 		ie->set_alt_pressed(bool(p_keycode & KEY_MASK_ALT));
 		ie->set_ctrl_pressed(bool(p_keycode & KEY_MASK_CTRL));

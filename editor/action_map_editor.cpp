@@ -249,9 +249,9 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		// Maintain physical keycode option state
 		if (physical_key_checkbox->is_pressed()) {
 			k->set_physical_keycode(k->get_keycode());
-			k->set_keycode(0);
+			k->set_keycode(KEY_NONE);
 		} else {
-			k->set_keycode(k->get_physical_keycode());
+			k->set_keycode((Key)k->get_physical_keycode());
 			k->set_physical_keycode(0);
 		}
 	}
@@ -435,9 +435,9 @@ void InputEventConfigurationDialog::_physical_keycode_toggled(bool p_checked) {
 
 	if (p_checked) {
 		k->set_physical_keycode(k->get_keycode());
-		k->set_keycode(0);
+		k->set_keycode(KEY_NONE);
 	} else {
-		k->set_keycode(k->get_physical_keycode());
+		k->set_keycode((Key)k->get_physical_keycode());
 		k->set_physical_keycode(0);
 	}
 
@@ -462,10 +462,10 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			if (physical_key_checkbox->is_pressed()) {
 				k->set_physical_keycode(kc);
-				k->set_keycode(0);
+				k->set_keycode(KEY_NONE);
 			} else {
 				k->set_physical_keycode(0);
-				k->set_keycode(kc);
+				k->set_keycode((Key)kc);
 			}
 
 			// Maintain modifier state from checkboxes

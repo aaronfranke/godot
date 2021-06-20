@@ -34,6 +34,7 @@
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
 #include "core/math/transform_2d.h"
+#include "core/os/keyboard.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 
@@ -161,7 +162,7 @@ class InputEventKey : public InputEventWithModifiers {
 
 	bool pressed = false; /// otherwise release
 
-	uint32_t keycode = 0; ///< check keyboard.h , KeyCode enum, without modifier masks
+	Key keycode = KEY_NONE; // Key enum, without modifier masks.
 	uint32_t physical_keycode = 0;
 	uint32_t unicode = 0; ///unicode
 
@@ -174,8 +175,8 @@ public:
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const override;
 
-	void set_keycode(uint32_t p_keycode);
-	uint32_t get_keycode() const;
+	void set_keycode(Key p_keycode);
+	Key get_keycode() const;
 
 	void set_physical_keycode(uint32_t p_keycode);
 	uint32_t get_physical_keycode() const;
