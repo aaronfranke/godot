@@ -233,8 +233,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			file_dialog->clear_filters();
-			for (Set<String>::Element *E = valid_extensions.front(); E; E = E->next()) {
-				file_dialog->add_filter("*." + E->get() + " ; " + E->get().to_upper());
+			for (const String &E : valid_extensions) {
+				file_dialog->add_filter("*." + E + " ; " + E.to_upper());
 			}
 
 			file_dialog->popup_file_dialog();
@@ -378,9 +378,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 		}
 
-		for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
-			const String &t = E->get();
-
+		for (const String &t : allowed_types) {
 			bool is_custom_resource = false;
 			Ref<Texture2D> icon;
 			if (!custom_resources.is_empty()) {
@@ -541,8 +539,8 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 }
 
 bool EditorResourcePicker::_is_type_valid(const String p_type_name, Set<String> p_allowed_types) const {
-	for (Set<String>::Element *E = p_allowed_types.front(); E; E = E->next()) {
-		String at = E->get().strip_edges();
+	for (const String &E : p_allowed_types) {
+		String at = E.strip_edges();
 		if (p_type_name == at || ClassDB::is_parent_class(p_type_name, at) || EditorNode::get_editor_data().script_class_is_parent(p_type_name, at)) {
 			return true;
 		}
@@ -591,8 +589,8 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 		// If the accepted dropped resource is from the extended list, it requires conversion.
 		if (!_is_type_valid(dropped_resource->get_class(), allowed_types)) {
-			for (Set<String>::Element *E = allowed_types.front(); E; E = E->next()) {
-				String at = E->get().strip_edges();
+			for (const String &E : allowed_types) {
+				String at = E.strip_edges();
 
 				if (at == "StandardMaterial3D" && ClassDB::is_parent_class(dropped_resource->get_class(), "Texture2D")) {
 					Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);

@@ -164,15 +164,15 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	Dictionary data;
 	data["type"] = "feature_profile";
 	Array dis_classes;
-	for (Set<StringName>::Element *E = disabled_classes.front(); E; E = E->next()) {
-		dis_classes.push_back(String(E->get()));
+	for (const StringName &E : disabled_classes) {
+		dis_classes.push_back(String(E));
 	}
 	dis_classes.sort();
 	data["disabled_classes"] = dis_classes;
 
 	Array dis_editors;
-	for (Set<StringName>::Element *E = disabled_editors.front(); E; E = E->next()) {
-		dis_editors.push_back(String(E->get()));
+	for (const StringName &E : disabled_editors) {
+		dis_editors.push_back(String(E));
 	}
 	dis_editors.sort();
 	data["disabled_editors"] = dis_editors;
@@ -180,8 +180,8 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 	Array dis_props;
 
 	for (Map<StringName, Set<StringName>>::Element *E = disabled_properties.front(); E; E = E->next()) {
-		for (Set<StringName>::Element *F = E->get().front(); F; F = F->next()) {
-			dis_props.push_back(String(E->key()) + ":" + String(F->get()));
+		for (const StringName &F : E->get()) {
+			dis_props.push_back(String(E->key()) + ":" + String(F));
 		}
 	}
 

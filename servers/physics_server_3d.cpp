@@ -191,8 +191,8 @@ Vector<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
 	Vector<RID> ret;
 	ret.resize(exclude.size());
 	int idx = 0;
-	for (Set<RID>::Element *E = exclude.front(); E; E = E->next()) {
-		ret.write[idx] = E->get();
+	for (const RID &E : exclude) {
+		ret.write[idx] = E;
 	}
 	return ret;
 }

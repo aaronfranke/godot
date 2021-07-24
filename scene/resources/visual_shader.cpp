@@ -642,7 +642,7 @@ bool VisualShader::is_nodes_connected_relatively(const Graph *p_graph, int p_nod
 
 	const VisualShader::Node &node = p_graph->nodes[p_node];
 
-	for (const int &E : node.prev_connected_nodes) {
+	for (const int E : node.prev_connected_nodes) {
 		if (E == p_target) {
 			return true;
 		}
@@ -1269,8 +1269,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, "modes/" + E->key(), PROPERTY_HINT_ENUM, E->get()));
 	}
 
-	for (Set<String>::Element *E = toggles.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "flags/" + E->get()));
+	for (const String &E : toggles) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "flags/" + E));
 	}
 
 	for (int i = 0; i < TYPE_MAX; i++) {

@@ -86,8 +86,7 @@ public:
 
 		void update_end() { //call after updating dependencies
 			List<Pair<Dependency *, Map<DependencyTracker *, uint32_t>::Element *>> to_clean_up;
-			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				Dependency *dep = E->get();
+			for (Dependency *dep : dependencies) {
 				Map<DependencyTracker *, uint32_t>::Element *F = dep->instances.find(this);
 				ERR_CONTINUE(!F);
 				if (F->get() != instance_version) {
@@ -106,8 +105,7 @@ public:
 		}
 
 		void clear() { // clear all dependencies
-			for (Set<Dependency *>::Element *E = dependencies.front(); E; E = E->next()) {
-				Dependency *dep = E->get();
+			for (Dependency *dep : dependencies) {
 				dep->instances.erase(this);
 			}
 			dependencies.clear();

@@ -351,8 +351,8 @@ void NativeScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 		script_data = script_data->base_data;
 	}
 
-	for (Set<MethodInfo>::Element *E = signals_.front(); E; E = E->next()) {
-		r_signals->push_back(E->get());
+	for (const MethodInfo &signal : signals_) {
+		r_signals->push_back(signal);
 	}
 }
 
@@ -392,8 +392,8 @@ void NativeScript::get_script_method_list(List<MethodInfo> *p_list) const {
 		script_data = script_data->base_data;
 	}
 
-	for (Set<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
-		p_list->push_back(E->get());
+	for (const MethodInfo &mi : methods) {
+		p_list->push_back(mi);
 	}
 }
 

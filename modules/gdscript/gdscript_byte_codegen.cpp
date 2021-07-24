@@ -1459,7 +1459,7 @@ void GDScriptByteCodeGenerator::write_endfor() {
 	}
 
 	// Patch break statements.
-	for (const int &E : current_breaks_to_patch.back()->get()) {
+	for (const int E : current_breaks_to_patch.back()->get()) {
 		patch_jump(E);
 	}
 	current_breaks_to_patch.pop_back();
@@ -1494,7 +1494,7 @@ void GDScriptByteCodeGenerator::write_endwhile() {
 	while_jmp_addrs.pop_back();
 
 	// Patch break statements.
-	for (const int &E : current_breaks_to_patch.back()->get()) {
+	for (const int E : current_breaks_to_patch.back()->get()) {
 		patch_jump(E);
 	}
 	current_breaks_to_patch.pop_back();
@@ -1506,7 +1506,7 @@ void GDScriptByteCodeGenerator::start_match() {
 
 void GDScriptByteCodeGenerator::start_match_branch() {
 	// Patch continue statements.
-	for (const int &E : match_continues_to_patch.back()->get()) {
+	for (const int E : match_continues_to_patch.back()->get()) {
 		patch_jump(E);
 	}
 	match_continues_to_patch.pop_back();
@@ -1516,7 +1516,7 @@ void GDScriptByteCodeGenerator::start_match_branch() {
 
 void GDScriptByteCodeGenerator::end_match() {
 	// Patch continue statements.
-	for (const int &E : match_continues_to_patch.back()->get()) {
+	for (const int E : match_continues_to_patch.back()->get()) {
 		patch_jump(E);
 	}
 	match_continues_to_patch.pop_back();

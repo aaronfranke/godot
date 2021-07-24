@@ -586,8 +586,8 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose(int p_max_convex_hulls) const {
 		{
 			Vector3 *w = convex_points.ptrw();
 			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
+			for (const Vector3 &E : points) {
+				w[idx++] = E;
 			}
 		}
 

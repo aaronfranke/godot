@@ -204,8 +204,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			const Set<Viewport *> viewports = world_2d->get_viewports();
 
-			for (Set<Viewport *>::Element *E = viewports.front(); E; E = E->next()) {
-				Viewport *vp = E->get();
+			for (const Viewport *vp : viewports) {
 				if (vp->is_audio_listener_2d()) {
 					//compute matrix to convert to screen
 					Transform2D to_screen = vp->get_global_canvas_transform() * vp->get_canvas_transform();

@@ -551,8 +551,8 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	Map<String, TreeItem *> parenthood;
 
-	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
-		NodePath path = E->get();
+	for (const String &E : paths) {
+		NodePath path = NodePath(E);
 		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {

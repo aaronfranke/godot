@@ -152,8 +152,8 @@ String ResourceImporterScene::get_visible_name() const {
 }
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
-	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		E->get()->get_extensions(p_extensions);
+	for (const Ref<EditorSceneImporter> &E : importers) {
+		E->get_extensions(p_extensions);
 	}
 }
 
@@ -1081,12 +1081,12 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
-	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		if (E->get().ptr() == p_exception) {
+	for (const Ref<EditorSceneImporter> &E : importers) {
+		if (E.ptr() == p_exception) {
 			continue;
 		}
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		E->get_extensions(&extensions);
 
 		for (String &F : extensions) {
 			if (F.to_lower() == ext) {
@@ -1111,12 +1111,12 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
-	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
-		if (E->get().ptr() == p_exception) {
+	for (const Ref<EditorSceneImporter> &E : importers) {
+		if (E.ptr() == p_exception) {
 			continue;
 		}
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		E->get_extensions(&extensions);
 
 		for (String &F : extensions) {
 			if (F.to_lower() == ext) {
@@ -1306,9 +1306,9 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file) {
 	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
+	for (const Ref<EditorSceneImporter> &E : importers) {
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		E->get_extensions(&extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
@@ -1346,9 +1346,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
+	for (const Ref<EditorSceneImporter> &E : importers) {
 		List<String> extensions;
-		E->get()->get_extensions(&extensions);
+		E->get_extensions(&extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {

@@ -1610,11 +1610,11 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
-	for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step((Space3DSW *)E->get(), p_step, iterations);
-		island_count += E->get()->get_island_count();
-		active_objects += E->get()->get_active_objects();
-		collision_pairs += E->get()->get_collision_pairs();
+	for (Space3DSW *E : active_spaces) {
+		stepper->step(E, p_step, iterations);
+		island_count += E->get_island_count();
+		active_objects += E->get_active_objects();
+		collision_pairs += E->get_collision_pairs();
 	}
 #endif
 }
@@ -1634,8 +1634,7 @@ void PhysicsServer3DSW::flush_queries() {
 
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
-	for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		Space3DSW *space = (Space3DSW *)E->get();
+	for (Space3DSW *space : active_spaces) {
 		space->call_queries();
 	}
 
@@ -1655,9 +1654,9 @@ void PhysicsServer3DSW::flush_queries() {
 			total_time[i] = 0;
 		}
 
-		for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
+		for (Space3DSW *E : active_spaces) {
 			for (int i = 0; i < Space3DSW::ELAPSED_TIME_MAX; i++) {
-				total_time[i] += E->get()->get_elapsed_time(Space3DSW::ElapsedTime(i));
+				total_time[i] += E->get_elapsed_time(Space3DSW::ElapsedTime(i));
 			}
 		}
 

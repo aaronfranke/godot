@@ -2026,8 +2026,7 @@ void ProjectManager::_open_selected_projects() {
 
 	const Set<String> &selected_list = _project_list->get_selected_project_keys();
 
-	for (const Set<String>::Element *E = selected_list.front(); E; E = E->next()) {
-		const String &selected = E->get();
+	for (const String &selected : selected_list) {
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 		String conf = path.plus_file("project.godot");
 
@@ -2217,8 +2216,7 @@ void ProjectManager::_rename_project() {
 		return;
 	}
 
-	for (Set<String>::Element *E = selected_list.front(); E; E = E->next()) {
-		const String &selected = E->get();
+	for (const String &selected : selected_list) {
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 		npdialog->set_project_path(path);
 		npdialog->set_mode(ProjectDialog::MODE_RENAME);
@@ -2304,8 +2302,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files, int p_screen) {
 	memdelete(da);
 	if (folders_set.size() > 0) {
 		PackedStringArray folders;
-		for (Set<String>::Element *E = folders_set.front(); E; E = E->next()) {
-			folders.push_back(E->get());
+		for (const String &folder : folders_set) {
+			folders.push_back(folder);
 		}
 
 		bool confirm = true;

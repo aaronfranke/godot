@@ -1403,8 +1403,8 @@ void EditorFileSystem::_save_late_updated_files() {
 	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
 	FileAccessRef f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(!f, "Cannot create file '" + fscache + "'. Check user write permissions.");
-	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
-		f->store_line(E->get());
+	for (const String &E : late_update_files) {
+		f->store_line(E);
 	}
 }
 

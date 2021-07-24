@@ -254,8 +254,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	feature_box->clear();
 	feature_box->add_item(TTR("(All)"), 0); // So it is always on top.
 	int id = 1;
-	for (Set<String>::Element *E = presets.front(); E; E = E->next()) {
-		feature_box->add_item(E->get(), id++);
+	for (const String &preset : presets) {
+		feature_box->add_item(preset, id++);
 	}
 }
 

@@ -523,8 +523,8 @@ Vector<Ref<Shape3D>> EditorSceneImporterMesh::convex_decompose() const {
 		{
 			Vector3 *w = convex_points.ptrw();
 			int idx = 0;
-			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
-				w[idx++] = E->get();
+			for (const Vector3 &E : points) {
+				w[idx++] = E;
 			}
 		}
 

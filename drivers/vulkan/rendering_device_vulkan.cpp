@@ -154,7 +154,7 @@ void RenderingDeviceVulkan::_free_dependencies(RID p_id) {
 	E = reverse_dependency_map.find(p_id);
 
 	if (E) {
-		for (Set<RID>::Element *F = E->get().front(); F; F = F->next()) {
+		for (const RID &F : E->get()) {
 			Map<RID, Set<RID>>::Element *G = dependency_map.find(F->get());
 			ERR_CONTINUE(!G);
 			ERR_CONTINUE(!G->get().has(p_id));
@@ -4967,7 +4967,7 @@ RenderingDeviceVulkan::DescriptorPool *RenderingDeviceVulkan::_descriptor_pool_a
 
 	DescriptorPool *pool = nullptr;
 
-	for (Set<DescriptorPool *>::Element *E = descriptor_pools[p_key].front(); E; E = E->next()) {
+	for (const DescriptorPool * &E : descriptor_pools[p_key]) {
 		if (E->get()->usage < max_descriptors_per_pool) {
 			pool = E->get();
 			break;
@@ -7799,7 +7799,7 @@ void RenderingDeviceVulkan::compute_list_end(uint32_t p_post_barrier) {
 
 	uint32_t barrier_idx = 0;
 
-	for (Set<Texture *>::Element *E = compute_list->state.textures_to_sampled_layout.front(); E; E = E->next()) {
+	for (const Texture * &E : compute_list->state.textures_to_sampled_layout) {
 		VkImageMemoryBarrier &image_memory_barrier = image_barriers[barrier_idx++];
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;

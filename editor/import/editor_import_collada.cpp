@@ -805,8 +805,8 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<EditorSceneImpor
 		Vector<Collada::Vertex> vertex_array; //there we go, vertex array
 
 		vertex_array.resize(vertex_set.size());
-		for (Set<Collada::Vertex>::Element *F = vertex_set.front(); F; F = F->next()) {
-			vertex_array.write[F->get().idx] = F->get();
+		for (const Collada::Vertex &F : vertex_set) {
+			vertex_array.write[F.idx] = F;
 		}
 
 		if (has_weights) {
@@ -1438,14 +1438,13 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 	bool tracks_found = false;
 
-	for (Set<String>::Element *E = valid_animated_nodes.front(); E; E = E->next()) {
+	for (const String &E : valid_animated_nodes) {
 		// take snapshots
-
-		if (!collada.state.scene_map.has(E->get())) {
+		if (!collada.state.scene_map.has(E)) {
 			continue;
 		}
 
-		NodeMap &nm = node_map[E->get()];
+		NodeMap &nm = node_map[E];
 		String path = scene->get_path_to(nm.node);
 
 		if (nm.bone >= 0) {
@@ -1456,7 +1455,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 		bool found_anim = false;
 
-		Collada::Node *cn = collada.state.scene_map[E->get()];
+		Collada::Node *cn = collada.state.scene_map[E];
 		if (cn->ignore_anim) {
 			continue;
 		}

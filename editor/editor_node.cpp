@@ -212,8 +212,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 		Set<int> iset = index_sets[i];
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name
-			for (Set<int>::Element *E = iset.front(); E; E = E->next()) {
-				int set_idx = E->get();
+			for (const int set_idx : iset) {
 				String scene_name = r_filenames[set_idx];
 				String full_path = p_full_paths[set_idx];
 
@@ -251,11 +250,11 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 			while (E) {
 				String scene_name = r_filenames[E->get()];
 				bool duplicate_found = false;
-				for (Set<int>::Element *F = iset.front(); F; F = F->next()) {
-					if (E->get() == F->get()) {
+				for (const int F : iset) {
+					if (E->get() == F) {
 						continue;
 					}
-					String other_scene_name = r_filenames[F->get()];
+					String other_scene_name = r_filenames[F];
 					if (other_scene_name == scene_name) {
 						duplicate_found = true;
 						break;
@@ -804,12 +803,12 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 }
 
 void EditorNode::_fs_changed() {
-	for (Set<FileDialog *>::Element *E = file_dialogs.front(); E; E = E->next()) {
-		E->get()->invalidate();
+	for (const FileDialog &E : file_dialogs) {
+		E->invalidate();
 	}
 
-	for (Set<EditorFileDialog *>::Element *E = editor_file_dialogs.front(); E; E = E->next()) {
-		E->get()->invalidate();
+	for (const EditorFileDialog &E : editor_file_dialogs) {
+		E->invalidate();
 	}
 
 	_mark_unsaved_scenes();
@@ -1071,8 +1070,8 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
 		//current_option = -1;
 		Vector<String> errors;
-		for (Set<String>::Element *E = dependency_errors[p_resource].front(); E; E = E->next()) {
-			errors.push_back(E->get());
+		for (const String &E : dependency_errors[p_resource]) {
+			errors.push_back(E);
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_RESOURCE, p_resource, errors);
 		dependency_errors.erase(p_resource);
@@ -3494,8 +3493,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!p_ignore_broken_deps && dependency_errors.has(lpath)) {
 		current_option = -1;
 		Vector<String> errors;
-		for (Set<String>::Element *E = dependency_errors[lpath].front(); E; E = E->next()) {
-			errors.push_back(E->get());
+		for (const String &E : dependency_errors[lpath]) {
+			errors.push_back(E);
 		}
 		dependency_error->show(DependencyErrorDialog::MODE_SCENE, lpath, errors);
 		opening_prev = false;
@@ -3511,8 +3510,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	for (Map<String, Set<String>>::Element *E = dependency_errors.front(); E; E = E->next()) {
 		String txt = vformat(TTR("Scene '%s' has broken dependencies:"), E->key()) + "\n";
-		for (Set<String>::Element *F = E->get().front(); F; F = F->next()) {
-			txt += "\t" + F->get() + "\n";
+		for (const String &F : E->get()) {
+			txt += "\t" + F + "\n";
 		}
 		add_io_error(txt);
 	}

@@ -86,8 +86,7 @@ void Step3DSW::_populate_island(Body3DSW *p_body, LocalVector<Body3DSW *> &p_bod
 void Step3DSW::_populate_island_soft_body(SoftBody3DSW *p_soft_body, LocalVector<Body3DSW *> &p_body_island, LocalVector<Constraint3DSW *> &p_constraint_island) {
 	p_soft_body->set_island_step(_step);
 
-	for (Set<Constraint3DSW *>::Element *E = p_soft_body->get_constraints().front(); E; E = E->next()) {
-		Constraint3DSW *constraint = (Constraint3DSW *)E->get();
+	for (Constraint3DSW constraint : p_soft_body->get_constraints()) {
 		if (constraint->get_island_step() == _step) {
 			continue; // Already processed.
 		}
@@ -230,8 +229,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	const SelfList<Area3DSW>::List &aml = p_space->get_moved_area_list();
 
 	while (aml.first()) {
-		for (const Set<Constraint3DSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-			Constraint3DSW *constraint = E->get();
+		for (Constraint3DSW *constraint : aml.first()->self()->get_constraints()) {
 			if (constraint->get_island_step() == _step) {
 				continue;
 			}

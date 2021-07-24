@@ -353,8 +353,7 @@ void TileMap::update_dirty_quadrants() {
 	for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
 		q->self()->map_to_world.clear();
 		q->self()->world_to_map.clear();
-		for (Set<Vector2i>::Element *E = q->self()->cells.front(); E; E = E->next()) {
-			Vector2i pk = E->get();
+		for (const Vector2i &pk : q->self()->cells) {
 			Vector2i pk_world_coords = map_to_world(pk);
 			q->self()->map_to_world[pk] = pk_world_coords;
 			q->self()->world_to_map[pk_world_coords] = pk;
@@ -741,8 +740,8 @@ void TileMap::fix_invalid_tiles() {
 			coords.insert(E->key());
 		}
 	}
-	for (Set<Vector2i>::Element *E = coords.front(); E; E = E->next()) {
-		set_cell(E->get(), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	for (const Vector2i &E : coords) {
+		set_cell(E, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 	}
 }
 
@@ -1732,9 +1731,9 @@ void TileMap::draw_cells_outline(Control *p_control, Set<Vector2i> p_cells, Colo
 		}
 	}
 
-	for (Set<Vector2i>::Element *E = p_cells.front(); E; E = E->next()) {
-		Vector2 top_left = map_to_world(E->get()) - tile_size / 2;
-		TypedArray<Vector2i> surrounding_tiles = get_surrounding_tiles(E->get());
+	for (const Vector2i &E : p_cells) {
+		Vector2 top_left = map_to_world(E) - tile_size / 2;
+		TypedArray<Vector2i> surrounding_tiles = get_surrounding_tiles(E);
 		for (int i = 0; i < surrounding_tiles.size(); i++) {
 			if (!p_cells.has(surrounding_tiles[i])) {
 				p_control->draw_line(p_transform.xform(top_left + uvs[i] * tile_size), p_transform.xform(top_left + uvs[(i + 1) % uvs.size()] * tile_size), p_color);

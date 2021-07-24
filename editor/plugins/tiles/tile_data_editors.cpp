@@ -777,8 +777,8 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 			}
 		}
 
-		for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
-			Vector2i coords = E->get().get_atlas_coords();
+		for (const TileMapCell &E : edited) {
+			Vector2i coords = E.get_atlas_coords();
 			p_canvas_item->draw_rect(p_tile_set_atlas_source->get_tile_texture_region(coords), selection_color, false);
 		}
 		p_canvas_item->draw_set_transform_matrix(Transform2D());
@@ -1578,8 +1578,8 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			}
 		}
 
-		for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
-			Vector2i coords = E->get().get_atlas_coords();
+		for (const TileMapCell &E : edited) {
+			Vector2i coords = E.get_atlas_coords();
 			p_canvas_item->draw_rect(p_tile_set_atlas_source->get_tile_texture_region(coords), selection_color, false);
 		}
 		p_canvas_item->draw_set_transform_matrix(Transform2D());
@@ -1623,8 +1623,8 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 
 		p_canvas_item->draw_set_transform_matrix(p_transform);
 
-		for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
-			Vector2i coords = E->get().get_atlas_coords();
+		for (const TileMapCell &E : edited) {
+			Vector2i coords = E.get_atlas_coords();
 
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
 			Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + p_tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
@@ -1954,15 +1954,15 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						}
 					}
 					undo_redo->create_action(TTR("Painting Terrain Set"));
-					for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
-						Vector2i coords = E->get().get_atlas_coords();
+					for (const TileMapCell &E : edited) {
+						Vector2i coords = E.get_atlas_coords();
 						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
-						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->get().alternative_tile), tile_data->get_terrain_set());
-						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E->get().alternative_tile), drag_painted_value);
+						undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E.alternative_tile), tile_data->get_terrain_set());
+						undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrain_set", coords.x, coords.y, E.alternative_tile), drag_painted_value);
 						for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 							TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
 							if (tile_data->is_valid_peering_bit_terrain(bit)) {
-								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->get().alternative_tile), tile_data->get_peering_bit_terrain(bit));
+								undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.alternative_tile), tile_data->get_peering_bit_terrain(bit));
 							}
 						}
 					}
@@ -2041,8 +2041,8 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 					mouse_pos_rect_polygon.push_back(Vector2(drag_start_pos.x, mb->get_position().y));
 
 					undo_redo->create_action(TTR("Painting Terrain"));
-					for (Set<TileMapCell>::Element *E = edited.front(); E; E = E->next()) {
-						Vector2i coords = E->get().get_atlas_coords();
+					for (const TileMapCell &E : edited) {
+						Vector2i coords = E.get_atlas_coords();
 						TileData *tile_data = Object::cast_to<TileData>(p_tile_set_atlas_source->get_tile_data(coords, 0));
 
 						for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -2057,8 +2057,8 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 								}
 								if (!Geometry2D::intersect_polygons(polygon, mouse_pos_rect_polygon).is_empty()) {
 									// Draw bit.
-									undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->get().alternative_tile), terrain);
-									undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E->get().alternative_tile), tile_data->get_peering_bit_terrain(bit));
+									undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.alternative_tile), terrain);
+									undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[i]), coords.x, coords.y, E.alternative_tile), tile_data->get_peering_bit_terrain(bit));
 								}
 							}
 						}

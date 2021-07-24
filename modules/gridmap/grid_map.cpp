@@ -448,9 +448,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	Map<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
 
-	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
-		ERR_CONTINUE(!cell_map.has(E->get()));
-		const Cell &c = cell_map[E->get()];
+	for (const IndexKey &E : g.cells) {
+		ERR_CONTINUE(!cell_map.has(E));
+		const Cell &c = cell_map[E];
 
 		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item)) {
 			continue;

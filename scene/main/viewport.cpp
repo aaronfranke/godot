@@ -453,9 +453,9 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 			if (listeners.size() && !listener) {
 				Listener3D *first = nullptr;
-				for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
-					if (first == nullptr || first->is_greater_than(E->get())) {
-						first = E->get();
+				for (const Listener3D *E : listeners) {
+					if (first == nullptr || first->is_greater_than(E)) {
+						first = E;
 					}
 				}
 
@@ -467,9 +467,9 @@ void Viewport::_notification(int p_what) {
 			if (cameras.size() && !camera_3d) {
 				//there are cameras but no current camera, pick first in tree and make it current
 				Camera3D *first = nullptr;
-				for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
-					if (first == nullptr || first->is_greater_than(E->get())) {
-						first = E->get();
+				for (const Camera3D *E : cameras) {
+					if (first == nullptr || first->is_greater_than(E)) {
+						first = E;
 					}
 				}
 
@@ -671,13 +671,13 @@ void Viewport::_process_picking() {
 			uint64_t frame = get_tree()->get_frame();
 
 			PhysicsDirectSpaceState2D::ShapeResult res[64];
-			for (Set<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
+			for (const CanvasLayer *E : canvas_layers) {
 				Transform2D canvas_transform;
 				ObjectID canvas_layer_id;
-				if (E->get()) {
+				if (E) {
 					// A descendant CanvasLayer
-					canvas_transform = E->get()->get_transform();
-					canvas_layer_id = E->get()->get_instance_id();
+					canvas_transform = E->get_transform();
+					canvas_layer_id = E->get_instance_id();
 				} else {
 					// This Viewport's builtin canvas
 					canvas_transform = get_canvas_transform();
@@ -1006,18 +1006,18 @@ void Viewport::_listener_remove(Listener3D *p_listener) {
 #ifndef _3D_DISABLED
 void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 	if (listeners.size() > 0) {
-		for (Set<Listener3D *>::Element *E = listeners.front(); E; E = E->next()) {
-			if (p_exclude == E->get()) {
+		for (Listener3D *E : listeners) {
+			if (p_exclude == E) {
 				continue;
 			}
-			if (!E->get()->is_inside_tree()) {
+			if (!E->is_inside_tree()) {
 				continue;
 			}
 			if (listener != nullptr) {
 				return;
 			}
 
-			E->get()->make_current();
+			E->make_current();
 		}
 	} else {
 		// Attempt to reset listener to the camera position
@@ -1083,18 +1083,18 @@ void Viewport::_camera_3d_remove(Camera3D *p_camera) {
 
 #ifndef _3D_DISABLED
 void Viewport::_camera_3d_make_next_current(Camera3D *p_exclude) {
-	for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
-		if (p_exclude == E->get()) {
+	for (Camera3D *E : cameras) {
+		if (p_exclude == E) {
 			continue;
 		}
-		if (!E->get()->is_inside_tree()) {
+		if (!E->is_inside_tree()) {
 			continue;
 		}
 		if (camera_3d != nullptr) {
 			return;
 		}
 
-		E->get()->make_current();
+		E->make_current();
 	}
 }
 #endif
@@ -3784,8 +3784,8 @@ Viewport::Viewport() {
 
 Viewport::~Viewport() {
 	//erase itself from viewport textures
-	for (Set<ViewportTexture *>::Element *E = viewport_textures.front(); E; E = E->next()) {
-		E->get()->vp = nullptr;
+	for (ViewportTexture *E : viewport_textures) {
+		E->vp = nullptr;
 	}
 	RenderingServer::get_singleton()->free(viewport);
 }

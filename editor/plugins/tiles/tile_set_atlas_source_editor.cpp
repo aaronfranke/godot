@@ -178,9 +178,9 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 	}
 
 	bool any_valid = false;
-	for (Set<TileSelection>::Element *E = tiles.front(); E; E = E->next()) {
-		const Vector2i &coords = E->get().tile;
-		const int &alternative = E->get().alternative;
+	for (const TileSelection &E : tiles) {
+		const Vector2i &coords = E.tile;
+		const int &alternative = E.alternative;
 
 		bool valid = false;
 		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
@@ -218,11 +218,11 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		}
 	}
 
-	for (Set<TileSelection>::Element *E = tiles.front(); E; E = E->next()) {
+	for (const TileSelection &E : tiles) {
 		// Return the first tile with a property matching the name.
 		// Note: It's a little bit annoying, but the behavior is the same the one in MultiNodeEdit.
-		const Vector2i &coords = E->get().tile;
-		const int &alternative = E->get().alternative;
+		const Vector2i &coords = E.tile;
+		const int &alternative = E.alternative;
 
 		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
 		ERR_FAIL_COND_V(!tile_data, false);
@@ -266,9 +266,9 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	Map<PropertyId, PLData> usage;
 
 	List<PLData *> data_list;
-	for (Set<TileSelection>::Element *E = tiles.front(); E; E = E->next()) {
-		const Vector2i &coords = E->get().tile;
-		const int &alternative = E->get().alternative;
+	for (const TileSelection &E : tiles) {
+		const Vector2i &coords = E.tile;
+		const int &alternative = E.alternative;
 
 		TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
 		ERR_FAIL_COND(!tile_data);
@@ -313,15 +313,15 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_tile_set_atlas_source, Set<TileSelection> p_tiles) {
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_tiles.is_empty());
-	for (Set<TileSelection>::Element *E = p_tiles.front(); E; E = E->next()) {
-		ERR_FAIL_COND(E->get().tile == TileSetSource::INVALID_ATLAS_COORDS);
-		ERR_FAIL_COND(E->get().alternative < 0);
+	for (const TileSelection &E : p_tiles) {
+		ERR_FAIL_COND(E.tile == TileSetSource::INVALID_ATLAS_COORDS);
+		ERR_FAIL_COND(E.alternative < 0);
 	}
 
 	// Disconnect to changes.
-	for (Set<TileSelection>::Element *E = tiles.front(); E; E = E->next()) {
-		const Vector2i &coords = E->get().tile;
-		const int &alternative = E->get().alternative;
+	for (const TileSelection &E : tiles) {
+		const Vector2i &coords = E.tile;
+		const int &alternative = E.alternative;
 
 		if (tile_set_atlas_source && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
 			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
@@ -335,9 +335,9 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 	tiles = Set<TileSelection>(p_tiles);
 
 	// Connect to changes.
-	for (Set<TileSelection>::Element *E = p_tiles.front(); E; E = E->next()) {
-		const Vector2i &coords = E->get().tile;
-		const int &alternative = E->get().alternative;
+	for (const TileSelection &E : p_tiles) {
+		const Vector2i &coords = E.tile;
+		const int &alternative = E.alternative;
 
 		if (tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
 			TileData *tile_data = Object::cast_to<TileData>(tile_set_atlas_source->get_tile_data(coords, alternative));
@@ -381,10 +381,9 @@ void TileSetAtlasSourceEditor::_update_source_inspector() {
 
 void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 	// Fix selected.
-	for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-		TileSelection selected = E->get();
+	for (const TileSelection &selected : selection) {
 		if (!tile_set_atlas_source->has_tile(selected.tile) || !tile_set_atlas_source->has_alternative_tile(selected.tile, selected.alternative)) {
-			selection.erase(E);
+			selection.erase(selected);
 		}
 	}
 
@@ -1145,9 +1144,9 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 	switch (drag_type) {
 		case DRAG_TYPE_CREATE_TILES:
 			undo_redo->create_action(TTR("Create tiles"));
-			for (Set<Vector2i>::Element *E = drag_modified_tiles.front(); E; E = E->next()) {
-				undo_redo->add_do_method(tile_set_atlas_source, "create_tile", E->get());
-				undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", E->get());
+			for (const Vector2i &E : drag_modified_tiles) {
+				undo_redo->add_do_method(tile_set_atlas_source, "create_tile", E);
+				undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", E);
 			}
 			undo_redo->commit_action(false);
 			break;
@@ -1162,8 +1161,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			tile_set_atlas_source->get_property_list(&list);
 			Map<Vector2i, List<const PropertyInfo *>> per_tile = _group_properties_per_tiles(list, tile_set_atlas_source);
 			undo_redo->create_action(TTR("Remove tiles"));
-			for (Set<Vector2i>::Element *E = drag_modified_tiles.front(); E; E = E->next()) {
-				Vector2i coords = E->get();
+			for (const Vector2i &coords : drag_modified_tiles) {
 				undo_redo->add_do_method(tile_set_atlas_source, "remove_tile", coords);
 				undo_redo->add_undo_method(tile_set_atlas_source, "create_tile", coords);
 				if (per_tile.has(coords)) {
@@ -1216,8 +1214,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 
 			undo_redo->create_action(TTR("Remove tiles"));
 			undo_redo->add_do_method(this, "_set_selection_from_array", Array());
-			for (Set<Vector2i>::Element *E = to_delete.front(); E; E = E->next()) {
-				Vector2i coords = E->get();
+			for (const Vector2i &coords : to_delete) {
 				undo_redo->add_do_method(tile_set_atlas_source, "remove_tile", coords);
 				undo_redo->add_undo_method(tile_set_atlas_source, "create_tile", coords);
 				if (per_tile.has(coords)) {
@@ -1381,8 +1378,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 
 			// Remove tiles
 			Set<Vector2i> removed;
-			for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-				TileSelection selected = E->get();
+			for (const TileSelection &selected : selection) {
 				if (selected.alternative == 0) {
 					// Remove a tile.
 					undo_redo->add_do_method(tile_set_atlas_source, "remove_tile", selected.tile);
@@ -1401,8 +1397,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 			}
 
 			// Remove alternatives
-			for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-				TileSelection selected = E->get();
+			for (const TileSelection &selected : selection) {
 				if (selected.alternative > 0 && !removed.has(selected.tile)) {
 					// Remove an alternative tile.
 					undo_redo->add_do_method(tile_set_atlas_source, "remove_alternative_tile", selected.tile, selected.alternative);
@@ -1440,13 +1435,13 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 		case TILE_CREATE_ALTERNATIVE: {
 			undo_redo->create_action(TTR("Create tile alternatives"));
 			Array array;
-			for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-				if (E->get().alternative == 0) {
-					int next_id = tile_set_atlas_source->get_next_alternative_tile_id(E->get().tile);
-					undo_redo->add_do_method(tile_set_atlas_source, "create_alternative_tile", E->get().tile, next_id);
-					array.push_back(E->get().tile);
+			for (const TileSelection &selected_tile : selection) {
+				if (selected_tile.alternative == 0) {
+					int next_id = tile_set_atlas_source->get_next_alternative_tile_id(selected_tile.tile);
+					undo_redo->add_do_method(tile_set_atlas_source, "create_alternative_tile", selected_tile.tile, next_id);
+					array.push_back(selected_tile.tile);
 					array.push_back(next_id);
-					undo_redo->add_undo_method(tile_set_atlas_source, "remove_alternative_tile", E->get().tile, next_id);
+					undo_redo->add_undo_method(tile_set_atlas_source, "remove_alternative_tile", selected_tile.tile, next_id);
 				}
 			}
 			undo_redo->add_do_method(this, "_set_selection_from_array", array);
@@ -1493,9 +1488,9 @@ void TileSetAtlasSourceEditor::_set_selection_from_array(Array p_selection) {
 
 Array TileSetAtlasSourceEditor::_get_selection_as_array() {
 	Array output;
-	for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-		output.push_back(E->get().tile);
-		output.push_back(E->get().alternative);
+	for (const TileSelection &selected_tile : selection) {
+		output.push_back(selected_tile.tile);
+		output.push_back(selected_tile.alternative);
 	}
 	return output;
 }
@@ -1507,11 +1502,10 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 
 	// Draw the selected tile.
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
-		for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-			TileSelection selected = E->get();
-			if (selected.alternative == 0) {
+		for (const TileSelection &selected_tile : selection) {
+			if (selected_tile.alternative == 0) {
 				// Draw the rect.
-				Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile);
+				Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected_tile.tile);
 				tile_atlas_control->draw_rect(region, selection_color, false);
 			}
 		}
@@ -1549,8 +1543,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 
 	if (drag_type == DRAG_TYPE_REMOVE_TILES) {
 		// Draw the tiles to be removed.
-		for (Set<Vector2i>::Element *E = drag_modified_tiles.front(); E; E = E->next()) {
-			tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(E->get()), Color(0.0, 0.0, 0.0), false);
+		for (const Vector2i &E : drag_modified_tiles) {
+			tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(E), Color(0.0, 0.0, 0.0), false);
 		}
 	} else if (drag_type == DRAG_TYPE_RECT_SELECT || drag_type == DRAG_TYPE_REMOVE_TILES_USING_RECT) {
 		// Draw tiles to be removed.
@@ -1574,8 +1568,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 			}
 		}
 
-		for (Set<Vector2i>::Element *E = to_paint.front(); E; E = E->next()) {
-			Vector2i coords = E->get();
+		for (const Vector2i &coords : to_paint) {
 			tile_atlas_control->draw_rect(tile_set_atlas_source->get_tile_texture_region(coords), color, false);
 		}
 	} else if (drag_type == DRAG_TYPE_CREATE_TILES_USING_RECT) {
@@ -1656,19 +1649,19 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 
 		// Draw the selection on top of other.
 		if (tools_button_group->get_pressed_button() == tool_select_button) {
-			for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-				if (E->get().alternative != 0) {
+			for (const TileSelection &E : selection) {
+				if (E.alternative != 0) {
 					continue;
 				}
-				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(E->get().tile);
-				Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(E->get().tile, 0);
+				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(E.tile);
+				Vector2i position = (texture_region.position + texture_region.get_end()) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(E.tile, 0);
 
 				Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
 				xform.translate(position);
 
 				TileMapCell cell;
 				cell.source_id = tile_set_atlas_source_id;
-				cell.set_atlas_coords(E->get().tile);
+				cell.set_atlas_coords(E.tile);
 				cell.alternative_tile = 0;
 				current_tile_data_editor->draw_over_tile(tile_atlas_control_unscaled, xform, cell, true);
 			}
@@ -1781,10 +1774,9 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 		}
 
 		// Draw selected tile.
-		for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-			TileSelection selected = E->get();
-			if (selected.alternative >= 1) {
-				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(selected.tile, selected.alternative);
+		for (const TileSelection &selected_tile : selection) {
+			if (selected_tile.alternative >= 1) {
+				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(selected_tile.tile, selected_tile.alternative);
 				if (rect != Rect2i()) {
 					alternative_tiles_control->draw_rect(rect, selection_color, false);
 				}
@@ -1824,11 +1816,11 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 
 		// Draw the selection on top of other.
 		if (tools_button_group->get_pressed_button() == tool_select_button) {
-			for (Set<TileSelection>::Element *E = selection.front(); E; E = E->next()) {
-				if (E->get().alternative == 0) {
+			for (const TileSelection &selected_tile : selection) {
+				if (selected_tile.alternative == 0) {
 					continue;
 				}
-				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E->get().tile, E->get().alternative);
+				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(selected_tile.tile, selected_tile.alternative);
 				Vector2 position = (rect.get_position() + rect.get_end()) / 2;
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();

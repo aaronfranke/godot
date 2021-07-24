@@ -1409,8 +1409,7 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			shader->data = nullptr;
 		}
 
-		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-			Material *material = E->get();
+		for (Material *material : shader->owners) {
 			material->shader_type = new_type;
 			if (material->data) {
 				memdelete(material->data);
@@ -1426,8 +1425,7 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			shader->type = SHADER_TYPE_MAX; //invalid
 		}
 
-		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-			Material *material = E->get();
+		for (Material *material : shader->owners) {
 			if (shader->data) {
 				material->data = material_data_request_func[new_type](shader->data);
 				material->data->self = material->self;
@@ -1448,8 +1446,7 @@ void RendererStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		shader->data->set_code(p_code);
 	}
 
-	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-		Material *material = E->get();
+	for (Material *material : shader->owners) {
 		material->dependency.changed_notify(DEPENDENCY_CHANGED_MATERIAL);
 		_material_queue_update(material, true, true);
 	}
@@ -1481,8 +1478,7 @@ void RendererStorageRD::shader_set_default_texture_param(RID p_shader, const Str
 	if (shader->data) {
 		shader->data->set_default_texture_param(p_name, p_texture);
 	}
-	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
-		Material *material = E->get();
+	for (Material *material : shader->owners) {
 		_material_queue_update(material, false, true);
 	}
 }
@@ -2722,8 +2718,7 @@ void RendererStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_su
 
 	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 
-	for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-		Mesh *shadow_owner = E->get();
+	for (Mesh *shadow_owner : mesh->shadow_owners) {
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 	}
@@ -3033,8 +3028,7 @@ void RendererStorageRD::mesh_clear(RID p_mesh) {
 	mesh->has_bone_weights = false;
 	mesh->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 
-	for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-		Mesh *shadow_owner = E->get();
+	for (Mesh *shadow_owner : mesh->shadow_owners) {
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 	}
@@ -4592,8 +4586,8 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 		}
 
 		uint32_t collision_3d_textures_used = 0;
-		for (const Set<RID>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
-			ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(E->get());
+		for (const RID &E : p_particles->collisions) {
+			ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(E);
 			if (!pci || !pci->active) {
 				continue;
 			}
@@ -8339,8 +8333,8 @@ void RendererStorageRD::global_variable_set(const StringName &p_name, const Vari
 			_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
 		} else {
 			//texture
-			for (Set<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
-				Material *material = material_owner.getornull(E->get());
+			for (const RID &E : gv.texture_materials) {
+				Material *material = material_owner.getornull(E);
 				ERR_CONTINUE(!material);
 				_material_queue_update(material, false, true);
 			}
@@ -8370,8 +8364,8 @@ void RendererStorageRD::global_variable_set_override(const StringName &p_name, c
 		_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
 	} else {
 		//texture
-		for (Set<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
-			Material *material = material_owner.getornull(E->get());
+		for (const RID &E : gv.texture_materials) {
+			Material *material = material_owner.getornull(E);
 			ERR_CONTINUE(!material);
 			_material_queue_update(material, false, true);
 		}
@@ -8707,8 +8701,7 @@ bool RendererStorageRD::free(RID p_rid) {
 			ERR_PRINT("deleting mesh with active instances");
 		}
 		if (mesh->shadow_owners.size()) {
-			for (Set<Mesh *>::Element *E = mesh->shadow_owners.front(); E; E = E->next()) {
-				Mesh *shadow_owner = E->get();
+			for (Mesh *shadow_owner : mesh->shadow_owners) {
 				shadow_owner->shadow_mesh = RID();
 				shadow_owner->dependency.changed_notify(DEPENDENCY_CHANGED_MESH);
 			}

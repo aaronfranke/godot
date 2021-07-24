@@ -1585,8 +1585,8 @@ void VisualScriptEditor::_remove_output_port(int p_id, int p_port) {
 
 	List<int> keys;
 	conn_map.get_key_list(&keys);
-	for (const int &E : keys) {
-		for (const Set<int>::Element *F = conn_map[E].front(); F; F = F->next()) {
+	for (const int E : keys) {
+		for (const int F : conn_map[E]) {
 			undo_redo->add_undo_method(script.ptr(), "data_connect", p_id, p_port, E, F);
 		}
 	}
@@ -1749,17 +1749,17 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	Set<int> to_select;
 	HashMap<int, int> remap;
 
-	for (Set<int>::Element *F = to_duplicate.front(); F; F = F->next()) {
+	for (const int F : to_duplicate) {
 		// Duplicate from the specific function but place it into the default func as it would lack the connections.
-		Ref<VisualScriptNode> node = script->get_node(F->get());
+		Ref<VisualScriptNode> node = script->get_node(F);
 
 		Ref<VisualScriptNode> dupe = node->duplicate(true);
 
 		int new_id = idc++;
-		remap.set(F->get(), new_id);
+		remap.set(F, new_id);
 
 		to_select.insert(new_id);
-		undo_redo->add_do_method(script.ptr(), "add_node", new_id, dupe, script->get_node_position(F->get()) + Vector2(20, 20));
+		undo_redo->add_do_method(script.ptr(), "add_node", new_id, dupe, script->get_node_position(F) + Vector2(20, 20));
 		undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
 	}
 
@@ -3833,14 +3833,14 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
 			}
 
-			for (Set<VisualScript::SequenceConnection>::Element *E = clipboard->sequence_connections.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "sequence_connect", remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
-				undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", remap[E->get().from_node], E->get().from_output, remap[E->get().to_node]);
+			for (const VisualScript::SequenceConnection &E : clipboard->sequence_connections) {
+				undo_redo->add_do_method(script.ptr(), "sequence_connect", remap[E.from_node], E.from_output, remap[E.to_node]);
+				undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", remap[E.from_node], E.from_output, remap[E.to_node]);
 			}
 
-			for (Set<VisualScript::DataConnection>::Element *E = clipboard->data_connections.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "data_connect", remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
-				undo_redo->add_undo_method(script.ptr(), "data_disconnect", remap[E->get().from_node], E->get().from_port, remap[E->get().to_node], E->get().to_port);
+			for (const VisualScript::DataConnection &E : clipboard->data_connections) {
+				undo_redo->add_do_method(script.ptr(), "data_connect", remap[E.from_node], E.from_port, remap[E.to_node], E.to_port);
+				undo_redo->add_undo_method(script.ptr(), "data_disconnect", remap[E.from_node], E.from_port, remap[E.to_node], E.to_port);
 			}
 
 			undo_redo->add_do_method(this, "_update_graph");
@@ -3958,9 +3958,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 						// If we still don't have a start node then,
 						// run through the nodes and select the first tree node,
 						// i.e. node without any input sequence but output sequence.
-						for (Set<int>::Element *E = nodes_from.front(); E; E = E->next()) {
-							if (!nodes_to.has(E->get())) {
-								start_node = E->get();
+						for (const int E : nodes_from) {
+							if (!nodes_to.has(E)) {
+								start_node = E;
 							}
 						}
 					}
@@ -4029,13 +4029,13 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			// Move the nodes.
 
 			// Handles reconnection of sequence connections on undo, start here in case of issues.
-			for (Set<VisualScript::SequenceConnection>::Element *E = seqext.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "sequence_disconnect", E->get().from_node, E->get().from_output, E->get().to_node);
-				undo_redo->add_undo_method(script.ptr(), "sequence_connect", E->get().from_node, E->get().from_output, E->get().to_node);
+			for (const VisualScript::SequenceConnection &E : seqext) {
+				undo_redo->add_do_method(script.ptr(), "sequence_disconnect", E.from_node, E.from_output, E.to_node);
+				undo_redo->add_undo_method(script.ptr(), "sequence_connect", E.from_node, E.from_output, E.to_node);
 			}
-			for (Set<VisualScript::DataConnection>::Element *E = dataext.front(); E; E = E->next()) {
-				undo_redo->add_do_method(script.ptr(), "data_disconnect", E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-				undo_redo->add_undo_method(script.ptr(), "data_connect", E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+			for (const VisualScript::DataConnection &E : dataext) {
+				undo_redo->add_do_method(script.ptr(), "data_disconnect", E.from_node, E.from_port, E.to_node, E.to_port);
+				undo_redo->add_undo_method(script.ptr(), "data_connect", E.from_node, E.from_port, E.to_node, E.to_port);
 			}
 
 			// I don't really think we need support for non sequenced functions at this moment.

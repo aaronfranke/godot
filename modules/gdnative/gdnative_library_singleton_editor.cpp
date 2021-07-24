@@ -57,8 +57,8 @@ Set<String> GDNativeLibrarySingletonEditor::_find_singletons_recursive(EditorFil
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		Set<String> paths = _find_singletons_recursive(p_dir->get_subdir(i));
 
-		for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
-			file_paths.insert(E->get());
+		for (const String &path : paths) {
+			file_paths.insert(path);
 		}
 	}
 
@@ -76,11 +76,11 @@ void GDNativeLibrarySingletonEditor::_discover_singletons() {
 		current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
 	}
 	Array files;
-	for (Set<String>::Element *E = file_paths.front(); E; E = E->next()) {
-		if (!current_files.has(E->get())) {
+	for (const String &file_path : file_paths) {
+		if (!current_files.has(file_path)) {
 			changed = true;
 		}
-		files.append(E->get());
+		files.append(file_path);
 	}
 
 	// Check for removed files

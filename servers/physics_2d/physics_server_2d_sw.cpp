@@ -1261,11 +1261,11 @@ void PhysicsServer2DSW::step(real_t p_step) {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
-	for (Set<const Space2DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		stepper->step((Space2DSW *)E->get(), p_step, iterations);
-		island_count += E->get()->get_island_count();
-		active_objects += E->get()->get_active_objects();
-		collision_pairs += E->get()->get_collision_pairs();
+	for (const Space2DSW *E : active_spaces) {
+		stepper->step((Space2DSW *)E, p_step, iterations);
+		island_count += E->get_island_count();
+		active_objects += E->get_active_objects();
+		collision_pairs += E->get_collision_pairs();
 	}
 };
 
@@ -1282,8 +1282,8 @@ void PhysicsServer2DSW::flush_queries() {
 
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
-	for (Set<const Space2DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-		Space2DSW *space = (Space2DSW *)E->get();
+	for (const Space2DSW *E : active_spaces) {
+		Space2DSW *space = (Space2DSW *)E;
 		space->call_queries();
 	}
 
@@ -1303,9 +1303,9 @@ void PhysicsServer2DSW::flush_queries() {
 			total_time[i] = 0;
 		}
 
-		for (Set<const Space2DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
+		for (const Space2DSW *E : active_spaces) {
 			for (int i = 0; i < Space2DSW::ELAPSED_TIME_MAX; i++) {
-				total_time[i] += E->get()->get_elapsed_time(Space2DSW::ElapsedTime(i));
+				total_time[i] += E->get_elapsed_time(Space2DSW::ElapsedTime(i));
 			}
 		}
 

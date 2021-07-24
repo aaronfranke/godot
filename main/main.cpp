@@ -1990,9 +1990,9 @@ bool Main::start() {
 
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
-		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
-			print_line("Erasing old docs at: " + E->get());
-			DocTools::erase_classes(E->get());
+		for (const String &checked_path : checked_paths) {
+			print_line("Erasing old docs at: " + checked_path);
+			DocTools::erase_classes(checked_path);
 		}
 
 		print_line("Generating new docs...");

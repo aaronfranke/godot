@@ -283,7 +283,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (const _VCSort &E : vclist) {
 		String prop_info_name = E->get().name;
 		int dot = prop_info_name.find(".");
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
@@ -873,7 +873,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 
 	Map<String, List<String>> props;
 
-	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
+	for (const _VCSort &E : vclist) {
 		String category = E->get().name;
 		String name = E->get().name;
 

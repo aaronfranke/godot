@@ -509,22 +509,22 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 	bool has_all_peers = true;
 	List<int> peers_to_add; // If one is missing, take note to add it.
 
-	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-		if (p_target < 0 && E->get() == -p_target) {
+	for (const int E : connected_peers) {
+		if (p_target < 0 && E == -p_target) {
 			continue; // Continue, excluded.
 		}
 
-		if (p_target > 0 && E->get() != p_target) {
+		if (p_target > 0 && E != p_target) {
 			continue; // Continue, not for this peer.
 		}
 
-		Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
+		Map<int, bool>::Element *F = psc->confirmed_peers.find(E);
 
 		if (!F || !F->get()) {
 			// Path was not cached, or was cached but is unconfirmed.
 			if (!F) {
 				// Not cached at all, take note.
-				peers_to_add.push_back(E->get());
+				peers_to_add.push_back(E);
 			}
 
 			has_all_peers = false;
@@ -876,19 +876,19 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, const 
 		MAKE_ROOM(ofs + path_len);
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
-		for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-			if (p_to < 0 && E->get() == -p_to) {
+		for (const int E : connected_peers) {
+			if (p_to < 0 && E == -p_to) {
 				continue; // Continue, excluded.
 			}
 
-			if (p_to > 0 && E->get() != p_to) {
+			if (p_to > 0 && E != p_to) {
 				continue; // Continue, not for this peer.
 			}
 
 			Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 			ERR_CONTINUE(!F); // Should never happen.
 
-			network_peer->set_target_peer(E->get()); // To this one specifically.
+			network_peer->set_target_peer(E); // To this one specifically.
 
 			if (F->get()) {
 				// This one confirmed path, so use id.
@@ -1048,8 +1048,8 @@ Vector<int> MultiplayerAPI::get_network_connected_peers() const {
 	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), Vector<int>(), "No network peer is assigned. Assume no peers are connected.");
 
 	Vector<int> ret;
-	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-		ret.push_back(E->get());
+	for (const int E : connected_peers) {
+		ret.push_back(E);
 	}
 
 	return ret;

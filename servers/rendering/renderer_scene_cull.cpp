@@ -1232,11 +1232,11 @@ void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) 
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 			if (!geom->visibility_dependencies.is_empty()) {
 				uint32_t depth = 0;
-				for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-					if (((1 << E->get()->base_type) & RS::INSTANCE_GEOMETRY_MASK) == 0 || !E->get()->base_data) {
+				for (const Instance *E : geom->visibility_dependencies) {
+					if (((1 << E->base_type) & RS::INSTANCE_GEOMETRY_MASK) == 0 || !E->base_data) {
 						continue;
 					}
-					InstanceGeometryData *child_geom = static_cast<InstanceGeometryData *>(E->get()->base_data);
+					InstanceGeometryData *child_geom = static_cast<InstanceGeometryData *>(E->base_data);
 					depth = MAX(depth, child_geom->visibility_dependencies_depth);
 				}
 				geom->visibility_dependencies_depth = depth + 1;
@@ -1260,8 +1260,8 @@ void RendererSceneCull::_update_instance_visibility_depth(Instance *p_instance) 
 
 	if (cycle_detected) {
 		ERR_PRINT("Cycle detected in the visibility dependecies tree.");
-		for (Set<Instance *>::Element *E = traversed_nodes.front(); E; E = E->next()) {
-			Instance *instance = E->get();
+		for (const Instance *E : traversed_nodes) {
+			Instance *instance = E;
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 			geom->visibility_dependencies_depth = 0;
 			if (instance->scenario && instance->visibility_index != -1) {
@@ -1486,8 +1486,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(p_instance->base_data);
 		//erase dependencies, since no longer a lightmap
 
-		for (Set<Instance *>::Element *E = lightmap_data->geometries.front(); E; E = E->next()) {
-			Instance *geom = E->get();
+		for (Instance *geom : lightmap_data->geometries) {
 			_instance_queue_update(geom, true, false);
 		}
 	}
@@ -1501,8 +1500,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		//make sure lights are updated if it casts shadow
 
 		if (geom->can_cast_shadows) {
-			for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
-				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
+			for (const Instance *E : geom->lights) {
+				InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
 				light->shadow_dirty = true;
 			}
 		}
@@ -1566,8 +1565,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 				InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 				idata.instance_geometry = geom->geometry_instance;
 
-				for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-					Instance *dep_instance = E->get();
+				for (const Instance *E : geom->visibility_dependencies) {
+					Instance *dep_instance = E;
 					if (dep_instance->array_index != -1) {
 						dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = p_instance->array_index;
 					}
@@ -1723,8 +1722,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 
 		if ((1 << swapped_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(swapped_instance->base_data);
-			for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-				Instance *dep_instance = E->get();
+			for (Instance *dep_instance : geom->visibility_dependencies) {
 				if (dep_instance != p_instance && dep_instance->array_index != -1) {
 					dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = swapped_instance->array_index;
 				}
@@ -1747,8 +1745,7 @@ void RendererSceneCull::_unpair_instance(Instance *p_instance) {
 		scene_render->geometry_instance_pair_decal_instances(geom->geometry_instance, nullptr, 0);
 		scene_render->geometry_instance_pair_voxel_gi_instances(geom->geometry_instance, nullptr, 0);
 
-		for (Set<Instance *>::Element *E = geom->visibility_dependencies.front(); E; E = E->next()) {
-			Instance *dep_instance = E->get();
+		for (Instance *dep_instance : geom->visibility_dependencies) {
 			if (dep_instance->array_index != -1) {
 				dep_instance->scenario->instance_data[dep_instance->array_index].parent_array_index = -1;
 			}
@@ -1841,9 +1838,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 	float accum_blend = 0.0;
 
 	InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
-	for (Set<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
-		Instance *lightmap = E->get();
-
+	for (Instance *lightmap : geom->lightmap_captures) {
 		bool interior = RSG::storage->lightmap_is_interior(lightmap->base);
 
 		if (inside && !interior) {
@@ -2680,8 +2675,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
 
-						for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
-							InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
+						for (const Instance *E : geom->lights) {
+							InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
 							instance_pair_buffer[idx++] = light->instance;
 							if (idx == MAX_INSTANCE_PAIRS) {
 								break;
@@ -2703,8 +2698,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
 
-						for (Set<Instance *>::Element *E = geom->reflection_probes.front(); E; E = E->next()) {
-							InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(E->get()->base_data);
+						for (const Instance *E : geom->reflection_probes) {
+							InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(E->base_data);
 
 							instance_pair_buffer[idx++] = reflection_probe->instance;
 							if (idx == MAX_INSTANCE_PAIRS) {
@@ -2720,8 +2715,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
 
-						for (Set<Instance *>::Element *E = geom->decals.front(); E; E = E->next()) {
-							InstanceDecalData *decal = static_cast<InstanceDecalData *>(E->get()->base_data);
+						for (const Instance *E : geom->decals) {
+							InstanceDecalData *decal = static_cast<InstanceDecalData *>(E->base_data);
 
 							instance_pair_buffer[idx++] = decal->instance;
 							if (idx == MAX_INSTANCE_PAIRS) {
@@ -2735,8 +2730,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (idata.flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						uint32_t idx = 0;
-						for (Set<Instance *>::Element *E = geom->voxel_gi_instances.front(); E; E = E->next()) {
-							InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(E->get()->base_data);
+						for (const Instance *E : geom->voxel_gi_instances) {
+							InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(E->base_data);
 
 							instance_pair_buffer[idx++] = voxel_gi->probe_instance;
 							if (idx == MAX_INSTANCE_PAIRS) {
@@ -3359,8 +3354,7 @@ void RendererSceneCull::render_probes() {
 			const RID *instance_caches = probe->light_instances.ptr();
 
 			int idx = 0; //must count visible lights
-			for (Set<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
-				Instance *instance = E->get();
+			for (Instance *instance : probe->lights) {
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 				if (!instance->visible) {
 					continue;
@@ -3441,8 +3435,7 @@ void RendererSceneCull::render_probes() {
 				RID *instance_caches = probe->light_instances.ptrw();
 
 				int idx = 0; //must count visible lights
-				for (Set<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
-					Instance *instance = E->get();
+				for (Instance *instance : probe->lights) {
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
 					if (!instance->visible) {
 						continue;
@@ -3496,8 +3489,7 @@ void RendererSceneCull::render_probes() {
 
 		RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
-		for (Set<Instance *>::Element *E = probe->dynamic_geometries.front(); E; E = E->next()) {
-			Instance *ins = E->get();
+		for (Instance *ins : probe->dynamic_geometries) {
 			if (!ins->visible) {
 				continue;
 			}
@@ -3505,8 +3497,8 @@ void RendererSceneCull::render_probes() {
 
 			if (ins->scenario && ins->array_index >= 0 && (ins->scenario->instance_data[ins->array_index].flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY)) {
 				uint32_t idx = 0;
-				for (Set<Instance *>::Element *F = geom->voxel_gi_instances.front(); F; F = F->next()) {
-					InstanceVoxelGIData *voxel_gi2 = static_cast<InstanceVoxelGIData *>(F->get()->base_data);
+				for (const Instance *F : geom->voxel_gi_instances) {
+					InstanceVoxelGIData *voxel_gi2 = static_cast<InstanceVoxelGIData *>(F->base_data);
 
 					instance_pair_buffer[idx++] = voxel_gi2->probe_instance;
 					if (idx == MAX_INSTANCE_PAIRS) {
@@ -3743,8 +3735,8 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 
 			if (can_cast_shadows != geom->can_cast_shadows) {
 				//ability to cast shadows change, let lights now
-				for (Set<Instance *>::Element *E = geom->lights.front(); E; E = E->next()) {
-					InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
+				for (const Instance *E : geom->lights) {
+					InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
 					light->shadow_dirty = true;
 				}
 

@@ -80,8 +80,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
-	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		int idx = E->get();
+	for (const int E : frames_selected) {
+		int idx = E;
 		int xp = idx % h;
 		int yp = (idx - xp) / h;
 		int x = xp * width;
@@ -215,8 +215,8 @@ void SpriteFramesEditor::_sheet_add_frames() {
 		region_rect = atlas_source->get_region();
 	}
 
-	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
-		int idx = E->get();
+	for (const int E : frames_selected) {
+		int idx = E;
 		int width = size.width / h;
 		int height = size.height / v;
 		int xp = idx % h;

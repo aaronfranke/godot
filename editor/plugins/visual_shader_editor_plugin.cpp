@@ -2597,7 +2597,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
 
-	for (const int &F : p_nodes) {
+	for (const int F : p_nodes) {
 		for (VisualShader::Connection &E : conns) {
 			if (E.from_node == F || E.to_node == F) {
 				undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
@@ -2607,7 +2607,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 	Set<String> uniform_names;
 
-	for (const int &F : p_nodes) {
+	for (const int F : p_nodes) {
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, F);
 
 		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F);
@@ -2638,7 +2638,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 	}
 
 	List<VisualShader::Connection> used_conns;
-	for (const int &F : p_nodes) {
+	for (const int F : p_nodes) {
 		for (VisualShader::Connection &E : conns) {
 			if (E.from_node == F || E.to_node == F) {
 				bool cancel = false;
@@ -2658,7 +2658,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 	}
 
 	// delete nodes from the graph
-	for (const int &F : p_nodes) {
+	for (const int F : p_nodes) {
 		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F);
 	}
 
@@ -2715,7 +2715,7 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 	const Set<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
 	Set<String> deleted_names;
 
-	for (Set<int>::Element *E = current_set.front(); E; E = E->next()) {
+	for (const int E : current_set) {
 		int node_id = E->get();
 		Ref<VisualShaderNode> node = visual_shader->get_node(type_id, node_id);
 		bool caught = false;

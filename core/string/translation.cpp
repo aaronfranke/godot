@@ -1012,7 +1012,7 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 
 Array TranslationServer::get_loaded_locales() const {
 	Array locales;
-	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
+	for (const Ref<Translation> &E : translations) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), Array());
 		String l = t->get_locale();
@@ -1062,7 +1062,7 @@ Ref<Translation> TranslationServer::get_translation_object(const String &p_local
 	String lang = get_language_code(p_locale);
 	bool near_match_found = false;
 
-	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
+	for (const Ref<Translation> &E : translations) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), nullptr);
 		String l = t->get_locale();
@@ -1148,7 +1148,7 @@ StringName TranslationServer::_get_message_from_translations(const StringName &p
 	String lang = get_language_code(p_locale);
 	bool near_match = false;
 
-	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
+	for (const Ref<Translation> &E : translations) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();

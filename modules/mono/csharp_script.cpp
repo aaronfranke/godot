@@ -885,8 +885,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// Script::instances are deleted during managed object disposal, which happens on domain finalize.
 		// Only placeholders are kept. Therefore we need to keep a copy before that happens.
 
-		for (Set<Object *>::Element *F = script->instances.front(); F; F = F->next()) {
-			Object *obj = F->get();
+		for (const Object *obj : script->instances) {
 			script->pending_reload_instances.insert(obj->get_instance_id());
 
 			RefCounted *rc = Object::cast_to<RefCounted>(obj);
@@ -896,8 +895,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		}
 
 #ifdef TOOLS_ENABLED
-		for (Set<PlaceHolderScriptInstance *>::Element *F = script->placeholders.front(); F; F = F->next()) {
-			Object *obj = F->get()->get_owner();
+		for (const PlaceHolderScriptInstance *F : script->placeholders) {
+			Object *obj = F->get_owner();
 			script->pending_reload_instances.insert(obj->get_instance_id());
 
 			RefCounted *rc = Object::cast_to<RefCounted>(obj);
@@ -910,9 +909,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		// Save state and remove script from instances
 		Map<ObjectID, CSharpScript::StateBackup> &owners_map = script->pending_reload_state;
 
-		for (Set<Object *>::Element *F = script->instances.front(); F; F = F->next()) {
-			Object *obj = F->get();
-
+		for (const Object *obj : script->instances) {
 			ERR_CONTINUE(!obj->get_script_instance());
 
 			CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
@@ -1035,8 +1032,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		StringName native_name = NATIVE_GDMONOCLASS_NAME(script->native);
 
 		{
-			for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
-				ObjectID obj_id = F->get();
+			for (const ObjectID &obj_id : script->pending_reload_instances) {
 				Object *obj = ObjectDB::get_instance(obj_id);
 
 				if (!obj) {
@@ -1088,8 +1084,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	}
 
 	for (Ref<CSharpScript> script : to_reload_state) {
-		for (Set<ObjectID>::Element *F = script->pending_reload_instances.front(); F; F = F->next()) {
-			ObjectID obj_id = F->get();
+		for (const ObjectID &obj_id : script->pending_reload_instances) {
 			Object *obj = ObjectDB::get_instance(obj_id);
 
 			if (!obj) {
@@ -2545,8 +2540,8 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			_update_exports_values(values, propnames);
 
 			if (changed) {
-				for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-					E->get()->update(propnames, values);
+				for (const PlaceHolderScriptInstance *E : placeholders) {
+					E->update(propnames, values);
 				}
 			} else {
 				p_instance_to_update->update(propnames, values);
@@ -3525,8 +3520,8 @@ CSharpScript::~CSharpScript() {
 void CSharpScript::get_members(Set<StringName> *p_members) {
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 	if (p_members) {
-		for (Set<StringName>::Element *E = exported_members_names.front(); E; E = E->next()) {
-			p_members->insert(E->get());
+		for (const StringName &E : exported_members_names) {
+			p_members->insert(E);
 		}
 	}
 #endif

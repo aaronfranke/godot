@@ -1585,9 +1585,7 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	// Update Linker Flag Values
 	{
 		String result_linker_flags = " ";
-		for (Set<String>::Element *E = plugin_linker_flags.front(); E; E = E->next()) {
-			const String &flag = E->get();
-
+		for (const String &flag : plugin_linker_flags) {
 			if (flag.length() == 0) {
 				continue;
 			}

@@ -172,8 +172,8 @@ void PluginScript::update_exports() {
 		List<PropertyInfo> propinfos;
 
 		get_script_property_list(&propinfos);
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propinfos, _properties_default_values);
+		for (const PlaceHolderScriptInstance *E : placeholders) {
+			E->update(propinfos, _properties_default_values);
 		}
 	}
 #endif

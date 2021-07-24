@@ -198,7 +198,7 @@ void EditorProfiler::_update_plot() {
 	for (int i = 0; i < total_metrics; i++) {
 		const Metric &m = _get_frame_metric(i);
 
-		for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
+		for (const StringName &E : plot_sigs) {
 			const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
 			if (F) {
 				highest = MAX(F->get()->total_time, highest);
@@ -234,7 +234,7 @@ void EditorProfiler::_update_plot() {
 
 			int current = i * frame_metrics.size() / w;
 
-			for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
+			for (const StringName &E : plot_sigs) {
 				const Metric &m = _get_frame_metric(current);
 
 				float value = 0;
@@ -528,7 +528,7 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	Vector<String> signatures;
 	signatures.resize(possible_signatures.size());
 	int sig_index = 0;
-	for (const Set<StringName>::Element *E = possible_signatures.front(); E; E = E->next()) {
+	for (const StringName &E : possible_signatures) {
 		signatures.write[sig_index] = E->get();
 		sig_map[E->get()] = sig_index;
 		sig_index++;
