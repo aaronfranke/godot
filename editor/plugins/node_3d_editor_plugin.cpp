@@ -864,12 +864,14 @@ void Node3DEditorViewport::_update_name() {
 	view_menu->reset_size();
 }
 
-void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
+void Node3DEditorViewport::_compute_edit(const Point2 &p_point, const bool p_auto_center) {
 	_edit.click_ray = _get_ray(p_point);
 	_edit.click_ray_pos = _get_ray_pos(p_point);
 	_edit.plane = TRANSFORM_VIEW;
+	if (p_auto_center) {
+		_edit.center = spatial_editor->get_gizmo_transform().origin;
+	}
 	spatial_editor->update_transform_gizmo();
-	_edit.center = spatial_editor->get_gizmo_transform().origin;
 
 	Node3D *selected = spatial_editor->get_single_selected_node();
 	Node3DEditorSelectedItem *se = selected ? editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected) : nullptr;
@@ -1325,6 +1327,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	_edit.center = spatial_editor->get_gizmo_target_center();
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
@@ -1573,7 +1576,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 						//handle rotate
 						_edit.mode = TRANSFORM_ROTATE;
-						_compute_edit(b->get_position());
+						_compute_edit(b->get_position(), false);
 						break;
 					}
 
@@ -3646,7 +3649,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D xform = spatial_editor->get_gizmo_transform();
 
-	Transform3D camera_xform = camera->get_transform();
+	const Transform3D camera_xform = camera->get_transform();
 
 	if (xform.origin.is_equal_approx(camera_xform.origin)) {
 		for (int i = 0; i < 3; i++) {
@@ -3669,6 +3672,14 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
 	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
 
+	if (camera->is_position_in_frustum(spatial_editor->get_gizmo_target_center())) {
+		xform.origin = spatial_editor->get_gizmo_target_center();
+	} else {
+		// When not in frustum, place the gizmo in the middle of the screen.
+		xform.origin = camera->project_position(viewport->get_size() / 2, gizmo_d);
+	}
+	spatial_editor->set_gizmo_transform(xform);
+
 	const real_t gizmo_size = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
 	// This prevents the gizmo from growing very large and going outside the viewport.
@@ -3677,7 +3688,6 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
 			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
-	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
 	// if the determinant is zero, we should disable the gizmo from being rendered
 	// this prevents supplying bad values to the renderer and then having to filter it out again
@@ -4322,15 +4332,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	zoom_indicator_delay = 0.0;
 
 	spatial_editor = p_spatial_editor;
-	SubViewportContainer *c = memnew(SubViewportContainer);
-	subviewport_container = c;
-	c->set_stretch(true);
-	add_child(c);
-	c->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	subviewport_container = memnew(SubViewportContainer);
+	subviewport_container->set_stretch(true);
+	add_child(subviewport_container);
+	subviewport_container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 	viewport = memnew(SubViewport);
 	viewport->set_disable_input(true);
 
-	c->add_child(viewport);
+	subviewport_container->add_child(viewport);
 	surface = memnew(Control);
 	surface->set_drag_forwarding(this);
 	add_child(surface);
@@ -4957,6 +4966,7 @@ void Node3DEditor::update_transform_gizmo() {
 	gizmo.visible = count > 0;
 	gizmo.transform.origin = (count > 0) ? gizmo_center / count : Vector3();
 	gizmo.transform.basis = (count == 1) ? gizmo_basis : Basis();
+	gizmo.target_center = gizmo_center;
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i]->update_transform_gizmo_view();
