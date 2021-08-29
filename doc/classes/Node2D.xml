@@ -130,7 +130,7 @@
 			Slants the node.
 			[b]Note:[/b] Skew is X axis only.
 		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			Local [Transform2D].
 		</member>
 	</members>
