@@ -132,7 +132,7 @@
 			[b]Note:[/b] Skew is performed on the X axis only, and [i]between[/i] rotation and scaling.
 			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [code]skew = deg_to_rad(value_in_degrees)[/code].
 		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			The node's [Transform2D], relative to the node's parent. See also [member global_transform].
 		</member>
 	</members>
