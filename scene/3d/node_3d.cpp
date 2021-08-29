@@ -311,6 +311,7 @@ void Node3D::set_basis(const Basis &p_basis) {
 
 	set_transform(Transform3D(p_basis, data.local_transform.origin));
 }
+
 void Node3D::set_quaternion(const Quaternion &p_quaternion) {
 	ERR_THREAD_GUARD;
 	if (_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {

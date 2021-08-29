@@ -3971,7 +3971,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
+			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D(p_usage != PROPERTY_USAGE_EDITOR));
 			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step));
 			return editor;
 		} break;
