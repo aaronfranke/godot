@@ -1551,7 +1551,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	buffer->draw(p_canvas_item, ofs, p_modulate);
 }
 
-void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, float p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
+void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HAlign p_align, real_t p_width, int p_max_lines, int p_size, const Color &p_modulate, int p_outline_size, const Color &p_outline_modulate, uint16_t p_flags) const {
 	ERR_FAIL_COND(data.is_empty());
 
 	for (int i = 0; i < data.size(); i++) {
