@@ -666,6 +666,17 @@ namespace Godot
         }
 
         /// <summary>
+        /// Creates a unit Vector2 rotated to the given angle. This is equivalent to doing
+        /// <c>Vector2(Mathf.Cos(angle), Mathf.Sin(angle))</c> or <c>Vector2.Right.Rotated(angle)</c>.
+        /// </summary>
+        /// <param name="angle">Angle of the vector, in radians.</param>
+        /// <returns>The resulting vector.</returns>
+        public static Vector2 FromAngle(real_t angle)
+        {
+            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        }
+
+        /// <summary>
         /// Adds each component of the <see cref="Vector2"/>
         /// with the components of the given <see cref="Vector2"/>.
         /// </summary>

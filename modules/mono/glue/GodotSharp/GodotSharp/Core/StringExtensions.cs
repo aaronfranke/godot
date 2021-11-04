@@ -1601,6 +1601,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Decodes a string in URL encoded format. This is meant to
+        /// decode parameters in a URL when receiving an HTTP request.
+        /// This mostly wraps around <see cref="Uri.UnescapeDataString"/>,
+        /// but also handles <c>+</c>.
+        /// See <see cref="URIEncode"/> for encoding.
+        /// </summary>
+        /// <param name="instance">The string to decode.</param>
+        /// <returns>The unescaped string.</returns>
+        public static string URIDecode(this string instance)
+        {
+            return Uri.UnescapeDataString(instance.Replace("+", "%20"));
+        }
+
+        /// <summary>
+        /// Encodes a string to URL friendly format. This is meant to
+        /// encode parameters in a URL when sending an HTTP request.
+        /// This wraps around <see cref="Uri.EscapeDataString"/>.
+        /// See <see cref="URIDecode"/> for decoding.
+        /// </summary>
+        /// <param name="instance">The string to encode.</param>
+        /// <returns>The escaped string.</returns>
+        public static string URIEncode(this string instance)
+        {
+            return Uri.EscapeDataString(instance);
+        }
+
+        /// <summary>
         /// Returns a copy of the string with special characters escaped using the XML standard.
         /// </summary>
         /// <seealso cref="XMLUnescape(string)"/>

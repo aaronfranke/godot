@@ -534,28 +534,36 @@ namespace Godot
             return new Quat(-quat.x, -quat.y, -quat.z, -quat.w);
         }
 
-        [Obsolete("This operator does not have the correct behavior and will be replaced in the future. Do not use this.")]
-        public static Quat operator *(Quat left, Vector3 right)
+        /// <summary>
+        /// Rotates (multiplies) the <see cref="Vector3"/>
+        /// by the given <see cref="Quat"/>.
+        /// </summary>
+        /// <param name="quat">The quaternion to rotate by.</param>
+        /// <param name="vec">The vector to rotate.</param>
+        /// <returns>The rotated vector.</returns>
+        public static Vector3 operator *(Quat quat, Vector3 vec)
         {
-            return new Quat
-            (
-                (left.w * right.x) + (left.y * right.z) - (left.z * right.y),
-                (left.w * right.y) + (left.z * right.x) - (left.x * right.z),
-                (left.w * right.z) + (left.x * right.y) - (left.y * right.x),
-                -(left.x * right.x) - (left.y * right.y) - (left.z * right.z)
-            );
+#if DEBUG
+            if (!quat.IsNormalized())
+            {
+                throw new InvalidOperationException("Quat is not normalized.");
+            }
+#endif
+            var u = new Vector3(quat.x, quat.y, quat.z);
+            Vector3 uv = u.Cross(vec);
+            return vec + (((uv * quat.w) + u.Cross(uv)) * 2);
         }
 
-        [Obsolete("This operator does not have the correct behavior and will be replaced in the future. Do not use this.")]
-        public static Quat operator *(Vector3 left, Quat right)
+        /// <summary>
+        /// Inversely rotates (multiplies) the <see cref="Vector3"/>
+        /// by the given <see cref="Quat"/>.
+        /// </summary>
+        /// <param name="vec">The vector to rotate.</param>
+        /// <param name="quat">The quaternion to rotate by.</param>
+        /// <returns>The inversely rotated vector.</returns>
+        public static Vector3 operator *(Vector3 vec, Quat quat)
         {
-            return new Quat
-            (
-                (right.w * left.x) + (right.y * left.z) - (right.z * left.y),
-                (right.w * left.y) + (right.z * left.x) - (right.x * left.z),
-                (right.w * left.z) + (right.x * left.y) - (right.y * left.x),
-                -(right.x * left.x) - (right.y * left.y) - (right.z * left.z)
-            );
+            return quat.Inverse() * vec;
         }
 
         /// <summary>
