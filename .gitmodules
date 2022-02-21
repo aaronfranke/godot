@@ -1,0 +1,3 @@
+[submodule "modules/1d"]
+	path = modules/1d
+	url = https://github.com/aaronfranke/godot-1d
