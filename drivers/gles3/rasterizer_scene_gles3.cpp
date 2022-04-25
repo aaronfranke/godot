@@ -726,7 +726,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 	}
 
 	if (!keep_color) {
-		glClearBufferfv(GL_COLOR, 0, clear_color.components);
+		glClearBufferfv(GL_COLOR, 0, clear_color.elements);
 	}
 
 	if (draw_sky) {

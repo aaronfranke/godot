@@ -43,8 +43,13 @@
 class Variant;
 
 struct _NO_DISCARD_ AABB {
-	Vector3 position;
-	Vector3 size;
+	union {
+		struct {
+			Vector3 position;
+			Vector3 size;
+		};
+		real_t elements[6] = { 0 };
+	};
 
 	real_t get_volume() const;
 	_FORCE_INLINE_ bool has_no_volume() const {
@@ -264,10 +269,10 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 
 	for (int k = 0; k < 3; k++) {
 		for (int i = 0; i < p_point_count; i++) {
-			if (p_points[i].coord[k] > ofs.coord[k] + half_extents.coord[k]) {
+			if (p_points[i].elements[k] > ofs.elements[k] + half_extents.elements[k]) {
 				bad_point_counts_positive[k]++;
 			}
-			if (p_points[i].coord[k] < ofs.coord[k] - half_extents.coord[k]) {
+			if (p_points[i].elements[k] < ofs.elements[k] - half_extents.elements[k]) {
 				bad_point_counts_negative[k]++;
 			}
 		}

@@ -44,14 +44,14 @@ struct _NO_DISCARD_ Quaternion {
 			real_t z;
 			real_t w;
 		};
-		real_t components[4] = { 0, 0, 0, 1.0 };
+		real_t elements[4] = { 0, 0, 0, 1 };
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int idx) {
-		return components[idx];
+		return elements[idx];
 	}
 	_FORCE_INLINE_ const real_t &operator[](int idx) const {
-		return components[idx];
+		return elements[idx];
 	}
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quaternion &p_quaternion) const;

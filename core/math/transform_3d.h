@@ -36,8 +36,18 @@
 #include "core/math/plane.h"
 
 struct _NO_DISCARD_ Transform3D {
-	Basis basis;
-	Vector3 origin;
+	union {
+		struct {
+			Basis basis;
+			Vector3 origin;
+		};
+		real_t elements[12] = {
+			1, 0, 0,
+			0, 1, 0,
+			0, 0, 1,
+			0, 0, 0
+		};
+	};
 
 	void invert();
 	Transform3D inverse() const;

@@ -54,17 +54,16 @@ struct _NO_DISCARD_ Vector2i {
 				int32_t height;
 			};
 		};
-
-		int32_t coord[2] = { 0 };
+		int32_t elements[2] = { 0 };
 	};
 
 	_FORCE_INLINE_ int32_t &operator[](int p_idx) {
 		DEV_ASSERT((unsigned int)p_idx < 2);
-		return coord[p_idx];
+		return elements[p_idx];
 	}
 	_FORCE_INLINE_ const int32_t &operator[](int p_idx) const {
 		DEV_ASSERT((unsigned int)p_idx < 2);
-		return coord[p_idx];
+		return elements[p_idx];
 	}
 
 	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {

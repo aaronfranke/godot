@@ -39,8 +39,13 @@ struct Rect2i;
 struct Transform2D;
 
 struct _NO_DISCARD_ Rect2 {
-	Point2 position;
-	Size2 size;
+	union {
+		struct {
+			Point2 position;
+			Size2 size;
+		};
+		real_t elements[4] = { 0 };
+	};
 
 	const Vector2 &get_position() const { return position; }
 	void set_position(const Vector2 &p_pos) { position = p_pos; }

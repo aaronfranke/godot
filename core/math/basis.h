@@ -35,10 +35,13 @@
 #include "core/math/vector3.h"
 
 struct _NO_DISCARD_ Basis {
-	Vector3 rows[3] = {
-		Vector3(1, 0, 0),
-		Vector3(0, 1, 0),
-		Vector3(0, 0, 1)
+	union {
+		Vector3 rows[3] = {
+			Vector3(1, 0, 0),
+			Vector3(0, 1, 0),
+			Vector3(0, 0, 1)
+		};
+		real_t elements[9];
 	};
 
 	_FORCE_INLINE_ const Vector3 &operator[](int axis) const {

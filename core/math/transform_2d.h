@@ -50,7 +50,19 @@ struct _NO_DISCARD_ Transform2D {
 	// Warning #2: 2D be aware that unlike 3D code, 2D code uses a left-handed coordinate system: Y-axis points down,
 	// and angle is measure from +X to +Y in a clockwise-fashion.
 
-	Vector2 columns[3];
+	union {
+		struct {
+			Vector2 x;
+			Vector2 y;
+			Vector2 origin;
+		};
+		Vector2 columns[3] = {
+			Vector2(1, 0),
+			Vector2(0, 1),
+			Vector2(0, 0)
+		};
+		real_t elements[6];
+	};
 
 	_FORCE_INLINE_ real_t tdotx(const Vector2 &v) const { return columns[0][0] * v.x + columns[1][0] * v.y; }
 	_FORCE_INLINE_ real_t tdoty(const Vector2 &v) const { return columns[0][1] * v.x + columns[1][1] * v.y; }

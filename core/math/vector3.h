@@ -54,18 +54,17 @@ struct _NO_DISCARD_ Vector3 {
 			real_t y;
 			real_t z;
 		};
-
-		real_t coord[3] = { 0 };
+		real_t elements[3] = { 0 };
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](const int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return elements[p_axis];
 	}
 
 	_FORCE_INLINE_ real_t &operator[](const int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return elements[p_axis];
 	}
 
 	void set_axis(const int p_axis, const real_t p_value);

@@ -38,8 +38,13 @@ class String;
 struct Rect2;
 
 struct _NO_DISCARD_ Rect2i {
-	Point2i position;
-	Size2i size;
+	union {
+		struct {
+			Point2i position;
+			Size2i size;
+		};
+		int32_t elements[4] = { 0 };
+	};
 
 	const Point2i &get_position() const { return position; }
 	void set_position(const Point2i &p_position) { position = p_position; }

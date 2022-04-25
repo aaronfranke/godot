@@ -56,17 +56,16 @@ struct _NO_DISCARD_ Vector2 {
 				real_t height;
 			};
 		};
-
-		real_t coord[2] = { 0 };
+		real_t elements[2] = { 0 };
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
 		DEV_ASSERT((unsigned int)p_idx < 2);
-		return coord[p_idx];
+		return elements[p_idx];
 	}
 	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
 		DEV_ASSERT((unsigned int)p_idx < 2);
-		return coord[p_idx];
+		return elements[p_idx];
 	}
 
 	_FORCE_INLINE_ void set_all(const real_t p_value) {

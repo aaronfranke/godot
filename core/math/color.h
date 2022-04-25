@@ -42,7 +42,7 @@ struct _NO_DISCARD_ Color {
 			float b;
 			float a;
 		};
-		float components[4] = { 0, 0, 0, 1.0 };
+		float elements[4] = { 0, 0, 0, 1 };
 	};
 
 	uint32_t to_rgba32() const;
@@ -58,10 +58,10 @@ struct _NO_DISCARD_ Color {
 	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
-		return components[p_idx];
+		return elements[p_idx];
 	}
 	_FORCE_INLINE_ const float &operator[](int p_idx) const {
-		return components[p_idx];
+		return elements[p_idx];
 	}
 
 	bool operator==(const Color &p_color) const {

@@ -1740,7 +1740,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 		return;
 	}
 
-	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
+	glClearBufferfv(GL_COLOR, 0, rt->clear_color.elements);
 	rt->clear_requested = false;
 }
 
