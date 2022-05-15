@@ -344,6 +344,19 @@ static GDNativeVariantFromTypeConstructorFunc gdnative_get_variant_from_type_con
 			return VariantTypeConstructor<Basis>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_TRANSFORM3D:
 			return VariantTypeConstructor<Transform3D>::variant_from_type;
+			// 4D types.
+		case GDNATIVE_VARIANT_TYPE_VECTOR4:
+			return VariantTypeConstructor<Vector4>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_VECTOR4I:
+			return VariantTypeConstructor<Vector4i>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_BASIS4D:
+			return VariantTypeConstructor<Basis4D>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_TRANSFORM4D:
+			return VariantTypeConstructor<Transform4D>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_EULER4D:
+			return VariantTypeConstructor<Euler4D>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_OCTONION:
+			return VariantTypeConstructor<Octonion>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_COLOR:
 			return VariantTypeConstructor<Color>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_STRING_NAME:
@@ -421,6 +434,19 @@ static GDNativeTypeFromVariantConstructorFunc gdnative_get_type_from_variant_con
 			return VariantTypeConstructor<Basis>::type_from_variant;
 		case GDNATIVE_VARIANT_TYPE_TRANSFORM3D:
 			return VariantTypeConstructor<Transform3D>::type_from_variant;
+			// 4D types.
+		case GDNATIVE_VARIANT_TYPE_VECTOR4:
+			return VariantTypeConstructor<Vector4>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_VECTOR4I:
+			return VariantTypeConstructor<Vector4i>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_BASIS4D:
+			return VariantTypeConstructor<Basis4D>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_TRANSFORM4D:
+			return VariantTypeConstructor<Transform4D>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_EULER4D:
+			return VariantTypeConstructor<Euler4D>::type_from_variant;
+		case GDNATIVE_VARIANT_TYPE_OCTONION:
+			return VariantTypeConstructor<Octonion>::type_from_variant;
 		case GDNATIVE_VARIANT_TYPE_COLOR:
 			return VariantTypeConstructor<Color>::type_from_variant;
 		case GDNATIVE_VARIANT_TYPE_STRING_NAME:

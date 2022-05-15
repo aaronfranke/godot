@@ -2357,6 +2357,14 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
 		}
+		case Variant::VECTOR4: {
+			Vector4 a = p_a;
+			Vector4 b = p_b;
+			Vector4 pa = p_pre_a;
+			Vector4 pb = p_post_b;
+
+			return a.cubic_interpolate(b, pa, pb, p_c);
+		}
 		case Variant::QUATERNION: {
 			Quaternion a = p_a;
 			Quaternion b = p_b;
@@ -2365,6 +2373,10 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 			return a.cubic_slerp(b, pa, pb, p_c);
 		}
+		// TODO Octonion
+		// TODO Basis4D?
+		// TODO Basis(3D)?
+		// TODO Upstream some stuff?
 		case Variant::AABB: {
 			AABB a = p_a;
 			AABB b = p_b;

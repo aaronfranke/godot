@@ -731,6 +731,76 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
+		} else if (id == "Vector4") { // 4D types.
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+			if (args.size() != 4) {
+				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+			value = Vector4(args[0], args[1], args[2], args[3]);
+		} else if (id == "Vector4i") {
+			Vector<int32_t> args;
+			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+			if (args.size() != 4) {
+				r_err_str = "Expected 4 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+			value = Vector4i(args[0], args[1], args[2], args[3]);
+		} else if (id == "Basis4D") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+			if (args.size() != 16) {
+				r_err_str = "Expected 16 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+			value = Basis4D(Vector4(args[0], args[1], args[2], args[3]), Vector4(args[4], args[5], args[6], args[7]), Vector4(args[8], args[9], args[10], args[11]), Vector4(args[12], args[13], args[14], args[15]));
+		} else if (id == "Transform4D") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+			if (args.size() != 20) {
+				r_err_str = "Expected 20 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+			value = Transform4D(Basis4D(Vector4(args[0], args[1], args[2], args[3]), Vector4(args[4], args[5], args[6], args[7]), Vector4(args[8], args[9], args[10], args[11]), Vector4(args[12], args[13], args[14], args[15])), Vector4(args[16], args[17], args[18], args[19]));
+		} else if (id == "Euler4D") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 6) {
+				r_err_str = "Expected 6 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Euler4D(args[0], args[1], args[2], args[3], args[4], args[5]);
+		} else if (id == "Octonion") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			if (args.size() != 8) {
+				r_err_str = "Expected 8 arguments for constructor";
+				return ERR_PARSE_ERROR;
+			}
+
+			value = Octonion(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
 		} else if (id == "Color") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1483,6 +1553,19 @@ static String rtos_fix(double p_value) {
 }
 
 Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int recursion_count) {
+#define WRITE_LINEAR_TYPE(variant_name, struct_name, primitive_type)                \
+	case Variant::variant_name: {                                                   \
+		String s = #struct_name "(";                                                \
+		struct_name val = p_variant;                                                \
+		for (size_t i = 0; i < sizeof(struct_name) / sizeof(primitive_type); i++) { \
+			if (i != 0) {                                                           \
+				s += ", ";                                                          \
+			}                                                                       \
+			s += rtos_fix(((primitive_type *)&val)[i]);                             \
+		}                                                                           \
+		p_store_string_func(p_store_string_ud, s + ")");                            \
+	} break;
+
 	switch (p_variant.get_type()) {
 		case Variant::NIL: {
 			p_store_string_func(p_store_string_ud, "null");
@@ -1596,7 +1679,13 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			p_store_string_func(p_store_string_ud, s + ")");
 		} break;
-
+			// 4D types.
+			WRITE_LINEAR_TYPE(VECTOR4, Vector4, real_t);
+			WRITE_LINEAR_TYPE(VECTOR4I, Vector4i, int32_t);
+			WRITE_LINEAR_TYPE(BASIS4D, Basis4D, real_t);
+			WRITE_LINEAR_TYPE(TRANSFORM4D, Transform4D, real_t);
+			WRITE_LINEAR_TYPE(EULER4D, Euler4D, real_t);
+			WRITE_LINEAR_TYPE(OCTONION, Octonion, real_t);
 		// misc types
 		case Variant::COLOR: {
 			Color c = p_variant;

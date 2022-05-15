@@ -71,7 +71,7 @@ class CustomPropertyEditor : public PopupPanel {
 	GDCLASS(CustomPropertyEditor, PopupPanel);
 
 	enum {
-		MAX_VALUE_EDITORS = 12,
+		MAX_VALUE_EDITORS = 20,
 		MAX_ACTION_BUTTONS = 5,
 		OBJ_MENU_LOAD = 0,
 		OBJ_MENU_EDIT = 1,

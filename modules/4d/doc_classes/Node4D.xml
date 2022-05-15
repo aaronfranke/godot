@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Node4D" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A 4D game object, inherited by all 4D-related nodes.
+	</brief_description>
+	<description>
+		A 4D game object, with a 4D transformation. All 4D nodes inherit from Node4D. Has a [member transform] which can be decomposed into a [Vector4] [member position], [Vector4] [member scale], [Euler4D] [member rotation].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="apply_scale">
+			<return type="void" />
+			<argument index="0" name="ratio" type="Vector4" />
+			<description>
+				Apply a scale to this [Node4D] in the parent-relative space. If you want to scale in object-local space, just multiply [member scale].
+			</description>
+		</method>
+		<method name="translate_local">
+			<return type="void" />
+			<argument index="0" name="offset" type="Vector4" />
+			<description>
+				Translate this [Node4D] in object-local space. If you want to translate in parent-relative space, just add to [member position].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="basis" type="Basis4D" setter="set_basis" getter="get_basis" default="Basis4D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)">
+			The transformation basis of this [Node4D]. This is the same as [code]transform.basis[/code].
+		</member>
+		<member name="position" type="Vector4" setter="set_position" getter="get_position" default="Vector4(0, 0, 0, 0)">
+			The position of this [Node4D]. This is the same as [code]transform.origin[/code].
+		</member>
+		<member name="rotation" type="Euler4D" setter="set_rotation" getter="get_rotation" default="Euler4D(0, 0, 0, 0, 0, 0)">
+			The rotation of this [Node4D], in the form of an [Euler4D]. The first 3 angles are analogous to 3D rotation.
+		</member>
+		<member name="scale" type="Vector4" setter="set_scale" getter="get_scale" default="Vector4(1, 1, 1, 1)">
+			The scale of this [Node4D]. This is the length of each basis vector.
+		</member>
+		<member name="transform" type="Transform4D" setter="set_transform" getter="get_transform" default="Transform4D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0)">
+			The transformation matrix of this [Node4D]. This is a combination of [member basis] and [member origin].
+		</member>
+	</members>
+</class>

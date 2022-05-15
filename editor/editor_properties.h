@@ -655,6 +655,112 @@ public:
 	EditorPropertyTransform3D();
 };
 
+// 4D types.
+class EditorPropertyVector4 : public EditorProperty {
+	GDCLASS(EditorPropertyVector4, EditorProperty);
+	EditorSpinSlider *spin[4];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	virtual void update_using_vector(Vector4 p_vector);
+	virtual Vector4 get_vector();
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyVector4(bool p_force_wide = false);
+};
+
+class EditorPropertyVector4i : public EditorProperty {
+	GDCLASS(EditorPropertyVector4i, EditorProperty);
+	EditorSpinSlider *spin[4];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyVector4i(bool p_force_wide = false);
+};
+
+class EditorPropertyBasis4D : public EditorProperty {
+	GDCLASS(EditorPropertyBasis4D, EditorProperty);
+	EditorSpinSlider *spin[16];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyBasis4D();
+};
+
+class EditorPropertyTransform4D : public EditorProperty {
+	GDCLASS(EditorPropertyTransform4D, EditorProperty);
+	EditorSpinSlider *spin[20];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	virtual void update_using_transform(Transform4D p_transform);
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyTransform4D();
+};
+
+class EditorPropertyEuler4D : public EditorProperty {
+	GDCLASS(EditorPropertyEuler4D, EditorProperty);
+	EditorSpinSlider *spin[6];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyEuler4D();
+};
+
+class EditorPropertyOctonion : public EditorProperty {
+	GDCLASS(EditorPropertyOctonion, EditorProperty);
+	EditorSpinSlider *spin[8];
+	bool setting = false;
+	void _value_changed(double p_val, const String &p_name);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	virtual void update_property() override;
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	EditorPropertyOctonion();
+};
+
 class EditorPropertyColor : public EditorProperty {
 	GDCLASS(EditorPropertyColor, EditorProperty);
 	ColorPickerButton *picker = nullptr;

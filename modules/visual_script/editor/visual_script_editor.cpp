@@ -394,6 +394,25 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::TRANSFORM3D:
 				color = Color(0.96, 0.66, 0.43);
 				break;
+				// 4D types.
+			case Variant::VECTOR4:
+				color = Color(1.0, 0.125, 0.95);
+				break;
+			case Variant::VECTOR4I:
+				color = Color(1.0, 0.125, 0.95);
+				break;
+			case Variant::BASIS4D:
+				color = Color(0.89, 0.93, 0.41);
+				break;
+			case Variant::TRANSFORM4D:
+				color = Color(0.96, 0.66, 0.43);
+				break;
+			case Variant::EULER4D:
+				color = Color(0.89, 0.93, 0.41);
+				break;
+			case Variant::OCTONION:
+				color = Color(0.93, 0.41, 0.64);
+				break;
 
 			case Variant::COLOR:
 				color = Color(0.62, 1.0, 0.44);
@@ -481,6 +500,9 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 				break;
 			case Variant::VECTOR3I:
 				color = Color(0.86, 0.42, 0.93);
+				break;
+			case Variant::VECTOR4:
+				color = Color(1.0, 0.125, 0.95);
 				break;
 			case Variant::TRANSFORM2D:
 				color = Color(0.59, 0.81, 0.1);
@@ -621,6 +643,12 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Vector4i"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Basis4D"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Transform4D"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Euler4D"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Octonion"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
@@ -1081,6 +1109,12 @@ void VisualScriptEditor::_update_members() {
 		Control::get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Vector4i"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Basis4D"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Transform4D"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Euler4D"), SNAME("EditorIcons")),
+		Control::get_theme_icon(SNAME("Octonion"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 		Control::get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
@@ -3486,6 +3520,19 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				n->set_basic_type(Variant::BASIS);
 			} else if (property_path[0] == "Transform3D") {
 				n->set_basic_type(Variant::TRANSFORM3D);
+				// 4D types.
+			} else if (property_path[0] == "Vector4") {
+				n->set_basic_type(Variant::VECTOR4);
+			} else if (property_path[0] == "Vector4i") {
+				n->set_basic_type(Variant::VECTOR4I);
+			} else if (property_path[0] == "Basis4D") {
+				n->set_basic_type(Variant::BASIS4D);
+			} else if (property_path[0] == "Transform4D") {
+				n->set_basic_type(Variant::TRANSFORM4D);
+			} else if (property_path[0] == "Euler4D") {
+				n->set_basic_type(Variant::EULER4D);
+			} else if (property_path[0] == "Octonion") {
+				n->set_basic_type(Variant::OCTONION);
 			} else if (property_path[0] == "Color") {
 				n->set_basic_type(Variant::COLOR);
 			} else if (property_path[0] == "RID") {

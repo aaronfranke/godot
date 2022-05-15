@@ -56,6 +56,12 @@
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
 
+// 4D includes.
+#include "modules/4d/math/euler_4d.h"
+#include "modules/4d/math/octonion.h"
+#include "modules/4d/math/transform_4d.h"
+#include "modules/4d/math/vector4i.h"
+
 class Object;
 
 struct PropertyInfo;
@@ -118,6 +124,14 @@ public:
 		PACKED_VECTOR2_ARRAY,
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
+
+		// 4D types.
+		VECTOR4,
+		VECTOR4I,
+		BASIS4D,
+		TRANSFORM4D,
+		EULER4D,
+		OCTONION,
 
 		VARIANT_MAX
 	};
@@ -210,6 +224,10 @@ private:
 		::AABB *_aabb;
 		Basis *_basis;
 		Transform3D *_transform3d;
+		Basis4D *_basis4d;
+		Transform4D *_transform4d;
+		Euler4D *_euler4d;
+		Octonion *_octonion;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 };
@@ -261,6 +279,14 @@ private:
 			true, //PACKED_VECTOR2_ARRAY,
 			true, //PACKED_VECTOR3_ARRAY,
 			true, //PACKED_COLOR_ARRAY,
+
+			// 4D types.
+			false, //VECTOR4,
+			false, // VECTOR4I,
+			true, // BASIS4D,
+			true, // TRANSFORM4D,
+			true, // EULER4D,
+			true, // OCTONION,
 		};
 
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
@@ -373,6 +399,14 @@ public:
 	operator Vector<::RID>() const;
 	operator Vector<Vector2>() const;
 
+	// 4D types.
+	operator Vector4() const;
+	operator Vector4i() const;
+	operator Basis4D() const;
+	operator Transform4D() const;
+	operator Euler4D() const;
+	operator Octonion() const;
+
 	// some core type enums to convert to
 	operator Side() const;
 	operator Orientation() const;
@@ -438,6 +472,14 @@ public:
 	Variant(const Vector<StringName> &p_array);
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
+
+	// 4D types.
+	Variant(const Vector4 &p_vector4);
+	Variant(const Vector4i &p_vector4i);
+	Variant(const Basis4D &p_basis4d);
+	Variant(const Transform4D &p_transform4d);
+	Variant(const Euler4D &p_euler4d);
+	Variant(const Octonion &p_octonion);
 
 	Variant(const IPAddress &p_address);
 

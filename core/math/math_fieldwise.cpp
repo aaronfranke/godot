@@ -160,6 +160,107 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
+		// 4D types.
+		case Variant::VECTOR4: {
+			SETUP_TYPE(Vector4)
+
+			/**/ TRY_TRANSFER_FIELD("x", x)
+			else TRY_TRANSFER_FIELD("y", y)
+			else TRY_TRANSFER_FIELD("z", z)
+			else TRY_TRANSFER_FIELD("w", w)
+
+			return target;
+		}
+
+		case Variant::VECTOR4I: {
+			SETUP_TYPE(Vector4i)
+
+			/**/ TRY_TRANSFER_FIELD("x", x)
+			else TRY_TRANSFER_FIELD("y", y)
+			else TRY_TRANSFER_FIELD("z", z)
+			else TRY_TRANSFER_FIELD("w", w)
+
+			return target;
+		}
+
+		case Variant::BASIS4D: {
+			SETUP_TYPE(Basis4D)
+
+			/**/ TRY_TRANSFER_FIELD("xx", x.x)
+			else TRY_TRANSFER_FIELD("xy", y.x)
+			else TRY_TRANSFER_FIELD("xz", z.x)
+			else TRY_TRANSFER_FIELD("xw", w.x)
+			else TRY_TRANSFER_FIELD("yx", x.y)
+			else TRY_TRANSFER_FIELD("yy", y.y)
+			else TRY_TRANSFER_FIELD("yz", z.y)
+			else TRY_TRANSFER_FIELD("yw", w.y)
+			else TRY_TRANSFER_FIELD("zx", x.z)
+			else TRY_TRANSFER_FIELD("zy", y.z)
+			else TRY_TRANSFER_FIELD("zz", z.z)
+			else TRY_TRANSFER_FIELD("zw", w.z)
+			else TRY_TRANSFER_FIELD("wx", x.w)
+			else TRY_TRANSFER_FIELD("wy", y.w)
+			else TRY_TRANSFER_FIELD("wz", z.w)
+			else TRY_TRANSFER_FIELD("ww", w.w)
+
+			return target;
+		}
+
+		case Variant::TRANSFORM4D: {
+			SETUP_TYPE(Transform4D)
+
+			/**/ TRY_TRANSFER_FIELD("xx", basis.x.x)
+			else TRY_TRANSFER_FIELD("xy", basis.y.x)
+			else TRY_TRANSFER_FIELD("xz", basis.z.x)
+			else TRY_TRANSFER_FIELD("xw", basis.w.x)
+			else TRY_TRANSFER_FIELD("yx", basis.x.y)
+			else TRY_TRANSFER_FIELD("yy", basis.y.y)
+			else TRY_TRANSFER_FIELD("yz", basis.z.y)
+			else TRY_TRANSFER_FIELD("yw", basis.w.y)
+			else TRY_TRANSFER_FIELD("zx", basis.x.z)
+			else TRY_TRANSFER_FIELD("zy", basis.y.z)
+			else TRY_TRANSFER_FIELD("zz", basis.z.z)
+			else TRY_TRANSFER_FIELD("zw", basis.w.z)
+			else TRY_TRANSFER_FIELD("wx", basis.x.w)
+			else TRY_TRANSFER_FIELD("wy", basis.y.w)
+			else TRY_TRANSFER_FIELD("wz", basis.z.w)
+			else TRY_TRANSFER_FIELD("ww", basis.w.w)
+			else TRY_TRANSFER_FIELD("xo", origin.x)
+			else TRY_TRANSFER_FIELD("yo", origin.y)
+			else TRY_TRANSFER_FIELD("zo", origin.z)
+			else TRY_TRANSFER_FIELD("wo", origin.w)
+
+			return target;
+		}
+
+		case Variant::EULER4D: {
+			SETUP_TYPE(Euler4D)
+
+			/**/ TRY_TRANSFER_FIELD("yz", yz)
+			else TRY_TRANSFER_FIELD("zx", zx)
+			else TRY_TRANSFER_FIELD("xy", xy)
+			else TRY_TRANSFER_FIELD("xw", xw)
+			else TRY_TRANSFER_FIELD("yw", yw)
+			else TRY_TRANSFER_FIELD("zw", zw)
+
+			return target;
+		}
+
+		case Variant::OCTONION: {
+			SETUP_TYPE(Octonion)
+
+			/**/ TRY_TRANSFER_FIELD("r", r)
+			else TRY_TRANSFER_FIELD("i", i)
+			else TRY_TRANSFER_FIELD("j", j)
+			else TRY_TRANSFER_FIELD("k", k)
+			else TRY_TRANSFER_FIELD("l", l)
+			else TRY_TRANSFER_FIELD("m", m)
+			else TRY_TRANSFER_FIELD("n", n)
+			else TRY_TRANSFER_FIELD("o", o)
+
+			return target;
+		}
+
 		default: {
 			ERR_FAIL_V(p_target);
 		}

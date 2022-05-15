@@ -151,6 +151,20 @@ public:
 	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform3d; }
 	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *v) { return v->_data._transform3d; }
 
+	// 4D types.
+	_FORCE_INLINE_ static Vector4 *get_vector4(Variant *v) { return reinterpret_cast<Vector4 *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Vector4 *get_vector4(const Variant *v) { return reinterpret_cast<const Vector4 *>(v->_data._mem); }
+	_FORCE_INLINE_ static Vector4i *get_vector4i(Variant *v) { return reinterpret_cast<Vector4i *>(v->_data._mem); }
+	_FORCE_INLINE_ static const Vector4i *get_vector4i(const Variant *v) { return reinterpret_cast<const Vector4i *>(v->_data._mem); }
+	_FORCE_INLINE_ static Basis4D *get_basis4d(Variant *v) { return v->_data._basis4d; }
+	_FORCE_INLINE_ static const Basis4D *get_basis4d(const Variant *v) { return v->_data._basis4d; }
+	_FORCE_INLINE_ static Transform4D *get_transform4d(Variant *v) { return v->_data._transform4d; }
+	_FORCE_INLINE_ static const Transform4D *get_transform4d(const Variant *v) { return v->_data._transform4d; }
+	_FORCE_INLINE_ static Euler4D *get_euler4d(Variant *v) { return v->_data._euler4d; }
+	_FORCE_INLINE_ static const Euler4D *get_euler4d(const Variant *v) { return v->_data._euler4d; }
+	_FORCE_INLINE_ static Octonion *get_octonion(Variant *v) { return v->_data._octonion; }
+	_FORCE_INLINE_ static const Octonion *get_octonion(const Variant *v) { return v->_data._octonion; }
+
 	// Misc types.
 	_FORCE_INLINE_ static Color *get_color(Variant *v) { return reinterpret_cast<Color *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Color *get_color(const Variant *v) { return reinterpret_cast<const Color *>(v->_data._mem); }
@@ -284,6 +298,22 @@ public:
 		v->_data.packed_array = Variant::PackedArrayRef<Color>::create(Vector<Color>());
 		v->type = Variant::PACKED_COLOR_ARRAY;
 	}
+	_FORCE_INLINE_ static void init_basis4d(Variant *v) {
+		v->_data._basis4d = memnew(Basis4D);
+		v->type = Variant::BASIS4D;
+	}
+	_FORCE_INLINE_ static void init_transform4d(Variant *v) {
+		v->_data._transform4d = memnew(Transform4D);
+		v->type = Variant::TRANSFORM4D;
+	}
+	_FORCE_INLINE_ static void init_euler4d(Variant *v) {
+		v->_data._euler4d = memnew(Euler4D);
+		v->type = Variant::EULER4D;
+	}
+	_FORCE_INLINE_ static void init_octonion(Variant *v) {
+		v->_data._octonion = memnew(Octonion);
+		v->type = Variant::OCTONION;
+	}
 	_FORCE_INLINE_ static void init_object(Variant *v) {
 		object_assign_null(v);
 		v->type = Variant::OBJECT;
@@ -330,6 +360,19 @@ public:
 				return get_rect2i(v);
 			case Variant::TRANSFORM3D:
 				return get_transform(v);
+			// 4D types.
+			case Variant::VECTOR4:
+				return get_vector4(v);
+			case Variant::VECTOR4I:
+				return get_vector4i(v);
+			case Variant::BASIS4D:
+				return get_basis4d(v);
+			case Variant::TRANSFORM4D:
+				return get_transform4d(v);
+			case Variant::EULER4D:
+				return get_euler4d(v);
+			case Variant::OCTONION:
+				return get_octonion(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
 			case Variant::QUATERNION:
@@ -408,6 +451,19 @@ public:
 				return get_rect2i(v);
 			case Variant::TRANSFORM3D:
 				return get_transform(v);
+			// 4D types.
+			case Variant::VECTOR4:
+				return get_vector4(v);
+			case Variant::VECTOR4I:
+				return get_vector4i(v);
+			case Variant::BASIS4D:
+				return get_basis4d(v);
+			case Variant::TRANSFORM4D:
+				return get_transform4d(v);
+			case Variant::EULER4D:
+				return get_euler4d(v);
+			case Variant::OCTONION:
+				return get_octonion(v);
 			case Variant::TRANSFORM2D:
 				return get_transform2d(v);
 			case Variant::QUATERNION:
@@ -627,6 +683,43 @@ struct VariantGetInternalPtr<Basis> {
 	static const Basis *get_ptr(const Variant *v) { return VariantInternal::get_basis(v); }
 };
 
+// 4D types.
+template <>
+struct VariantGetInternalPtr<Vector4> {
+	static Vector4 *get_ptr(Variant *v) { return VariantInternal::get_vector4(v); }
+	static const Vector4 *get_ptr(const Variant *v) { return VariantInternal::get_vector4(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Vector4i> {
+	static Vector4i *get_ptr(Variant *v) { return VariantInternal::get_vector4i(v); }
+	static const Vector4i *get_ptr(const Variant *v) { return VariantInternal::get_vector4i(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Basis4D> {
+	static Basis4D *get_ptr(Variant *v) { return VariantInternal::get_basis4d(v); }
+	static const Basis4D *get_ptr(const Variant *v) { return VariantInternal::get_basis4d(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Transform4D> {
+	static Transform4D *get_ptr(Variant *v) { return VariantInternal::get_transform4d(v); }
+	static const Transform4D *get_ptr(const Variant *v) { return VariantInternal::get_transform4d(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Euler4D> {
+	static Euler4D *get_ptr(Variant *v) { return VariantInternal::get_euler4d(v); }
+	static const Euler4D *get_ptr(const Variant *v) { return VariantInternal::get_euler4d(v); }
+};
+
+template <>
+struct VariantGetInternalPtr<Octonion> {
+	static Octonion *get_ptr(Variant *v) { return VariantInternal::get_octonion(v); }
+	static const Octonion *get_ptr(const Variant *v) { return VariantInternal::get_octonion(v); }
+};
+
 //
 
 template <>
@@ -765,6 +858,8 @@ VARIANT_ACCESSOR_NUMBER(Vector2::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector2i::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector3::Axis)
 VARIANT_ACCESSOR_NUMBER(Vector3i::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector4::Axis)
+VARIANT_ACCESSOR_NUMBER(Vector4i::Axis)
 
 template <>
 struct VariantInternalAccessor<Basis::EulerOrder> {
@@ -866,6 +961,43 @@ template <>
 struct VariantInternalAccessor<Basis> {
 	static _FORCE_INLINE_ const Basis &get(const Variant *v) { return *VariantInternal::get_basis(v); }
 	static _FORCE_INLINE_ void set(Variant *v, const Basis &p_value) { *VariantInternal::get_basis(v) = p_value; }
+};
+
+// 4D types.
+template <>
+struct VariantInternalAccessor<Vector4> {
+	static _FORCE_INLINE_ const Vector4 &get(const Variant *v) { return *VariantInternal::get_vector4(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Vector4 &p_value) { *VariantInternal::get_vector4(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Vector4i> {
+	static _FORCE_INLINE_ const Vector4i &get(const Variant *v) { return *VariantInternal::get_vector4i(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Vector4i &p_value) { *VariantInternal::get_vector4i(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Basis4D> {
+	static _FORCE_INLINE_ const Basis4D &get(const Variant *v) { return *VariantInternal::get_basis4d(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Basis4D &p_value) { *VariantInternal::get_basis4d(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Transform4D> {
+	static _FORCE_INLINE_ const Transform4D &get(const Variant *v) { return *VariantInternal::get_transform4d(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Transform4D &p_value) { *VariantInternal::get_transform4d(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Euler4D> {
+	static _FORCE_INLINE_ const Euler4D &get(const Variant *v) { return *VariantInternal::get_euler4d(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Euler4D &p_value) { *VariantInternal::get_euler4d(v) = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Octonion> {
+	static _FORCE_INLINE_ const Octonion &get(const Variant *v) { return *VariantInternal::get_octonion(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Octonion &p_value) { *VariantInternal::get_octonion(v) = p_value; }
 };
 
 template <>
@@ -1034,6 +1166,7 @@ INITIALIZER_INT(Vector2::Axis)
 INITIALIZER_INT(Vector2i::Axis)
 INITIALIZER_INT(Vector3::Axis)
 INITIALIZER_INT(Vector3i::Axis)
+INITIALIZER_INT(Vector4::Axis)
 
 template <>
 struct VariantInitializer<double> {
@@ -1108,6 +1241,37 @@ struct VariantInitializer<Basis> {
 template <>
 struct VariantInitializer<Transform3D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform(v); }
+};
+
+// 4D types.
+template <>
+struct VariantInitializer<Vector4> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4>(v); }
+};
+
+template <>
+struct VariantInitializer<Vector4i> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<Vector4i>(v); }
+};
+
+template <>
+struct VariantInitializer<Basis4D> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_basis4d(v); }
+};
+
+template <>
+struct VariantInitializer<Transform4D> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform4d(v); }
+};
+
+template <>
+struct VariantInitializer<Euler4D> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_euler4d(v); }
+};
+
+template <>
+struct VariantInitializer<Octonion> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_octonion(v); }
 };
 
 template <>
@@ -1287,6 +1451,37 @@ struct VariantZeroAssigner<Basis> {
 template <>
 struct VariantZeroAssigner<Transform3D> {
 	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform3D(); }
+};
+
+// 4D types.
+template <>
+struct VariantZeroAssigner<Vector4> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector4(v) = Vector4(); }
+};
+
+template <>
+struct VariantZeroAssigner<Vector4i> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector4i(v) = Vector4i(); }
+};
+
+template <>
+struct VariantZeroAssigner<Basis4D> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_basis4d(v) = Basis4D(); }
+};
+
+template <>
+struct VariantZeroAssigner<Transform4D> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform4d(v) = Transform4D(); }
+};
+
+template <>
+struct VariantZeroAssigner<Euler4D> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_euler4d(v) = Euler4D(); }
+};
+
+template <>
+struct VariantZeroAssigner<Octonion> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_octonion(v) = Octonion(); }
 };
 
 template <>

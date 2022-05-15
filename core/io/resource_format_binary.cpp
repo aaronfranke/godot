@@ -81,6 +81,13 @@ enum {
 	VARIANT_VECTOR3I = 47,
 	VARIANT_PACKED_INT64_ARRAY = 48,
 	VARIANT_PACKED_FLOAT64_ARRAY = 49,
+	// 4D types.
+	VARIANT_VECTOR4 = 401,
+	VARIANT_VECTOR4I = 402,
+	VARIANT_BASIS4D = 403,
+	VARIANT_TRANSFORM4D = 404,
+	VARIANT_EULER4D = 405,
+	VARIANT_OCTONION = 406,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -613,6 +620,89 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 #endif
 
 			r_v = array;
+		} break;
+		// 4D types.
+		case VARIANT_VECTOR4: {
+			Vector4 v;
+			v.x = f->get_real();
+			v.y = f->get_real();
+			v.z = f->get_real();
+			v.w = f->get_real();
+			r_v = v;
+		} break;
+		case VARIANT_VECTOR4I: {
+			Vector4i v;
+			v.x = f->get_32();
+			v.y = f->get_32();
+			v.z = f->get_32();
+			v.w = f->get_32();
+			r_v = v;
+		} break;
+		case VARIANT_BASIS4D: {
+			Basis4D b;
+			b.x.x = f->get_real();
+			b.x.y = f->get_real();
+			b.x.z = f->get_real();
+			b.x.w = f->get_real();
+			b.y.x = f->get_real();
+			b.y.y = f->get_real();
+			b.y.z = f->get_real();
+			b.y.w = f->get_real();
+			b.z.x = f->get_real();
+			b.z.y = f->get_real();
+			b.z.z = f->get_real();
+			b.z.w = f->get_real();
+			b.w.x = f->get_real();
+			b.w.y = f->get_real();
+			b.w.z = f->get_real();
+			b.w.w = f->get_real();
+			r_v = b;
+		} break;
+		case VARIANT_TRANSFORM4D: {
+			Transform4D t;
+			t.basis.x.x = f->get_real();
+			t.basis.x.y = f->get_real();
+			t.basis.x.z = f->get_real();
+			t.basis.x.w = f->get_real();
+			t.basis.y.x = f->get_real();
+			t.basis.y.y = f->get_real();
+			t.basis.y.z = f->get_real();
+			t.basis.y.w = f->get_real();
+			t.basis.z.x = f->get_real();
+			t.basis.z.y = f->get_real();
+			t.basis.z.z = f->get_real();
+			t.basis.z.w = f->get_real();
+			t.basis.w.x = f->get_real();
+			t.basis.w.y = f->get_real();
+			t.basis.w.z = f->get_real();
+			t.basis.w.w = f->get_real();
+			t.origin.x = f->get_real();
+			t.origin.y = f->get_real();
+			t.origin.z = f->get_real();
+			t.origin.w = f->get_real();
+			r_v = t;
+		} break;
+		case VARIANT_EULER4D: {
+			Euler4D e;
+			e.xy = f->get_real();
+			e.zx = f->get_real();
+			e.xw = f->get_real();
+			e.yz = f->get_real();
+			e.yw = f->get_real();
+			e.zw = f->get_real();
+			r_v = e;
+		} break;
+		case VARIANT_OCTONION: {
+			Octonion o;
+			o.r = f->get_real();
+			o.i = f->get_real();
+			o.j = f->get_real();
+			o.k = f->get_real();
+			o.l = f->get_real();
+			o.m = f->get_real();
+			o.n = f->get_real();
+			o.o = f->get_real();
+			r_v = o;
 		} break;
 		default: {
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
@@ -1749,6 +1839,89 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 				f->store_real(r[i].a);
 			}
 
+		} break;
+		// 4D types.
+		case Variant::VECTOR4: {
+			f->store_32(VARIANT_VECTOR4);
+			Vector4 val = p_property;
+			f->store_real(val.x);
+			f->store_real(val.y);
+			f->store_real(val.z);
+			f->store_real(val.w);
+		} break;
+		case Variant::VECTOR4I: {
+			f->store_32(VARIANT_VECTOR4I);
+			Vector4i val = p_property;
+			f->store_32(val.x);
+			f->store_32(val.y);
+			f->store_32(val.z);
+			f->store_32(val.w);
+		} break;
+		case Variant::BASIS4D: {
+			f->store_32(VARIANT_BASIS4D);
+			Basis4D val = p_property;
+			f->store_real(val.x.x);
+			f->store_real(val.x.y);
+			f->store_real(val.x.z);
+			f->store_real(val.x.w);
+			f->store_real(val.y.x);
+			f->store_real(val.y.y);
+			f->store_real(val.y.z);
+			f->store_real(val.y.w);
+			f->store_real(val.z.x);
+			f->store_real(val.z.y);
+			f->store_real(val.z.z);
+			f->store_real(val.z.w);
+			f->store_real(val.w.x);
+			f->store_real(val.w.y);
+			f->store_real(val.w.z);
+			f->store_real(val.w.w);
+		} break;
+		case Variant::TRANSFORM4D: {
+			f->store_32(VARIANT_TRANSFORM4D);
+			Transform4D val = p_property;
+			f->store_real(val.basis.x.x);
+			f->store_real(val.basis.x.y);
+			f->store_real(val.basis.x.z);
+			f->store_real(val.basis.x.w);
+			f->store_real(val.basis.y.x);
+			f->store_real(val.basis.y.y);
+			f->store_real(val.basis.y.z);
+			f->store_real(val.basis.y.w);
+			f->store_real(val.basis.z.x);
+			f->store_real(val.basis.z.y);
+			f->store_real(val.basis.z.z);
+			f->store_real(val.basis.z.w);
+			f->store_real(val.basis.w.x);
+			f->store_real(val.basis.w.y);
+			f->store_real(val.basis.w.z);
+			f->store_real(val.basis.w.w);
+			f->store_real(val.origin.x);
+			f->store_real(val.origin.y);
+			f->store_real(val.origin.z);
+			f->store_real(val.origin.w);
+		} break;
+		case Variant::EULER4D: {
+			f->store_32(VARIANT_EULER4D);
+			Euler4D val = p_property;
+			f->store_real(val.xy);
+			f->store_real(val.zx);
+			f->store_real(val.xw);
+			f->store_real(val.yz);
+			f->store_real(val.yw);
+			f->store_real(val.zw);
+		} break;
+		case Variant::OCTONION: {
+			f->store_32(VARIANT_OCTONION);
+			Octonion val = p_property;
+			f->store_real(val.r);
+			f->store_real(val.i);
+			f->store_real(val.j);
+			f->store_real(val.k);
+			f->store_real(val.l);
+			f->store_real(val.m);
+			f->store_real(val.n);
+			f->store_real(val.o);
 		} break;
 		default: {
 			ERR_FAIL_MSG("Invalid variant.");

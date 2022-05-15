@@ -528,6 +528,69 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			return r;
 		}
 
+		// 4D types.
+		case Variant::VECTOR4: {
+			Vector4 i = p_initial_val;
+			Vector4 d = p_delta_val;
+			Vector4 r;
+			for (int index = 0; index < 4; index++) {
+				APPLY_EQUATION(elements[index]);
+			}
+			return r;
+		}
+		case Variant::VECTOR4I: {
+			Vector4i i = p_initial_val;
+			Vector4i d = p_delta_val;
+			Vector4i r;
+			for (int index = 0; index < 4; index++) {
+				APPLY_EQUATION(elements[index]);
+			}
+			return r;
+		}
+		case Variant::BASIS4D: {
+			Basis4D i = p_initial_val;
+			Basis4D d = p_delta_val;
+			Basis4D r;
+			for (int index = 0; index < 4; index++) {
+				APPLY_EQUATION(x[index]);
+				APPLY_EQUATION(y[index]);
+				APPLY_EQUATION(z[index]);
+				APPLY_EQUATION(w[index]);
+			}
+			return r;
+		}
+		case Variant::TRANSFORM4D: {
+			Transform4D i = p_initial_val;
+			Transform4D d = p_delta_val;
+			Transform4D r;
+			for (int index = 0; index < 4; index++) {
+				APPLY_EQUATION(basis.x[index]);
+				APPLY_EQUATION(basis.y[index]);
+				APPLY_EQUATION(basis.z[index]);
+				APPLY_EQUATION(basis.w[index]);
+				APPLY_EQUATION(origin[index]);
+			}
+			return r;
+		}
+		case Variant::EULER4D: {
+			Euler4D i = p_initial_val;
+			Euler4D d = p_delta_val;
+			Euler4D r;
+			for (int index = 0; index < 6; index++) {
+				APPLY_EQUATION(elements[index]);
+			}
+			return r;
+		}
+		case Variant::OCTONION: {
+			Octonion i = p_initial_val;
+			Octonion d = p_delta_val;
+			Octonion r;
+			for (int index = 0; index < 8; index++) {
+				APPLY_EQUATION(elements[index]);
+			}
+			return r;
+		}
+
 		case Variant::COLOR: {
 			Color i = p_initial_val;
 			Color d = p_delta_val;

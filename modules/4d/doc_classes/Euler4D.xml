@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Euler4D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents rotation in 4D using 6 Euler angles.
+	</brief_description>
+	<description>
+		Represents rotation in 4D using 6 Euler angles in the order ZX, ZW, XW, YZ, XY, YW.
+		YZ, ZX, and XY are equivalent to rotating around the X, Y, and Z axes in 3D.
+		XW, YW, and ZW are rotations perpendicular to YZ, ZX, and XY, respectively (the ones that share no letters are perpendicular). Perpencular rotations cause something called "double rotation" which is a concept unique to 4D and above.
+		Here's what determines the rotation order of Euler angles. For 3D, we have Yaw, Pitch, and Roll, in that order.
+		Yaw acts as horizontal rotation (ZX plane, no Y so it's horizontal). For the 4D equivalent of Yaw, we have three angles that rotate horizontally (no Y): ZX, ZW, and XW. Therefore, these three go first. More specifically, ZX is yaw-like Yaw, ZW is pitch-like Yaw, and XW is roll-like Yaw, so they goes in the order ZX, ZW, XW.
+		Next is Pitch. Pitch is vertical rotation that changes the direction an object is pointing by moving its forward vector (-Z) up or down (Y), so pitch only exists in the YZ plane. Therefore, for the 4D equivalent of pitch, there is only one angle that does this: YZ.
+		Lastly is Roll. Roll is also vertical rotation, but it brings the sides of an object higher or lower. For the 4D equivalent of roll, we want every angle that involves Y but not Z, so that gives us two angles: XY and YW. Therefore, these two go last.
+	</description>
+	<tutorials>
+		<link title="Rotation in 4D on Wikipedia">https://en.wikipedia.org/wiki/Rotations_in_4-dimensional_Euclidean_space</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Euler4D">
+			<return type="Euler4D" />
+			<description>
+				Constructs a default [Euler4D] representing no rotation, with all components set to 0.
+			</description>
+		</constructor>
+		<constructor name="Euler4D">
+			<return type="Euler4D" />
+			<argument index="0" name="from" type="Euler4D" />
+			<description>
+				Constructs an [Euler4D] from an existing [Euler4D].
+			</description>
+		</constructor>
+		<constructor name="Euler4D">
+			<return type="Euler4D" />
+			<argument index="0" name="yz" type="float" />
+			<argument index="1" name="zx" type="float" />
+			<argument index="2" name="xy" type="float" />
+			<description>
+				Constructs an Euler4D from 3 rotation angles, in the order YZ, ZX, XY. The XW, YW, and ZW angles are set to 0.
+			</description>
+		</constructor>
+		<constructor name="Euler4D">
+			<return type="Euler4D" />
+			<argument index="0" name="yz" type="float" />
+			<argument index="1" name="zx" type="float" />
+			<argument index="2" name="xy" type="float" />
+			<argument index="3" name="xw" type="float" />
+			<argument index="4" name="yw" type="float" />
+			<argument index="5" name="zw" type="float" />
+			<description>
+				Constructs an Euler4D from 6 rotation angles, in the order YZ, ZX, XY, XW, YW, ZW.
+			</description>
+		</constructor>
+		<constructor name="Euler4D">
+			<return type="Euler4D" />
+			<argument index="0" name="yz_zx_xy" type="Vector3" />
+			<description>
+				Constructs an Euler4D from 3D euler angles in a [Vector3] in the order YZ, ZX, XY. As such, the only rotation will be in 3D.
+			</description>
+		</constructor>
+		<constructor name="Euler4D">
+			<return type="Euler4D" />
+			<argument index="0" name="yz_zx_xy" type="Vector3" />
+			<argument index="1" name="xw_yw_zw" type="Vector3" />
+			<description>
+				Constructs an Euler4D from 3D euler angles in a [Vector3] in the order YZ, ZX, XY, and the second [Vector3] containing the XW, YW, and ZW angles.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="from_basis" qualifiers="static">
+			<return type="Euler4D" />
+			<argument index="0" name="basis" type="Basis4D" />
+			<description>
+				Constructs an [Euler4D] from a [Basis4D] rotation matrix.
+				[b]Note:[/b] Due to the way this is implemented, this process produces a LOT of floating-point error. With 32-bit floats, this has a margin of error of 0.1%.
+			</description>
+		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="euler" type="Euler4D" />
+			<description>
+				Returns [code]true[/code] if this [Euler4D] and [code]euler[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="to_basis" qualifiers="const">
+			<return type="Basis4D" />
+			<description>
+				Converts this [Euler4D] to a [Basis4D] rotation matrix.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="xw" type="float" setter="" getter="" default="0.0">
+			The rotation on the XW plane. This is perpendicular to YZ rotation, so we treat this as the fourth component.
+			When converting a [Basis4D] to an [Euler4D], this value will be on the range of [code](-PI, PI)[/code].
+		</member>
+		<member name="xy" type="float" setter="" getter="" default="0.0">
+			The rotation on the XY plane. This is equivalent to rotating around the Z axis in 3D, so we treat this as the third component.
+			When converting a [Basis4D] to an [Euler4D], this value will be on the range of [code](-PI/2, PI/2)[/code].
+		</member>
+		<member name="yw" type="float" setter="" getter="" default="0.0">
+			The rotation on the YW plane. This is perpendicular to ZX rotation, so we treat this as the fifth component.
+			When converting a [Basis4D] to an [Euler4D], this value will be on the range of [code](-PI/2, PI/2)[/code].
+		</member>
+		<member name="yz" type="float" setter="" getter="" default="0.0">
+			The rotation on the YZ plane. This is equivalent to rotating around the X axis in 3D, so we treat this as the first component.
+			When converting a [Basis4D] to an [Euler4D], this value will be on the range of [code](-PI/2, PI/2)[/code].
+		</member>
+		<member name="zw" type="float" setter="" getter="" default="0.0">
+			The rotation on the ZW plane. This is perpendicular to XY rotation, so we treat this as the sixth component.
+			When converting a [Basis4D] to an [Euler4D], this value will be on the range of [code](-PI/2, PI/2)[/code].
+		</member>
+		<member name="zx" type="float" setter="" getter="" default="0.0">
+			The rotation on the ZX plane. This is equivalent to rotating around the Y axis in 3D, so we treat this as the second component.
+			When converting a [Basis4D] to an [Euler4D], this value will be on the range of [code](-PI, PI)[/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="IDENTITY" value="Euler4D(0, 0, 0, 0, 0, 0)">
+			The identity [Euler4D], representing no rotation. All components are set to 0.
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Euler4D" />
+			<description>
+				Returns [code]true[/code] if the [Euler4D]s are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Euler4D" />
+			<argument index="0" name="right" type="float" />
+			<description>
+				Returns a new [Euler4D] with each component multiplied by [code]right[/code].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Euler4D" />
+			<argument index="0" name="right" type="int" />
+			<description>
+				Returns a new [Euler4D] with each component multiplied by [code]right[/code].
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Euler4D" />
+			<argument index="0" name="right" type="Euler4D" />
+			<description>
+				Adds two [Euler4D]s together, which adds each component angle.
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Euler4D" />
+			<argument index="0" name="right" type="Euler4D" />
+			<description>
+				Subtracts one [Euler4D] from another [Euler4D], which subtracts each component angle.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Euler4D" />
+			<description>
+				Returns [code]true[/code] if the [Euler4D]s are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the value of the component at the given index. Components are stored in the order YZ, ZX, XY, XW, YW, ZW.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Euler4D" />
+			<description>
+				Returns the negative value of the [Euler4D]. This is the same as writing [code]Euler4D(-e.yz, -e.zx, -e.xy, -e.xw, -e.yw, -e.zw)[/code].
+			</description>
+		</operator>
+	</operators>
+</class>

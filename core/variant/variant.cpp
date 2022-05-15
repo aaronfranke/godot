@@ -173,6 +173,25 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "PackedColorArray";
 
 		} break;
+		// 4D types.
+		case VECTOR4: {
+			return "Vector4";
+		} break;
+		case VECTOR4I: {
+			return "Vector4i";
+		} break;
+		case BASIS4D: {
+			return "Basis4D";
+		} break;
+		case TRANSFORM4D: {
+			return "Transform4D";
+		} break;
+		case EULER4D: {
+			return "Euler4D";
+		} break;
+		case OCTONION: {
+			return "Octonion";
+		} break;
 		default: {
 		}
 	}
@@ -878,6 +897,26 @@ bool Variant::is_zero() const {
 
 		} break;
 
+		// 4D types.
+		case VECTOR4: {
+			return *reinterpret_cast<const Vector4 *>(_data._mem) == Vector4();
+		} break;
+		case VECTOR4I: {
+			return *reinterpret_cast<const Vector4i *>(_data._mem) == Vector4i();
+		} break;
+		case BASIS4D: {
+			return *_data._basis4d == Basis4D();
+		} break;
+		case TRANSFORM4D: {
+			return *_data._transform4d == Transform4D();
+		} break;
+		case EULER4D: {
+			return *_data._euler4d == Euler4D();
+		} break;
+		case OCTONION: {
+			return *_data._octonion == Octonion();
+		} break;
+
 		// misc types
 		case COLOR: {
 			return *reinterpret_cast<const Color *>(_data._mem) == Color();
@@ -998,6 +1037,12 @@ bool Variant::is_one() const {
 			return *reinterpret_cast<const Vector3i *>(_data._mem) == Vector3i(1, 1, 1);
 
 		} break;
+		case VECTOR4: {
+			return *reinterpret_cast<const Vector4 *>(_data._mem) == Vector4(1, 1, 1, 1);
+		} break;
+		case VECTOR4I: {
+			return *reinterpret_cast<const Vector4i *>(_data._mem) == Vector4i(1, 1, 1, 1);
+		} break;
 		case PLANE: {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane(1, 1, 1, 1);
 
@@ -1101,6 +1146,26 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case TRANSFORM3D: {
 			_data._transform3d = memnew(Transform3D(*p_variant._data._transform3d));
+		} break;
+
+		// 4D types.
+		case VECTOR4: {
+			memnew_placement(_data._mem, Vector4(*reinterpret_cast<const Vector4 *>(p_variant._data._mem)));
+		} break;
+		case VECTOR4I: {
+			memnew_placement(_data._mem, Vector4i(*reinterpret_cast<const Vector4i *>(p_variant._data._mem)));
+		} break;
+		case BASIS4D: {
+			_data._basis4d = memnew(Basis4D(*p_variant._data._basis4d));
+		} break;
+		case TRANSFORM4D: {
+			_data._transform4d = memnew(Transform4D(*p_variant._data._transform4d));
+		} break;
+		case EULER4D: {
+			_data._euler4d = memnew(Euler4D(*p_variant._data._euler4d));
+		} break;
+		case OCTONION: {
+			_data._octonion = memnew(Octonion(*p_variant._data._octonion));
 		} break;
 
 		// misc types
@@ -1256,6 +1321,25 @@ void Variant::zero() {
 		case QUATERNION:
 			*reinterpret_cast<Quaternion *>(this->_data._mem) = Quaternion();
 			break;
+			// 4D types.
+		case VECTOR4:
+			*reinterpret_cast<Vector4 *>(this->_data._mem) = Vector4();
+			break;
+		case VECTOR4I:
+			*reinterpret_cast<Vector4i *>(this->_data._mem) = Vector4i();
+			break;
+		case BASIS4D:
+			*reinterpret_cast<Basis4D *>(this->_data._mem) = Basis4D();
+			break;
+		case TRANSFORM4D:
+			*reinterpret_cast<Transform4D *>(this->_data._mem) = Transform4D();
+			break;
+		case EULER4D:
+			*reinterpret_cast<Euler4D *>(this->_data._mem) = Euler4D();
+			break;
+		case OCTONION:
+			*reinterpret_cast<Octonion *>(this->_data._mem) = Octonion();
+			break;
 		case COLOR:
 			*reinterpret_cast<Color *>(this->_data._mem) = Color();
 			break;
@@ -1271,7 +1355,9 @@ void Variant::_clear_internal() {
 			reinterpret_cast<String *>(_data._mem)->~String();
 		} break;
 		/*
-		// no point, they don't allocate memory
+		// No point, they don't allocate memory.
+		VECTOR4,
+		VECTOR4I,
 		VECTOR3,
 		PLANE,
 		QUATERNION,
@@ -1290,6 +1376,20 @@ void Variant::_clear_internal() {
 		} break;
 		case TRANSFORM3D: {
 			memdelete(_data._transform3d);
+		} break;
+
+		// 4D types.
+		case BASIS4D: {
+			memdelete(_data._basis4d);
+		} break;
+		case TRANSFORM4D: {
+			memdelete(_data._transform4d);
+		} break;
+		case EULER4D: {
+			memdelete(_data._euler4d);
+		} break;
+		case OCTONION: {
+			memdelete(_data._octonion);
 		} break;
 
 			// misc types
@@ -1691,6 +1791,19 @@ String Variant::stringify(int recursion_count) const {
 			return operator Basis();
 		case TRANSFORM3D:
 			return operator Transform3D();
+		// 4D types.
+		case VECTOR4:
+			return operator Vector4();
+		case VECTOR4I:
+			return operator Vector4i();
+		case BASIS4D:
+			return operator Basis4D();
+		case TRANSFORM4D:
+			return operator Transform4D();
+		case EULER4D:
+			return operator Euler4D();
+		case OCTONION:
+			return operator Octonion();
 		case STRING_NAME:
 			return operator StringName();
 		case NODE_PATH:
@@ -1956,6 +2069,79 @@ Variant::operator Transform2D() const {
 		return m;
 	} else {
 		return Transform2D();
+	}
+}
+
+// 4D types.
+Variant::operator Vector4() const {
+	if (type == VECTOR4) {
+		return *reinterpret_cast<const Vector4 *>(_data._mem);
+	} else if (type == VECTOR4I) {
+		return Vector4(reinterpret_cast<const Vector4i *>(_data._mem)->x, reinterpret_cast<const Vector4i *>(_data._mem)->y, reinterpret_cast<const Vector4i *>(_data._mem)->z, reinterpret_cast<const Vector4i *>(_data._mem)->w);
+	} else if (type == VECTOR3) {
+		return Vector4(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y, reinterpret_cast<const Vector3 *>(_data._mem)->z, 0.0);
+	} else if (type == VECTOR3I) {
+		return Vector4(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0.0);
+	} else if (type == VECTOR2) {
+		return Vector4(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0, 0.0);
+	} else if (type == VECTOR2I) {
+		return Vector4(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0, 0.0);
+	} else {
+		return Vector4();
+	}
+}
+
+Variant::operator Vector4i() const {
+	if (type == VECTOR4I) {
+		return *reinterpret_cast<const Vector4i *>(_data._mem);
+	} else if (type == VECTOR4) {
+		return Vector4i(reinterpret_cast<const Vector4 *>(_data._mem)->x, reinterpret_cast<const Vector4 *>(_data._mem)->y, reinterpret_cast<const Vector4 *>(_data._mem)->z, reinterpret_cast<const Vector4 *>(_data._mem)->w);
+	} else if (type == VECTOR3) {
+		return Vector4i(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y, reinterpret_cast<const Vector3 *>(_data._mem)->z, 0);
+	} else if (type == VECTOR3I) {
+		return Vector4i(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y, reinterpret_cast<const Vector3i *>(_data._mem)->z, 0);
+	} else if (type == VECTOR2) {
+		return Vector4i(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0, 0);
+	} else if (type == VECTOR2I) {
+		return Vector4i(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0, 0);
+	} else {
+		return Vector4i();
+	}
+}
+
+Variant::operator Basis4D() const {
+	if (type == BASIS4D) {
+		return *_data._basis4d;
+	} else if (type == TRANSFORM4D) {
+		return _data._transform4d->basis;
+	} else {
+		return Basis4D();
+	}
+}
+
+Variant::operator Transform4D() const {
+	if (type == TRANSFORM4D) {
+		return *_data._transform4d;
+	} else if (type == BASIS4D) {
+		return Transform4D(*_data._basis4d);
+	} else {
+		return Basis4D();
+	}
+}
+
+Variant::operator Euler4D() const {
+	if (type == EULER4D) {
+		return *_data._euler4d;
+	} else {
+		return Euler4D();
+	}
+}
+
+Variant::operator Octonion() const {
+	if (type == OCTONION) {
+		return *_data._octonion;
+	} else {
+		return Octonion();
 	}
 }
 
@@ -2434,6 +2620,37 @@ Variant::Variant(const Transform2D &p_transform) {
 	_data._transform2d = memnew(Transform2D(p_transform));
 }
 
+// 4D types.
+Variant::Variant(const Vector4 &p_vector4) {
+	type = VECTOR4;
+	memnew_placement(_data._mem, Vector4(p_vector4));
+}
+
+Variant::Variant(const Vector4i &p_vector4i) {
+	type = VECTOR4I;
+	memnew_placement(_data._mem, Vector4i(p_vector4i));
+}
+
+Variant::Variant(const Basis4D &p_matrix) {
+	type = BASIS4D;
+	_data._basis4d = memnew(Basis4D(p_matrix));
+}
+
+Variant::Variant(const Transform4D &p_transform) {
+	type = TRANSFORM4D;
+	_data._transform4d = memnew(Transform4D(p_transform));
+}
+
+Variant::Variant(const Euler4D &p_euler) {
+	type = EULER4D;
+	_data._euler4d = memnew(Euler4D(p_euler));
+}
+
+Variant::Variant(const Octonion &p_octonion) {
+	type = OCTONION;
+	_data._octonion = memnew(Octonion(p_octonion));
+}
+
 Variant::Variant(const Color &p_color) {
 	type = COLOR;
 	memnew_placement(_data._mem, Color(p_color));
@@ -2672,6 +2889,25 @@ void Variant::operator=(const Variant &p_variant) {
 		case TRANSFORM3D: {
 			*_data._transform3d = *(p_variant._data._transform3d);
 		} break;
+		// 4D types.
+		case VECTOR4: {
+			*reinterpret_cast<Vector4 *>(_data._mem) = *reinterpret_cast<const Vector4 *>(p_variant._data._mem);
+		} break;
+		case VECTOR4I: {
+			*reinterpret_cast<Vector4i *>(_data._mem) = *reinterpret_cast<const Vector4i *>(p_variant._data._mem);
+		} break;
+		case BASIS4D: {
+			*_data._basis4d = *(p_variant._data._basis4d);
+		} break;
+		case TRANSFORM4D: {
+			*_data._transform4d = *(p_variant._data._transform4d);
+		} break;
+		case EULER4D: {
+			*_data._euler4d = *(p_variant._data._euler4d);
+		} break;
+		case OCTONION: {
+			*_data._octonion = *(p_variant._data._octonion);
+		} break;
 
 		// misc types
 		case COLOR: {
@@ -2873,6 +3109,52 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 			return hash;
 
+		} break;
+		// 4D types.
+		case VECTOR4: {
+			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->x);
+			hash = hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->y, hash);
+			hash = hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->z, hash);
+			return hash_djb2_one_float(reinterpret_cast<const Vector4 *>(_data._mem)->w, hash);
+		} break;
+		case VECTOR4I: {
+			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector4i *>(_data._mem)->x);
+			hash = hash_djb2_one_float(reinterpret_cast<const Vector4i *>(_data._mem)->y, hash);
+			hash = hash_djb2_one_float(reinterpret_cast<const Vector4i *>(_data._mem)->z, hash);
+			return hash_djb2_one_float(reinterpret_cast<const Vector4i *>(_data._mem)->w, hash);
+		} break;
+		case BASIS4D: {
+			uint32_t hash = 5831;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					hash = hash_djb2_one_float((*_data._basis4d)[i][j], hash);
+				}
+			}
+			return hash;
+		} break;
+		case TRANSFORM4D: {
+			uint32_t hash = 5831;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					hash = hash_djb2_one_float(_data._transform4d->basis[i][j], hash);
+				}
+				hash = hash_djb2_one_float(_data._transform4d->origin[i], hash);
+			}
+			return hash;
+		} break;
+		case EULER4D: {
+			uint32_t hash = 5831;
+			for (int i = 0; i < 6; i++) {
+				hash = hash_djb2_one_float(_data._euler4d->operator[](i), hash);
+			}
+			return hash;
+		} break;
+		case OCTONION: {
+			uint32_t hash = 5831;
+			for (int i = 0; i < 6; i++) {
+				hash = hash_djb2_one_float(_data._octonion->operator[](i), hash);
+			}
+			return hash;
 		} break;
 
 		// misc types
@@ -3202,6 +3484,57 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			}
 
 			return hash_compare_vector3(l->origin, r->origin);
+		} break;
+		// 4D types.
+		case VECTOR4: {
+			const Vector4 *l = reinterpret_cast<const Vector4 *>(_data._mem);
+			const Vector4 *r = reinterpret_cast<const Vector4 *>(p_variant._data._mem);
+			return hash_compare_quaternion(*l, *r);
+		} break;
+		case VECTOR4I: {
+			const Vector4i *l = reinterpret_cast<const Vector4i *>(_data._mem);
+			const Vector4i *r = reinterpret_cast<const Vector4i *>(p_variant._data._mem);
+			return *l == *r;
+		} break;
+		case BASIS4D: {
+			const Basis4D *l = _data._basis4d;
+			const Basis4D *r = p_variant._data._basis4d;
+			for (int i = 0; i < 4; i++) {
+				if (!(hash_compare_quaternion((*l)[i], (*r)[i]))) {
+					return false;
+				}
+			}
+			return true;
+		} break;
+		case TRANSFORM4D: {
+			const Transform4D *l = _data._transform4d;
+			const Transform4D *r = p_variant._data._transform4d;
+			for (int i = 0; i < 4; i++) {
+				if (!(hash_compare_quaternion(l->basis[i], r->basis[i]))) {
+					return false;
+				}
+			}
+			return hash_compare_quaternion(l->origin, r->origin);
+		} break;
+		case EULER4D: {
+			const Euler4D *l = _data._euler4d;
+			const Euler4D *r = p_variant._data._euler4d;
+			for (int i = 0; i < 6; i++) {
+				if (!(hash_compare_scalar(l->operator[](i), r->operator[](i)))) {
+					return false;
+				}
+			}
+			return true;
+		} break;
+		case OCTONION: {
+			const Octonion *l = _data._octonion;
+			const Octonion *r = p_variant._data._octonion;
+			for (int i = 0; i < 8; i++) {
+				if (!(hash_compare_scalar(l->operator[](i), r->operator[](i)))) {
+					return false;
+				}
+			}
+			return true;
 		} break;
 
 		case COLOR: {

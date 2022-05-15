@@ -6066,8 +6066,16 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 		} else if (Object::cast_to<EditorPropertyTransform3D>(prop) || Object::cast_to<EditorPropertyVector3>(prop)) {
 			prop->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
-		} else if (Object::cast_to<EditorPropertyQuaternion>(prop)) {
+		} else if (Object::cast_to<EditorPropertyVector4>(prop) || Object::cast_to<EditorPropertyVector4i>(prop)) {
 			prop->set_custom_minimum_size(Size2(320 * EDSCALE, 0));
+		} else if (Object::cast_to<EditorPropertyBasis4D>(prop)) {
+			prop->set_custom_minimum_size(Size2(390, 300) * EDSCALE);
+		} else if (Object::cast_to<EditorPropertyTransform4D>(prop)) {
+			prop->set_custom_minimum_size(Size2(320, 300) * EDSCALE);
+		} else if (Object::cast_to<EditorPropertyEuler4D>(prop)) {
+			prop->set_custom_minimum_size(Size2(250, 200) * EDSCALE);
+		} else if (Object::cast_to<EditorPropertyOctonion>(prop)) {
+			prop->set_custom_minimum_size(Size2(320, 200) * EDSCALE);
 		} else if (Object::cast_to<EditorPropertyFloat>(prop)) {
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 		} else if (Object::cast_to<EditorPropertyEnum>(prop)) {

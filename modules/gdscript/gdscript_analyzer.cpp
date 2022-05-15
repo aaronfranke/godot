@@ -3306,6 +3306,10 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::PACKED_VECTOR3_ARRAY:
 							case Variant::ARRAY:
 							case Variant::STRING:
+							case Variant::BASIS4D:
+							case Variant::TRANSFORM4D:
+							case Variant::EULER4D:
+							case Variant::OCTONION:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT;
 								break;
 							// Expect String only.
@@ -3323,6 +3327,8 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::VECTOR2I:
 							case Variant::VECTOR3:
 							case Variant::VECTOR3I:
+							case Variant::VECTOR4:
+							case Variant::VECTOR4I:
 							case Variant::TRANSFORM2D:
 							case Variant::TRANSFORM3D:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT &&
@@ -3387,6 +3393,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::PACKED_INT64_ARRAY:
 					case Variant::VECTOR2I:
 					case Variant::VECTOR3I:
+					case Variant::VECTOR4I:
 						result_type.builtin_type = Variant::INT;
 						break;
 					// Return float.
@@ -3394,7 +3401,10 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::PACKED_FLOAT64_ARRAY:
 					case Variant::VECTOR2:
 					case Variant::VECTOR3:
+					case Variant::VECTOR4:
 					case Variant::QUATERNION:
+					case Variant::EULER4D:
+					case Variant::OCTONION:
 						result_type.builtin_type = Variant::FLOAT;
 						break;
 					// Return Color.
@@ -3421,6 +3431,11 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::AABB:
 					case Variant::BASIS:
 						result_type.builtin_type = Variant::VECTOR3;
+						break;
+					// Return Vector4.
+					case Variant::BASIS4D:
+					case Variant::TRANSFORM4D:
+						result_type.builtin_type = Variant::VECTOR4;
 						break;
 					// Depends on the index.
 					case Variant::TRANSFORM3D:

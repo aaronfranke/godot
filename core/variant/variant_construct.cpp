@@ -148,6 +148,36 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Transform3D, Basis, Vector3>>(sarray("basis", "origin"));
 	add_constructor<VariantConstructor<Transform3D, Vector3, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis", "origin"));
 
+	// 4D types.
+	add_constructor<VariantConstructNoArgs<Vector4>>(sarray());
+	add_constructor<VariantConstructor<Vector4, Vector4>>(sarray("from"));
+	add_constructor<VariantConstructor<Vector4, double, double, double, double>>(sarray("x", "y", "z", "w"));
+
+	add_constructor<VariantConstructNoArgs<Vector4i>>(sarray());
+	add_constructor<VariantConstructor<Vector4i, Vector4i>>(sarray("from"));
+	add_constructor<VariantConstructor<Vector4i, int64_t, int64_t, int64_t, int64_t>>(sarray("x", "y", "z", "w"));
+
+	add_constructor<VariantConstructNoArgs<Basis4D>>(sarray());
+	add_constructor<VariantConstructor<Basis4D, Basis4D>>(sarray("from"));
+	add_constructor<VariantConstructor<Basis4D, Vector4, Vector4, Vector4, Vector4>>(sarray("x_axis", "y_axis", "z_axis", "w_axis"));
+
+	add_constructor<VariantConstructNoArgs<Transform4D>>(sarray());
+	add_constructor<VariantConstructor<Transform4D, Transform4D>>(sarray("from"));
+	add_constructor<VariantConstructor<Transform4D, Basis4D, Vector4>>(sarray("basis", "origin"));
+	add_constructor<VariantConstructor<Transform4D, Vector4, Vector4, Vector4, Vector4, Vector4>>(sarray("x_axis", "y_axis", "z_axis", "w_axis", "origin"));
+
+	add_constructor<VariantConstructNoArgs<Euler4D>>(sarray());
+	add_constructor<VariantConstructor<Euler4D, Euler4D>>(sarray("from"));
+	add_constructor<VariantConstructor<Euler4D, Vector3>>(sarray("yz_zx_xy"));
+	add_constructor<VariantConstructor<Euler4D, Vector3, Vector3>>(sarray("yz_zx_xy", "xw_yw_zw"));
+	add_constructor<VariantConstructor<Euler4D, double, double, double>>(sarray("yz", "zx", "xy"));
+	add_constructor<VariantConstructor<Euler4D, double, double, double, double, double, double>>(sarray("yz", "zx", "xy", "xw", "yw", "zw"));
+
+	add_constructor<VariantConstructNoArgs<Octonion>>(sarray());
+	add_constructor<VariantConstructor<Octonion, Octonion>>(sarray("from"));
+	add_constructor<VariantConstructor<Octonion, Quaternion>>(sarray("from"));
+	add_constructor<VariantConstructor<Octonion, double, double, double, double, double, double, double, double>>(sarray("r", "i", "j", "k", "l", "m", "n", "o"));
+
 	add_constructor<VariantConstructNoArgs<Color>>(sarray());
 	add_constructor<VariantConstructor<Color, Color>>(sarray("from"));
 	add_constructor<VariantConstructor<Color, Color, double>>(sarray("from", "alpha"));

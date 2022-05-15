@@ -85,6 +85,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	}
 
 	const uint32_t vec3_elems = 3;
+	const uint32_t vec4_elems = 4;
 	const uint32_t ptrsize_32 = 4;
 	const uint32_t ptrsize_64 = 8;
 	static const char *build_config_name[4] = { "float_32", "float_64", "double_32", "double_64" };
@@ -151,6 +152,13 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::PACKED_VECTOR2_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			// 4D types.
+			{ Variant::VECTOR4, vec4_elems * sizeof(float), vec4_elems * sizeof(float), vec4_elems * sizeof(double), vec4_elems * sizeof(double) },
+			{ Variant::VECTOR4I, 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t), 4 * sizeof(int32_t) },
+			{ Variant::BASIS4D, 4 * 4 * sizeof(float), 4 * 4 * sizeof(float), 4 * 4 * sizeof(double), 4 * 4 * sizeof(double) },
+			{ Variant::TRANSFORM4D, 4 * 5 * sizeof(float), 4 * 5 * sizeof(float), 4 * 5 * sizeof(double), 4 * 5 * sizeof(double) },
+			{ Variant::EULER4D, 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
+			{ Variant::OCTONION, 8 * sizeof(float), 8 * sizeof(float), 8 * sizeof(double), 8 * sizeof(double) },
 			{ Variant::VARIANT_MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
 		};
 
@@ -189,6 +197,13 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		static_assert(type_size_array[Variant::PACKED_VECTOR2_ARRAY][sizeof(void *)] == sizeof(PackedVector2Array), "Size of PackedVector2Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
+		// 4D types.
+		static_assert(type_size_array[Variant::VECTOR4][sizeof(void *)] == sizeof(Vector4), "Size of Vector4 mismatch");
+		static_assert(type_size_array[Variant::VECTOR4I][sizeof(void *)] == sizeof(Vector4i), "Size of Vector4i mismatch");
+		static_assert(type_size_array[Variant::BASIS4D][sizeof(void *)] == sizeof(Basis4D), "Size of Basis4D mismatch");
+		static_assert(type_size_array[Variant::TRANSFORM4D][sizeof(void *)] == sizeof(Transform4D), "Size of Transform4D mismatch");
+		static_assert(type_size_array[Variant::EULER4D][sizeof(void *)] == sizeof(Euler4D), "Size of Euler4D mismatch");
+		static_assert(type_size_array[Variant::OCTONION][sizeof(void *)] == sizeof(Octonion), "Size of Octonion mismatch");
 		static_assert(type_size_array[Variant::VARIANT_MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
 
 		Array core_type_sizes;
@@ -267,6 +282,35 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			{ Variant::BASIS, "z", vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(double), vec3_elems * 2 * sizeof(double) },
 			{ Variant::TRANSFORM3D, "basis", 0, 0, 0, 0 },
 			{ Variant::TRANSFORM3D, "origin", (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
+			// 4D types.
+			{ Variant::VECTOR4, "x", 0, 0, 0, 0 },
+			{ Variant::VECTOR4, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
+			{ Variant::VECTOR4, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ Variant::VECTOR4, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
+			{ Variant::VECTOR4I, "x", 0, 0, 0, 0 },
+			{ Variant::VECTOR4I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
+			{ Variant::VECTOR4I, "z", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
+			{ Variant::VECTOR4I, "w", 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
+			{ Variant::BASIS4D, "x", 0, 0, 0, 0 },
+			{ Variant::BASIS4D, "y", 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::BASIS4D, "z", 4 * 2 * sizeof(float), 4 * 2 * sizeof(float), 4 * 2 * sizeof(double), 4 * 2 * sizeof(double) },
+			{ Variant::BASIS4D, "w", 4 * 3 * sizeof(float), 4 * 3 * sizeof(float), 4 * 3 * sizeof(double), 4 * 3 * sizeof(double) },
+			{ Variant::TRANSFORM4D, "basis", 0, 0, 0, 0 },
+			{ Variant::TRANSFORM4D, "origin", 4 * 4 * sizeof(float), 4 * 4 * sizeof(float), 4 * 4 * sizeof(double), 4 * 4 * sizeof(double) },
+			{ Variant::EULER4D, "yz", 0, 0, 0, 0 },
+			{ Variant::EULER4D, "zx", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
+			{ Variant::EULER4D, "xy", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ Variant::EULER4D, "xw", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
+			{ Variant::EULER4D, "yw", 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::EULER4D, "zw", 5 * sizeof(float), 5 * sizeof(float), 5 * sizeof(double), 5 * sizeof(double) },
+			{ Variant::OCTONION, "r", 0, 0, 0, 0 },
+			{ Variant::OCTONION, "i", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
+			{ Variant::OCTONION, "j", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
+			{ Variant::OCTONION, "k", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
+			{ Variant::OCTONION, "l", 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
+			{ Variant::OCTONION, "m", 5 * sizeof(float), 5 * sizeof(float), 5 * sizeof(double), 5 * sizeof(double) },
+			{ Variant::OCTONION, "n", 6 * sizeof(float), 6 * sizeof(float), 6 * sizeof(double), 6 * sizeof(double) },
+			{ Variant::OCTONION, "o", 7 * sizeof(float), 7 * sizeof(float), 7 * sizeof(double), 7 * sizeof(double) },
 			{ Variant::COLOR, "r", 0, 0, 0, 0 },
 			{ Variant::COLOR, "g", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
 			{ Variant::COLOR, "b", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },

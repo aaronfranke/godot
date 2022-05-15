@@ -111,6 +111,31 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		*r_len = 4;
 	}
 
+#define DECODE_LINEAR_TYPE_LOOP(struct_type, primitive_type)                                     \
+	ERR_FAIL_COND_V((size_t)len < sizeof(struct_type), ERR_INVALID_DATA);                        \
+	struct_type val;                                                                             \
+	for (size_t i = 0; i < sizeof(struct_type) / sizeof(primitive_type); i++) {                  \
+		((primitive_type *)&val)[i] = decode_##primitive_type(&buf[sizeof(primitive_type) * i]); \
+	}                                                                                            \
+	r_variant = val;                                                                             \
+	if (r_len) {                                                                                 \
+		(*r_len) += sizeof(struct_type);                                                         \
+	}
+
+#define DECODE_LINEAR_REAL_TYPE(struct_type, variant_type) \
+	case variant_type: {                                   \
+		if (type & ENCODE_FLAG_64) {                       \
+			DECODE_LINEAR_TYPE_LOOP(struct_type, double)   \
+		} else {                                           \
+			DECODE_LINEAR_TYPE_LOOP(struct_type, float)    \
+		}                                                  \
+	} break;
+
+#define DECODE_LINEAR_TYPE(struct_type, variant_type, primitive_type) \
+	case variant_type: {                                              \
+		DECODE_LINEAR_TYPE_LOOP(struct_type, primitive_type)          \
+	} break;
+
 	// Note: We cannot use sizeof(real_t) for decoding, in case a different size is encoded.
 	// Decoding math types always checks for the encoded size, while encoding always uses compilation setting.
 	// This does lead to some code duplication for decoding, but compatibility is the priority.
@@ -172,7 +197,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = str;
 
 		} break;
-
 		// math types
 		case Variant::VECTOR2: {
 			Vector2 val;
@@ -455,8 +479,14 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				}
 			}
 			r_variant = val;
-
 		} break;
+			// 4D types.
+			DECODE_LINEAR_TYPE(Vector4i, Variant::VECTOR4I, uint32_t)
+			DECODE_LINEAR_REAL_TYPE(Vector4, Variant::VECTOR4)
+			DECODE_LINEAR_REAL_TYPE(Basis4D, Variant::BASIS4D)
+			DECODE_LINEAR_REAL_TYPE(Transform4D, Variant::TRANSFORM4D)
+			DECODE_LINEAR_REAL_TYPE(Euler4D, Variant::EULER4D)
+			DECODE_LINEAR_REAL_TYPE(Octonion, Variant::OCTONION)
 		// misc types
 		case Variant::COLOR: {
 			ERR_FAIL_COND_V(len < 4 * 4, ERR_INVALID_DATA);
@@ -1071,11 +1101,16 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 #ifdef REAL_T_IS_DOUBLE
 		case Variant::VECTOR2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
+		case Variant::TRANSFORM4D:
 		case Variant::QUATERNION:
+		case Variant::OCTONION:
+		case Variant::EULER4D:
+		case Variant::BASIS4D:
 		case Variant::PLANE:
 		case Variant::BASIS:
 		case Variant::RECT2:
@@ -1336,6 +1371,75 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			r_len += 12 * sizeof(real_t);
 
+		} break;
+		// 4D types.
+		case Variant::VECTOR4: {
+			if (buf) {
+				Vector4 v4 = p_variant;
+				encode_real(v4.x, &buf[0]);
+				encode_real(v4.y, &buf[sizeof(real_t)]);
+				encode_real(v4.z, &buf[sizeof(real_t) * 2]);
+				encode_real(v4.w, &buf[sizeof(real_t) * 3]);
+			}
+			r_len += 4 * sizeof(real_t);
+		} break;
+		case Variant::VECTOR4I: {
+			if (buf) {
+				Vector4i vec = p_variant;
+				encode_uint32(vec.x, &buf[0]);
+				encode_uint32(vec.y, &buf[4]);
+				encode_uint32(vec.z, &buf[8]);
+				encode_uint32(vec.z, &buf[12]);
+			}
+			r_len += 4 * 4;
+		} break;
+		case Variant::BASIS4D: {
+			if (buf) {
+				Basis4D val = p_variant;
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val[i][j], sizeof(real_t));
+					}
+				}
+			}
+			r_len += 16 * sizeof(real_t);
+		} break;
+		case Variant::TRANSFORM4D: {
+			if (buf) {
+				Transform4D val = p_variant;
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						memcpy(&buf[(i * 4 + j) * sizeof(real_t)], &val.basis[i][j], sizeof(real_t));
+					}
+				}
+
+				encode_real(val.origin.x, &buf[sizeof(real_t) * 16]);
+				encode_real(val.origin.y, &buf[sizeof(real_t) * 17]);
+				encode_real(val.origin.z, &buf[sizeof(real_t) * 18]);
+				encode_real(val.origin.w, &buf[sizeof(real_t) * 19]);
+			}
+
+			r_len += 20 * sizeof(real_t);
+		} break;
+		case Variant::EULER4D: {
+			if (buf) {
+				Euler4D euler = p_variant;
+				for (int i = 0; i < 6; i++) {
+					encode_real(euler[i], &buf[sizeof(real_t) * i]);
+				}
+			}
+
+			r_len += 6 * sizeof(real_t);
+		} break;
+		case Variant::OCTONION: {
+			if (buf) {
+				Octonion oct = p_variant;
+				for (int i = 0; i < 8; i++) {
+					encode_real(oct[i], &buf[sizeof(real_t) * i]);
+				}
+			}
+
+			r_len += 8 * sizeof(real_t);
 		} break;
 
 		// misc types

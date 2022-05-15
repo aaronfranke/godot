@@ -2685,6 +2685,24 @@
 		<constant name="TYPE_VECTOR3I" value="10" enum="Variant.Type">
 			Variable is of type [Vector3i].
 		</constant>
+		<constant name="TYPE_VECTOR4" value="35" enum="Variant.Type">
+			Variable is of type [Vector4].
+		</constant>
+		<constant name="TYPE_VECTOR4I" value="36" enum="Variant.Type">
+			Variable is of type [Vector4i].
+		</constant>
+		<constant name="TYPE_BASIS4D" value="37" enum="Variant.Type">
+			Variable is of type [Basis4D].
+		</constant>
+		<constant name="TYPE_TRANSFORM4D" value="38" enum="Variant.Type">
+			Variable is of type [Transform4D].
+		</constant>
+		<constant name="TYPE_EULER4D" value="39" enum="Variant.Type">
+			Variable is of type [Euler4D].
+		</constant>
+		<constant name="TYPE_OCTONION" value="40" enum="Variant.Type">
+			Variable is of type [Octonion].
+		</constant>
 		<constant name="TYPE_TRANSFORM2D" value="11" enum="Variant.Type">
 			Variable is of type [Transform2D].
 		</constant>
@@ -2757,7 +2775,7 @@
 		<constant name="TYPE_PACKED_COLOR_ARRAY" value="34" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="35" enum="Variant.Type">
+		<constant name="TYPE_MAX" value="41" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

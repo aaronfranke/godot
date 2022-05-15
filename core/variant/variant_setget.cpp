@@ -111,6 +111,41 @@ void register_named_setters_getters() {
 	REGISTER_MEMBER(Transform3D, basis);
 	REGISTER_MEMBER(Transform3D, origin);
 
+	// 4D types.
+	REGISTER_MEMBER(Vector4, x);
+	REGISTER_MEMBER(Vector4, y);
+	REGISTER_MEMBER(Vector4, z);
+	REGISTER_MEMBER(Vector4, w);
+
+	REGISTER_MEMBER(Vector4i, x);
+	REGISTER_MEMBER(Vector4i, y);
+	REGISTER_MEMBER(Vector4i, z);
+	REGISTER_MEMBER(Vector4i, w);
+
+	REGISTER_MEMBER(Basis4D, x);
+	REGISTER_MEMBER(Basis4D, y);
+	REGISTER_MEMBER(Basis4D, z);
+	REGISTER_MEMBER(Basis4D, w);
+
+	REGISTER_MEMBER(Transform4D, basis);
+	REGISTER_MEMBER(Transform4D, origin);
+
+	REGISTER_MEMBER(Euler4D, yz);
+	REGISTER_MEMBER(Euler4D, zx);
+	REGISTER_MEMBER(Euler4D, xy);
+	REGISTER_MEMBER(Euler4D, xw);
+	REGISTER_MEMBER(Euler4D, yw);
+	REGISTER_MEMBER(Euler4D, zw);
+
+	REGISTER_MEMBER(Octonion, r);
+	REGISTER_MEMBER(Octonion, i);
+	REGISTER_MEMBER(Octonion, j);
+	REGISTER_MEMBER(Octonion, k);
+	REGISTER_MEMBER(Octonion, l);
+	REGISTER_MEMBER(Octonion, m);
+	REGISTER_MEMBER(Octonion, n);
+	REGISTER_MEMBER(Octonion, o);
+
 	REGISTER_MEMBER(Color, r);
 	REGISTER_MEMBER(Color, g);
 	REGISTER_MEMBER(Color, b);
@@ -810,6 +845,14 @@ INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Color, double, float, 4)
 INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform2D, Vector2, .columns, 3)
 INDEXED_SETGET_STRUCT_BULTIN_FUNC(Basis, Vector3, set_column, get_column, 3)
 
+// 4D types.
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector4, double, real_t, 4)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Vector4i, int64_t, int32_t, 4)
+INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Basis4D, Vector4, , 4)
+INDEXED_SETGET_STRUCT_BULTIN_ACCESSOR(Transform4D, Vector4, , 5)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Euler4D, double, real_t, 6)
+INDEXED_SETGET_STRUCT_BULTIN_NUMERIC(Octonion, double, real_t, 8)
+
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedByteArray, int64_t, uint8_t)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedInt32Array, int64_t, int32_t)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedInt64Array, int64_t, int64_t)
@@ -871,6 +914,13 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(Color);
 	REGISTER_INDEXED_MEMBER(Transform2D);
 	REGISTER_INDEXED_MEMBER(Basis);
+
+	REGISTER_INDEXED_MEMBER(Vector4);
+	REGISTER_INDEXED_MEMBER(Vector4i);
+	REGISTER_INDEXED_MEMBER(Basis4D);
+	REGISTER_INDEXED_MEMBER(Transform4D);
+	REGISTER_INDEXED_MEMBER(Euler4D);
+	REGISTER_INDEXED_MEMBER(Octonion);
 
 	REGISTER_INDEXED_MEMBER(PackedByteArray);
 	REGISTER_INDEXED_MEMBER(PackedInt32Array);
@@ -2071,6 +2121,10 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 			r_dst = Vector3i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vaz + vbz * c + 0.5));
 		}
 			return;
+		case VECTOR4: {
+			r_dst = *reinterpret_cast<const Vector4 *>(a._data._mem) + *reinterpret_cast<const Vector4 *>(b._data._mem) * c;
+		}
+			return;
 		case AABB: {
 			const ::AABB *ra = reinterpret_cast<const ::AABB *>(a._data._mem);
 			const ::AABB *rb = reinterpret_cast<const ::AABB *>(b._data._mem);
@@ -2228,7 +2282,10 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = Vector3i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vaz + vbz * c + 0.5));
 		}
 			return;
-
+		case VECTOR4: {
+			r_dst = reinterpret_cast<const Vector4 *>(a._data._mem)->lerp(*reinterpret_cast<const Vector4 *>(b._data._mem), c);
+		}
+			return;
 		case TRANSFORM2D: {
 			r_dst = a._data._transform2d->interpolate_with(*b._data._transform2d, c);
 		}

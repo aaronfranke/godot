@@ -202,6 +202,12 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<AABB>::init, // AABB.
 	&VariantInitializer<Basis>::init, // BASIS.
 	&VariantInitializer<Transform3D>::init, // TRANSFORM3D.
+	&VariantInitializer<Vector4>::init, // VECTOR4.
+	&VariantInitializer<Vector4i>::init, // VECTOR4I.
+	&VariantInitializer<Basis4D>::init, // BASIS4D.
+	&VariantInitializer<Transform4D>::init, // TRANSFORM4D.
+	&VariantInitializer<Euler4D>::init, // EULER4D.
+	&VariantInitializer<Octonion>::init, // OCTONION.
 	&VariantInitializer<Color>::init, // COLOR.
 	&VariantInitializer<StringName>::init, // STRING_NAME.
 	&VariantInitializer<NodePath>::init, // NODE_PATH.
@@ -285,6 +291,12 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CALL_PTRCALL_AABB,                  \
 		&&OPCODE_CALL_PTRCALL_BASIS,                 \
 		&&OPCODE_CALL_PTRCALL_TRANSFORM3D,           \
+		&&OPCODE_CALL_PTRCALL_VECTOR4,               \
+		&&OPCODE_CALL_PTRCALL_VECTOR4I,              \
+		&&OPCODE_CALL_PTRCALL_BASIS4D,               \
+		&&OPCODE_CALL_PTRCALL_TRANSFORM4D,           \
+		&&OPCODE_CALL_PTRCALL_EULER4D,               \
+		&&OPCODE_CALL_PTRCALL_OCTONION,              \
 		&&OPCODE_CALL_PTRCALL_COLOR,                 \
 		&&OPCODE_CALL_PTRCALL_STRING_NAME,           \
 		&&OPCODE_CALL_PTRCALL_NODE_PATH,             \
@@ -374,6 +386,12 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_AABB,                   \
 		&&OPCODE_TYPE_ADJUST_BASIS,                  \
 		&&OPCODE_TYPE_ADJUST_TRANSFORM3D,            \
+		&&OPCODE_TYPE_ADJUST_VECTOR4,                \
+		&&OPCODE_TYPE_ADJUST_VECTOR4I,               \
+		&&OPCODE_TYPE_ADJUST_BASIS4D,                \
+		&&OPCODE_TYPE_ADJUST_TRANSFORM4D,            \
+		&&OPCODE_TYPE_ADJUST_EULER4D,                \
+		&&OPCODE_TYPE_ADJUST_OCTONION,               \
 		&&OPCODE_TYPE_ADJUST_COLOR,                  \
 		&&OPCODE_TYPE_ADJUST_STRING_NAME,            \
 		&&OPCODE_TYPE_ADJUST_NODE_PATH,              \
@@ -457,6 +475,13 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_AABB get_aabb
 #define OP_GET_BASIS get_basis
 #define OP_GET_RID get_rid
+// 4D types.
+#define OP_GET_VECTOR4 get_vector4
+#define OP_GET_VECTOR4I get_vector4i
+#define OP_GET_BASIS4D get_basis4d
+#define OP_GET_TRANSFORM4D get_transform4d
+#define OP_GET_EULER4D get_euler4d
+#define OP_GET_OCTONION get_octonion
 
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state) {
 	OPCODES_TABLE;
@@ -1833,6 +1858,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_CALL_PTR(AABB);
 			OPCODE_CALL_PTR(BASIS);
 			OPCODE_CALL_PTR(TRANSFORM3D);
+			// 4D types.
+			OPCODE_CALL_PTR(VECTOR4);
+			OPCODE_CALL_PTR(VECTOR4I);
+			OPCODE_CALL_PTR(BASIS4D);
+			OPCODE_CALL_PTR(TRANSFORM4D);
+			OPCODE_CALL_PTR(EULER4D);
+			OPCODE_CALL_PTR(OCTONION);
 			OPCODE_CALL_PTR(COLOR);
 			OPCODE_CALL_PTR(STRING_NAME);
 			OPCODE_CALL_PTR(NODE_PATH);
@@ -3299,6 +3331,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
 			OPCODE_TYPE_ADJUST(TRANSFORM3D, Transform3D);
+			// 4D types.
+			OPCODE_TYPE_ADJUST(VECTOR4, Vector4);
+			OPCODE_TYPE_ADJUST(VECTOR4I, Vector4i);
+			OPCODE_TYPE_ADJUST(BASIS4D, Basis4D);
+			OPCODE_TYPE_ADJUST(TRANSFORM4D, Transform4D);
+			OPCODE_TYPE_ADJUST(EULER4D, Euler4D);
+			OPCODE_TYPE_ADJUST(OCTONION, Octonion);
 			OPCODE_TYPE_ADJUST(COLOR, Color);
 			OPCODE_TYPE_ADJUST(STRING_NAME, StringName);
 			OPCODE_TYPE_ADJUST(NODE_PATH, NodePath);

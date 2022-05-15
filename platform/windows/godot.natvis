@@ -45,6 +45,12 @@
 		<DisplayString Condition="type == Variant::VECTOR2">{*(Vector2 *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::RECT2">{*(Rect2 *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::VECTOR3">{*(Vector3 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR4">{*(Vector4 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR4I">{*(Vector4 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::BASIS4D">{*(Basis4D *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::TRANSFORM4D">{*(Transform4D *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::EULER4D">{*(Euler4D *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::OCTONION">{*(Octonion *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::PLANE">{*(Plane *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::QUATERNION">{*(Quaternion *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
@@ -77,6 +83,12 @@
 			<Item Name="[value]" Condition="type == Variant::VECTOR2">*(Vector2 *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::RECT2">*(Rect2 *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::VECTOR3">*(Vector3 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::VECTOR4">*(Vector4 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::VECTOR4I">{*(Vector4 *)_data._mem}</Item>
+			<Item Name="[value]" Condition="type == Variant::BASIS4D">{*(Basis4D *)_data._mem}</Item>
+			<Item Name="[value]" Condition="type == Variant::TRANSFORM4D">{*(Transform4D *)_data._mem}</Item>
+			<Item Name="[value]" Condition="type == Variant::EULER4D">{*(Euler4D *)_data._mem}</Item>
+			<Item Name="[value]" Condition="type == Variant::OCTONION">{*(Octonion *)_data._mem}</Item>
 			<Item Name="[value]" Condition="type == Variant::PLANE">*(Plane *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::QUATERNION">*(Quaternion *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>

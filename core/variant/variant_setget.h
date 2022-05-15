@@ -315,6 +315,41 @@ SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_column, get_column, 2)
 SETGET_STRUCT(Transform3D, Basis, basis)
 SETGET_STRUCT(Transform3D, Vector3, origin)
 
+// 4D types.
+SETGET_NUMBER_STRUCT(Vector4, double, x)
+SETGET_NUMBER_STRUCT(Vector4, double, y)
+SETGET_NUMBER_STRUCT(Vector4, double, z)
+SETGET_NUMBER_STRUCT(Vector4, double, w)
+
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, x)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, y)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, z)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, w)
+
+SETGET_STRUCT(Basis4D, Vector4, x)
+SETGET_STRUCT(Basis4D, Vector4, y)
+SETGET_STRUCT(Basis4D, Vector4, z)
+SETGET_STRUCT(Basis4D, Vector4, w)
+
+SETGET_STRUCT(Transform4D, Basis4D, basis)
+SETGET_STRUCT(Transform4D, Vector4, origin)
+
+SETGET_NUMBER_STRUCT(Euler4D, double, yz)
+SETGET_NUMBER_STRUCT(Euler4D, double, zx)
+SETGET_NUMBER_STRUCT(Euler4D, double, xy)
+SETGET_NUMBER_STRUCT(Euler4D, double, xw)
+SETGET_NUMBER_STRUCT(Euler4D, double, yw)
+SETGET_NUMBER_STRUCT(Euler4D, double, zw)
+
+SETGET_NUMBER_STRUCT(Octonion, double, r)
+SETGET_NUMBER_STRUCT(Octonion, double, i)
+SETGET_NUMBER_STRUCT(Octonion, double, j)
+SETGET_NUMBER_STRUCT(Octonion, double, k)
+SETGET_NUMBER_STRUCT(Octonion, double, l)
+SETGET_NUMBER_STRUCT(Octonion, double, m)
+SETGET_NUMBER_STRUCT(Octonion, double, n)
+SETGET_NUMBER_STRUCT(Octonion, double, o)
+
 SETGET_NUMBER_STRUCT(Color, double, r)
 SETGET_NUMBER_STRUCT(Color, double, g)
 SETGET_NUMBER_STRUCT(Color, double, b)

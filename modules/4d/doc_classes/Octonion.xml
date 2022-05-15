@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Octonion" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents rotation in 4D using an Octonion for smooth rotation interpolation.
+	</brief_description>
+	<description>
+		Represents rotation in 4D using an Octonion. Octonions are an 8D number system that can be used to represent rotation in 4D, similarly to how [Quaternion]s are a 4D number system that can be used to represent rotation in 3D. Octonions only represent a valid rotation in 4D when they are normalized.
+		The Octonion number system (r, i, j, k, l, m, n, o) is a superset of the [Quaternion] number system (r, i, j, k, or as Godot calls it, w, x, y, z), just like how [Quaternion] is a superset of complex numbers (r, i).
+	</description>
+	<tutorials>
+		<link title="Multiplication table of the unit Octonions">https://i.imgur.com/fyS3rw9.jpg</link>
+		<link title="Visualizing Quaternions with stereographic projection by 3Blue1Brown">https://www.youtube.com/watch?v=d4EgbgTm0Bg</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Octonion">
+			<return type="Octonion" />
+			<description>
+				Constructs a default [Octonion] representing no rotation, with the real component set to 1 and all other components set to 0.
+			</description>
+		</constructor>
+		<constructor name="Octonion">
+			<return type="Octonion" />
+			<argument index="0" name="from" type="Octonion" />
+			<description>
+				Constructs a [Octonion] from an existing [Octonion].
+			</description>
+		</constructor>
+		<constructor name="Octonion">
+			<return type="Octonion" />
+			<argument index="0" name="from" type="Quaternion" />
+			<description>
+				Constructs a [Octonion] from an existing [Quaternion]. As such, the only rotation will be in 3D.
+			</description>
+		</constructor>
+		<constructor name="Octonion">
+			<return type="Octonion" />
+			<argument index="0" name="r" type="float" />
+			<argument index="1" name="i" type="float" />
+			<argument index="2" name="j" type="float" />
+			<argument index="3" name="k" type="float" />
+			<argument index="4" name="l" type="float" />
+			<argument index="5" name="m" type="float" />
+			<argument index="6" name="n" type="float" />
+			<argument index="7" name="o" type="float" />
+			<description>
+				Constructs an [Octonion] from the given real and imaginary components. Unlike [Quaternion], the real component comes first. The order is (r, i, j, k, l, m, n, o).
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="octonion" type="Octonion" />
+			<description>
+				Returns [code]true[/code] if this [Octonion] and [code]octonion[/code] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="i" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]i[/code] axis component of the [Octonion]. By index, this is 1. This is equivalent to the X component of [Quaternion].
+		</member>
+		<member name="j" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]j[/code] axis component of the [Octonion]. By index, this is 2. This is equivalent to the Y component of [Quaternion].
+		</member>
+		<member name="k" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]k[/code] axis component of the [Octonion]. By index, this is 3. This is equivalent to the Z component of [Quaternion].
+		</member>
+		<member name="l" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]l[/code] axis component of the [Octonion]. By index, this is 4.
+		</member>
+		<member name="m" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]m[/code] axis component of the [Octonion]. By index, this is 5.
+		</member>
+		<member name="n" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]n[/code] axis component of the [Octonion]. By index, this is 6.
+		</member>
+		<member name="o" type="float" setter="" getter="" default="0.0">
+			Imaginary [code]o[/code] axis component of the [Octonion]. By index, this is 7.
+		</member>
+		<member name="r" type="float" setter="" getter="" default="1.0">
+			The real component of the [Octonion]. By index, this is 0. This is equivalent to the W component of [Quaternion].
+		</member>
+	</members>
+	<constants>
+		<constant name="IDENTITY" value="Octonion(1, 0, 0, 0, 0, 0, 0, 0)">
+			The identity [Octonion], representing no rotation. The real part is set to 1 and all imaginary parts are set to 0.
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<argument index="0" name="right" type="Octonion" />
+			<description>
+				Returns [code]true[/code] if the [Octonion]s are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Octonion" />
+			<argument index="0" name="right" type="Octonion" />
+			<description>
+				Multiplies two [Octonion]s together.
+				[b]Note:[/b] Octonion multiplication is neither commutative nor associative. The order and grouping of multiplication matters.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<argument index="0" name="right" type="Octonion" />
+			<description>
+				Returns [code]true[/code] if the [Octonion]s are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Access the [Octonion] components by index, in the order (r, i, j, k, l, m, n, o).
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Octonion" />
+			<description>
+				Returns the negative value of the [Octonion]. This is the same as writing [code]Octonion(-o.r, -o.i, -o.j, -o.k, -o.l, -o.m, -o.n, -o.o)[/code].
+			</description>
+		</operator>
+	</operators>
+</class>

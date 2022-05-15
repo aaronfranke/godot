@@ -969,6 +969,37 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 
 				} break;
+				// 4D types.
+				case Variant::VECTOR4: {
+					EditorPropertyVector4 *editor = memnew(EditorPropertyVector4);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+				} break;
+				case Variant::VECTOR4I: {
+					EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
+					editor->setup(-100000, 100000, true);
+					prop = editor;
+				} break;
+				case Variant::BASIS4D: {
+					EditorPropertyBasis4D *editor = memnew(EditorPropertyBasis4D);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+				} break;
+				case Variant::TRANSFORM4D: {
+					EditorPropertyTransform4D *editor = memnew(EditorPropertyTransform4D);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+				} break;
+				case Variant::EULER4D: {
+					EditorPropertyEuler4D *editor = memnew(EditorPropertyEuler4D);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+				} break;
+				case Variant::OCTONION: {
+					EditorPropertyOctonion *editor = memnew(EditorPropertyOctonion);
+					editor->setup(-100000, 100000, default_float_step, true);
+					prop = editor;
+				} break;
 
 				// Miscellaneous types.
 				case Variant::COLOR: {

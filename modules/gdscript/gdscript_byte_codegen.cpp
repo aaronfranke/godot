@@ -98,6 +98,13 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 				case Variant::SIGNAL:
 				case Variant::DICTIONARY:
 				case Variant::ARRAY:
+				// 4D types.
+				case Variant::VECTOR4:
+				case Variant::VECTOR4I:
+				case Variant::BASIS4D:
+				case Variant::TRANSFORM4D:
+				case Variant::EULER4D:
+				case Variant::OCTONION:
 					temp_type = p_type.builtin_type;
 					break;
 				case Variant::PACKED_BYTE_ARRAY:
@@ -467,6 +474,25 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			break;
 		case Variant::TRANSFORM3D:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM3D, 1);
+			break;
+			// 4D types.
+		case Variant::VECTOR4:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR4, 1);
+			break;
+		case Variant::VECTOR4I:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR4I, 1);
+			break;
+		case Variant::BASIS4D:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BASIS4D, 1);
+			break;
+		case Variant::TRANSFORM4D:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM4D, 1);
+			break;
+		case Variant::EULER4D:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_EULER4D, 1);
+			break;
+		case Variant::OCTONION:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_OCTONION, 1);
 			break;
 		case Variant::COLOR:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR, 1);
@@ -1134,6 +1160,13 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 			CASE_TYPE(AABB);
 			CASE_TYPE(BASIS);
 			CASE_TYPE(TRANSFORM3D);
+			// 4D types.
+			CASE_TYPE(VECTOR4);
+			CASE_TYPE(VECTOR4I);
+			CASE_TYPE(BASIS4D);
+			CASE_TYPE(TRANSFORM4D);
+			CASE_TYPE(EULER4D);
+			CASE_TYPE(OCTONION);
 			CASE_TYPE(COLOR);
 			CASE_TYPE(STRING_NAME);
 			CASE_TYPE(NODE_PATH);

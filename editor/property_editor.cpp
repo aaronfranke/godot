@@ -815,6 +815,113 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			value_editor[11]->set_text(String::num(tr.origin.z));
 
 		} break;
+		// 4D types.
+		case Variant::VECTOR4: {
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("z");
+			field_names.push_back("w");
+			config_value_editors(4, 4, 10, field_names);
+			Vector4 vec = v;
+			value_editor[0]->set_text(String::num(vec.x));
+			value_editor[1]->set_text(String::num(vec.y));
+			value_editor[2]->set_text(String::num(vec.z));
+			value_editor[3]->set_text(String::num(vec.w));
+		} break;
+		case Variant::VECTOR4I: {
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("z");
+			field_names.push_back("w");
+			config_value_editors(4, 4, 10, field_names);
+			Vector4i vec = v;
+			value_editor[0]->set_text(String::num(vec.x));
+			value_editor[1]->set_text(String::num(vec.y));
+			value_editor[2]->set_text(String::num(vec.z));
+			value_editor[3]->set_text(String::num(vec.w));
+		} break;
+		case Variant::BASIS4D: {
+			field_names.push_back("xx");
+			field_names.push_back("xy");
+			field_names.push_back("xz");
+			field_names.push_back("xw");
+			field_names.push_back("yx");
+			field_names.push_back("yy");
+			field_names.push_back("yz");
+			field_names.push_back("yw");
+			field_names.push_back("zx");
+			field_names.push_back("zy");
+			field_names.push_back("zz");
+			field_names.push_back("zw");
+			field_names.push_back("wx");
+			field_names.push_back("wy");
+			field_names.push_back("wz");
+			field_names.push_back("ww");
+			config_value_editors(16, 4, 16, field_names);
+
+			Basis4D basis = v;
+			for (int i = 0; i < 16; i++) {
+				value_editor[i]->set_text(String::num(basis[i % 4][i / 4]));
+			}
+		} break;
+		case Variant::TRANSFORM4D: {
+			field_names.push_back("xx");
+			field_names.push_back("xy");
+			field_names.push_back("xz");
+			field_names.push_back("xw");
+			field_names.push_back("xo");
+			field_names.push_back("yx");
+			field_names.push_back("yy");
+			field_names.push_back("yz");
+			field_names.push_back("yw");
+			field_names.push_back("yo");
+			field_names.push_back("zx");
+			field_names.push_back("zy");
+			field_names.push_back("zz");
+			field_names.push_back("zw");
+			field_names.push_back("zo");
+			field_names.push_back("wx");
+			field_names.push_back("wy");
+			field_names.push_back("wz");
+			field_names.push_back("ww");
+			field_names.push_back("wo");
+			config_value_editors(20, 5, 16, field_names);
+
+			Transform4D transform = v;
+			for (int i = 0; i < 20; i++) {
+				value_editor[i]->set_text(String::num(transform[i % 5][i / 5]));
+			}
+		} break;
+		case Variant::EULER4D: {
+			field_names.push_back("yz");
+			field_names.push_back("zx");
+			field_names.push_back("xy");
+			field_names.push_back("xw");
+			field_names.push_back("yw");
+			field_names.push_back("zw");
+			config_value_editors(6, 3, 16, field_names);
+
+			Euler4D euler = v;
+			for (int i = 0; i < 6; i++) {
+				value_editor[i]->set_text(String::num(euler[i]));
+			}
+		} break;
+		case Variant::OCTONION: {
+			field_names.push_back("r");
+			field_names.push_back("i");
+			field_names.push_back("j");
+			field_names.push_back("k");
+			field_names.push_back("l");
+			field_names.push_back("m");
+			field_names.push_back("n");
+			field_names.push_back("o");
+			config_value_editors(8, 4, 10, field_names);
+
+			Octonion octonion = v;
+			for (int i = 0; i < 6; i++) {
+				value_editor[i]->set_text(String::num(octonion[i]));
+			}
+		} break;
 		case Variant::COLOR: {
 			if (!color_picker) {
 				//late init for performance
@@ -1607,6 +1714,70 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 		} break;
+		// 4D types.
+		case Variant::VECTOR4: {
+			Vector4 vec;
+			vec.x = _parse_real_expression(value_editor[0]->get_text());
+			vec.y = _parse_real_expression(value_editor[1]->get_text());
+			vec.z = _parse_real_expression(value_editor[2]->get_text());
+			vec.w = _parse_real_expression(value_editor[3]->get_text());
+			v = vec;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+		} break;
+		case Variant::VECTOR4I: {
+			Vector4i vec;
+			vec.x = _parse_real_expression(value_editor[0]->get_text());
+			vec.y = _parse_real_expression(value_editor[1]->get_text());
+			vec.z = _parse_real_expression(value_editor[2]->get_text());
+			vec.w = _parse_real_expression(value_editor[3]->get_text());
+			v = vec;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+		} break;
+		case Variant::BASIS4D: {
+			Basis4D basis;
+			for (int i = 0; i < 16; i++) {
+				basis[i % 4][i / 4] = _parse_real_expression(value_editor[i]->get_text());
+			}
+			v = basis;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+		} break;
+		case Variant::TRANSFORM4D: {
+			Transform4D transform;
+			for (int i = 0; i < 20; i++) {
+				transform[i % 5][i / 5] = _parse_real_expression(value_editor[i]->get_text());
+			}
+
+			v = transform;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+		} break;
+		case Variant::EULER4D: {
+			Euler4D euler;
+			for (int i = 0; i < 6; i++) {
+				euler[i] = _parse_real_expression(value_editor[i]->get_text());
+			}
+			v = euler;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+		} break;
+		case Variant::OCTONION: {
+			Octonion octonion;
+			for (int i = 0; i < 8; i++) {
+				octonion[i] = _parse_real_expression(value_editor[i]->get_text());
+			}
+			v = octonion;
+			if (v != prev_v) {
+				_emit_changed_whole_or_field();
+			}
+		} break;
 		case Variant::COLOR: {
 		} break;
 
@@ -1675,7 +1846,12 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
-		case Variant::TRANSFORM3D: {
+		case Variant::TRANSFORM3D:
+		case Variant::VECTOR4:
+		case Variant::BASIS4D:
+		case Variant::TRANSFORM4D:
+		case Variant::EULER4D:
+		case Variant::OCTONION: {
 			for (int i = 0; i < MAX_VALUE_EDITORS; ++i) {
 				if (value_editor[i]->has_focus()) {
 					focused_value_editor = i;

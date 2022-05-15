@@ -1803,6 +1803,77 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 
+	// 4D types.
+	bind_method(Vector4, min_axis_index, sarray(), varray());
+	bind_method(Vector4, max_axis_index, sarray(), varray());
+	bind_method(Vector4, direction_to, sarray("to"), varray());
+	bind_method(Vector4, distance_to, sarray("to"), varray());
+	bind_method(Vector4, distance_squared_to, sarray("to"), varray());
+	bind_method(Vector4, length, sarray(), varray());
+	bind_method(Vector4, length_squared, sarray(), varray());
+	bind_method(Vector4, limit_length, sarray("length"), varray(1.0));
+	bind_method(Vector4, normalized, sarray(), varray());
+	bind_method(Vector4, is_normalized, sarray(), varray());
+	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
+	bind_method(Vector4, inverse, sarray(), varray());
+	bind_method(Vector4, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4, snapped, sarray("step"), varray());
+	bind_method(Vector4, lerp, sarray("to", "weight"), varray());
+	bind_method(Vector4, cubic_interpolate, sarray("b", "pre_a", "post_b", "weight"), varray());
+	bind_method(Vector4, move_toward, sarray("to", "delta"), varray());
+	bind_method(Vector4, dot, sarray("with"), varray());
+	bind_method(Vector4, abs, sarray(), varray());
+	bind_method(Vector4, floor, sarray(), varray());
+	bind_method(Vector4, ceil, sarray(), varray());
+	bind_method(Vector4, round, sarray(), varray());
+	bind_method(Vector4, posmod, sarray("mod"), varray());
+	bind_method(Vector4, posmodv, sarray("modv"), varray());
+	bind_method(Vector4, project, sarray("b"), varray());
+	bind_method(Vector4, bounce, sarray("n"), varray());
+	bind_method(Vector4, reflect, sarray("n"), varray());
+	bind_method(Vector4, sign, sarray(), varray());
+
+	bind_method(Vector4i, abs, sarray(), varray());
+	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4i, distance_squared_to, sarray("to"), varray());
+	bind_method(Vector4i, distance_to, sarray("to"), varray());
+	bind_method(Vector4i, dot, sarray("with"), varray());
+	bind_method(Vector4i, length, sarray(), varray());
+	bind_method(Vector4i, length_squared, sarray(), varray());
+	bind_method(Vector4i, max_axis_index, sarray(), varray());
+	bind_method(Vector4i, min_axis_index, sarray(), varray());
+	bind_method(Vector4i, posmod, sarray("mod"), varray());
+	bind_method(Vector4i, posmodv, sarray("modv"), varray());
+	bind_method(Vector4i, sign, sarray(), varray());
+
+	bind_method(Basis4D, determinant, sarray(), varray());
+	bind_method(Basis4D, get_column, sarray("index"), varray());
+	bind_method(Basis4D, get_row, sarray("index"), varray());
+	bind_method(Basis4D, get_scale, sarray(), varray());
+	bind_method(Basis4D, inverse, sarray(), varray());
+	bind_method(Basis4D, is_equal_approx, sarray("b"), varray());
+	bind_method(Basis4D, orthonormalized, sarray(), varray());
+	bind_method(Basis4D, scaled, sarray("scale"), varray());
+	bind_method(Basis4D, set_column, sarray("index", "value"), varray());
+	bind_method(Basis4D, set_row, sarray("index", "value"), varray());
+	bind_method(Basis4D, transposed, sarray(), varray());
+	bind_static_method(Basis4D, from_scale, sarray("scale"), varray());
+
+	bind_method(Transform4D, affine_inverse, sarray(), varray());
+	bind_method(Transform4D, get_scale, sarray(), varray());
+	bind_method(Transform4D, interpolate_with, sarray("xform", "weight"), varray());
+	bind_method(Transform4D, inverse, sarray(), varray());
+	bind_method(Transform4D, is_equal_approx, sarray("xform"), varray());
+	bind_method(Transform4D, orthonormalized, sarray(), varray());
+	bind_method(Transform4D, scaled, sarray("scale"), varray());
+	bind_method(Transform4D, translated_local, sarray("offset"), varray());
+
+	bind_method(Euler4D, is_equal_approx, sarray("euler"), varray());
+	bind_method(Euler4D, to_basis, sarray(), varray());
+	bind_static_method(Euler4D, from_basis, sarray("basis"), varray());
+
+	bind_method(Octonion, is_equal_approx, sarray("octonion"), varray());
+
 	/* Dictionary */
 
 	bind_method(Dictionary, size, sarray(), varray());
@@ -2137,6 +2208,15 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "FORWARD", Vector3i(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "BACK", Vector3i(0, 0, 1));
 
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_X", Vector4::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Z", Vector4::AXIS_Z);
+	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_W", Vector4::AXIS_W);
+
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
+
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_X", Vector2::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);
 
@@ -2192,6 +2272,46 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
 
 	_VariantCall::add_variant_constant(Variant::QUATERNION, "IDENTITY", Quaternion(0, 0, 0, 1));
+
+	// 4D types.
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_X", Vector4i::AXIS_X);
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_Y", Vector4i::AXIS_Y);
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_Z", Vector4i::AXIS_Z);
+	_VariantCall::add_constant(Variant::VECTOR4I, "AXIS_W", Vector4i::AXIS_W);
+
+	const Vector4 v4x = Vector4(1, 0, 0, 0);
+	const Vector4 v4y = Vector4(0, 1, 0, 0);
+	const Vector4 v4z = Vector4(0, 0, 1, 0);
+	const Vector4 v4w = Vector4(0, 0, 0, 1);
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "UNIT_X", Vector4i(v4x));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "UNIT_Y", Vector4i(v4y));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "UNIT_Z", Vector4i(v4z));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "UNIT_W", Vector4i(v4w));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "UNIT_X", v4x);
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "UNIT_Y", v4y);
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "UNIT_Z", v4z);
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "UNIT_W", v4w);
+
+	Basis4D flip_x_basis_4d = Basis4D(-v4x, v4y, v4z, v4w);
+	Basis4D flip_y_basis_4d = Basis4D(v4x, -v4y, v4z, v4w);
+	Basis4D flip_z_basis_4d = Basis4D(v4x, v4y, -v4z, v4w);
+	Basis4D flip_w_basis_4d = Basis4D(v4x, v4y, v4z, -v4w);
+	_VariantCall::add_variant_constant(Variant::BASIS4D, "IDENTITY", Basis4D());
+	_VariantCall::add_variant_constant(Variant::BASIS4D, "FLIP_X", flip_x_basis_4d);
+	_VariantCall::add_variant_constant(Variant::BASIS4D, "FLIP_Y", flip_y_basis_4d);
+	_VariantCall::add_variant_constant(Variant::BASIS4D, "FLIP_Z", flip_z_basis_4d);
+	_VariantCall::add_variant_constant(Variant::BASIS4D, "FLIP_W", flip_w_basis_4d);
+
+	_VariantCall::add_variant_constant(Variant::TRANSFORM4D, "IDENTITY", Transform4D());
+	_VariantCall::add_variant_constant(Variant::TRANSFORM4D, "FLIP_X", Transform4D(flip_x_basis_4d));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM4D, "FLIP_Y", Transform4D(flip_y_basis_4d));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM4D, "FLIP_Z", Transform4D(flip_z_basis_4d));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM4D, "FLIP_W", Transform4D(flip_w_basis_4d));
+
+	_VariantCall::add_variant_constant(Variant::EULER4D, "IDENTITY", Euler4D(0, 0, 0, 0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::OCTONION, "IDENTITY", Octonion(1, 0, 0, 0, 0, 0, 0, 0));
 }
 
 void Variant::_register_variant_methods() {

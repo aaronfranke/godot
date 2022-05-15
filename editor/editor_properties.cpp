@@ -2723,6 +2723,604 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	set_bottom_editor(g);
 }
 
+// 4D types.
+
+///////////////////// VECTOR4 /////////////////////////
+
+void EditorPropertyVector4::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyVector4::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Vector4 v4;
+	v4.x = spin[0]->get_value();
+	v4.y = spin[1]->get_value();
+	v4.z = spin[2]->get_value();
+	v4.w = spin[3]->get_value();
+
+	emit_changed(get_edited_property(), v4, p_name);
+}
+
+void EditorPropertyVector4::update_property() {
+	update_using_vector(get_edited_object()->get(get_edited_property()));
+}
+
+void EditorPropertyVector4::update_using_vector(Vector4 p_vector) {
+	setting = true;
+	spin[0]->set_value(p_vector.x);
+	spin[1]->set_value(p_vector.y);
+	spin[2]->set_value(p_vector.z);
+	spin[3]->set_value(p_vector.w);
+	setting = false;
+}
+
+Vector4 EditorPropertyVector4::get_vector() {
+	Vector4 v4;
+	v4.x = spin[0]->get_value();
+	v4.y = spin[1]->get_value();
+	v4.z = spin[2]->get_value();
+	v4.w = spin[3]->get_value();
+	return v4;
+}
+
+void EditorPropertyVector4::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 3; i++) {
+				spin[i]->add_theme_color_override("label_color", colors[i]);
+			}
+			spin[3]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_r_w"), SNAME("Editor")));
+		} break;
+	}
+}
+
+void EditorPropertyVector4::_bind_methods() {
+}
+
+void EditorPropertyVector4::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyVector4::EditorPropertyVector4(bool p_force_wide) {
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+
+	BoxContainer *bc;
+
+	if (p_force_wide) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+	} else if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
+	static const char *desc[4] = { "x", "y", "z", "w" };
+	for (int i = 0; i < 4; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_flat(true);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4::_value_changed), varray(desc[i]));
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
+	}
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
+}
+
+///////////////////// VECTOR4I /////////////////////////
+
+void EditorPropertyVector4i::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyVector4i::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Vector4i vec;
+	vec.x = spin[0]->get_value();
+	vec.y = spin[1]->get_value();
+	vec.z = spin[2]->get_value();
+	vec.w = spin[3]->get_value();
+	emit_changed(get_edited_property(), vec, p_name);
+}
+
+void EditorPropertyVector4i::update_property() {
+	Vector4i vec = get_edited_object()->get(get_edited_property());
+	setting = true;
+	spin[0]->set_value(vec.x);
+	spin[1]->set_value(vec.y);
+	spin[2]->set_value(vec.z);
+	spin[3]->set_value(vec.w);
+	setting = false;
+}
+
+void EditorPropertyVector4i::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			for (int i = 0; i < 3; i++) {
+				spin[i]->add_theme_color_override("label_color", colors[i]);
+			}
+			spin[3]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_r_w"), SNAME("Editor")));
+		} break;
+	}
+}
+
+void EditorPropertyVector4i::_bind_methods() {
+}
+
+void EditorPropertyVector4i::setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 4; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(1);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyVector4i::EditorPropertyVector4i(bool p_force_wide) {
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+
+	BoxContainer *bc;
+	if (p_force_wide) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+	} else if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
+	static const char *desc[4] = { "x", "y", "z", "w" };
+	for (int i = 0; i < 4; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_flat(true);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVector4i::_value_changed), varray(desc[i]));
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
+	}
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
+}
+
+///////////////////// BASIS4D /////////////////////////
+
+void EditorPropertyBasis4D::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 16; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyBasis4D::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Basis4D p;
+	p[0][0] = spin[0]->get_value();
+	p[1][0] = spin[1]->get_value();
+	p[2][0] = spin[2]->get_value();
+	p[3][0] = spin[3]->get_value();
+	p[0][1] = spin[4]->get_value();
+	p[1][1] = spin[5]->get_value();
+	p[2][1] = spin[6]->get_value();
+	p[3][1] = spin[7]->get_value();
+	p[0][2] = spin[8]->get_value();
+	p[1][2] = spin[9]->get_value();
+	p[2][2] = spin[10]->get_value();
+	p[3][2] = spin[11]->get_value();
+	p[0][3] = spin[12]->get_value();
+	p[1][3] = spin[13]->get_value();
+	p[2][3] = spin[14]->get_value();
+	p[3][3] = spin[15]->get_value();
+
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyBasis4D::update_property() {
+	Basis4D val = get_edited_object()->get(get_edited_property());
+	setting = true;
+	spin[0]->set_value(val[0][0]);
+	spin[1]->set_value(val[1][0]);
+	spin[2]->set_value(val[2][0]);
+	spin[3]->set_value(val[3][0]);
+	spin[4]->set_value(val[0][1]);
+	spin[5]->set_value(val[1][1]);
+	spin[6]->set_value(val[2][1]);
+	spin[7]->set_value(val[3][1]);
+	spin[8]->set_value(val[0][2]);
+	spin[9]->set_value(val[1][2]);
+	spin[10]->set_value(val[2][2]);
+	spin[11]->set_value(val[3][2]);
+	spin[12]->set_value(val[0][3]);
+	spin[13]->set_value(val[1][3]);
+	spin[14]->set_value(val[2][3]);
+	spin[15]->set_value(val[3][3]);
+
+	setting = false;
+}
+
+void EditorPropertyBasis4D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			const Color w = get_theme_color(SNAME("property_color_r_w"), SNAME("Editor"));
+			for (int i = 0; i < 16; i++) {
+				int mod = i % 4;
+				if (mod == 3) {
+					// Use yellow for the W axis.
+					spin[i]->add_theme_color_override("label_color", w);
+				} else {
+					spin[i]->add_theme_color_override("label_color", colors[mod]);
+				}
+			}
+		} break;
+	}
+}
+
+void EditorPropertyBasis4D::_bind_methods() {
+}
+
+void EditorPropertyBasis4D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 16; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyBasis4D::EditorPropertyBasis4D() {
+	GridContainer *g = memnew(GridContainer);
+	g->set_columns(4);
+	add_child(g);
+
+	static const char *desc[16] = { "xx", "xy", "xz", "xw", "yx", "yy", "yz", "yw", "zx", "zy", "zz", "zw", "wx", "wy", "wz", "ww" };
+	for (int i = 0; i < 16; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_label(desc[i]);
+		spin[i]->set_flat(true);
+		g->add_child(spin[i]);
+		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyBasis4D::_value_changed), varray(desc[i]));
+	}
+	set_bottom_editor(g);
+}
+
+///////////////////// TRANSFORM4D /////////////////////////
+
+void EditorPropertyTransform4D::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 20; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyTransform4D::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+
+	Transform4D p;
+	p.basis[0][0] = spin[0]->get_value();
+	p.basis[1][0] = spin[1]->get_value();
+	p.basis[2][0] = spin[2]->get_value();
+	p.basis[3][0] = spin[3]->get_value();
+	p.basis[0][1] = spin[5]->get_value();
+	p.basis[1][1] = spin[6]->get_value();
+	p.basis[2][1] = spin[7]->get_value();
+	p.basis[3][1] = spin[8]->get_value();
+	p.basis[0][2] = spin[10]->get_value();
+	p.basis[1][2] = spin[11]->get_value();
+	p.basis[2][2] = spin[12]->get_value();
+	p.basis[3][2] = spin[13]->get_value();
+	p.basis[0][3] = spin[15]->get_value();
+	p.basis[1][3] = spin[16]->get_value();
+	p.basis[2][3] = spin[17]->get_value();
+	p.basis[3][3] = spin[18]->get_value();
+	p.origin[0] = spin[4]->get_value();
+	p.origin[1] = spin[9]->get_value();
+	p.origin[2] = spin[14]->get_value();
+	p.origin[3] = spin[19]->get_value();
+
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyTransform4D::update_property() {
+	update_using_transform(get_edited_object()->get(get_edited_property()));
+}
+
+void EditorPropertyTransform4D::update_using_transform(Transform4D p_transform) {
+	setting = true;
+	spin[0]->set_value(p_transform.basis[0][0]);
+	spin[1]->set_value(p_transform.basis[1][0]);
+	spin[2]->set_value(p_transform.basis[2][0]);
+	spin[3]->set_value(p_transform.basis[3][0]);
+	spin[5]->set_value(p_transform.basis[0][1]);
+	spin[6]->set_value(p_transform.basis[1][1]);
+	spin[7]->set_value(p_transform.basis[2][1]);
+	spin[8]->set_value(p_transform.basis[3][1]);
+	spin[10]->set_value(p_transform.basis[0][2]);
+	spin[11]->set_value(p_transform.basis[1][2]);
+	spin[12]->set_value(p_transform.basis[2][2]);
+	spin[13]->set_value(p_transform.basis[3][2]);
+	spin[15]->set_value(p_transform.basis[0][3]);
+	spin[16]->set_value(p_transform.basis[1][3]);
+	spin[17]->set_value(p_transform.basis[2][3]);
+	spin[18]->set_value(p_transform.basis[3][3]);
+	spin[4]->set_value(p_transform.origin[0]);
+	spin[9]->set_value(p_transform.origin[1]);
+	spin[14]->set_value(p_transform.origin[2]);
+	spin[19]->set_value(p_transform.origin[3]);
+	setting = false;
+}
+
+void EditorPropertyTransform4D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			const Color w = get_theme_color(SNAME("property_color_r_w"), SNAME("Editor"));
+			for (int i = 0; i < 20; i++) {
+				int mod = i % 5;
+				if (mod == 4) {
+					// Use the last regular color (cyan) for the origin vector.
+					spin[i]->add_theme_color_override("label_color", colors[3]);
+				} else if (mod == 3) {
+					// Use yellow for the W axis.
+					spin[i]->add_theme_color_override("label_color", w);
+				} else {
+					spin[i]->add_theme_color_override("label_color", colors[mod]);
+				}
+			}
+		} break;
+	}
+}
+
+void EditorPropertyTransform4D::_bind_methods() {
+}
+
+void EditorPropertyTransform4D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 20; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyTransform4D::EditorPropertyTransform4D() {
+	GridContainer *g = memnew(GridContainer);
+	g->set_columns(5);
+	add_child(g);
+
+	static const char *desc[20] = { "xx", "xy", "xz", "xw", "xo", "yx", "yy", "yz", "yw", "yo", "zx", "zy", "zz", "zw", "zo", "wx", "wy", "wz", "ww", "wo" };
+	for (int i = 0; i < 20; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_label(desc[i]);
+		spin[i]->set_flat(true);
+		g->add_child(spin[i]);
+		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyTransform4D::_value_changed), varray(desc[i]));
+	}
+	set_bottom_editor(g);
+}
+
+///////////////////// EULER4D /////////////////////////
+
+void EditorPropertyEuler4D::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 6; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyEuler4D::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+	Euler4D euler;
+	for (int i = 0; i < 6; i++) {
+		euler[i] = Math::deg2rad(spin[i]->get_value());
+		if (euler[i] < CMP_EPSILON - Math_PI) {
+			euler[i] += Math_TAU;
+		}
+	}
+	euler = euler.wrapped();
+	emit_changed(get_edited_property(), euler, p_name);
+}
+
+void EditorPropertyEuler4D::update_property() {
+	Euler4D val = get_edited_object()->get(get_edited_property());
+	setting = true;
+	for (int i = 0; i < 6; i++) {
+		if (val[i] < CMP_EPSILON - Math_PI) {
+			val[i] += Math_TAU;
+		}
+		spin[i]->set_value(Math::rad2deg(val[i]));
+	}
+	setting = false;
+}
+
+void EditorPropertyEuler4D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			// XY, ZX, and YZ are analogous to 3D, so use the 3D euler colors for those.
+			// XW, YW, and ZW are not analogous to 3D, so use other colors for those.
+			spin[0]->add_theme_color_override("label_color", colors[0]);
+			spin[1]->add_theme_color_override("label_color", colors[1]);
+			spin[2]->add_theme_color_override("label_color", colors[2]);
+			spin[3]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_m"), SNAME("Editor")));
+			spin[4]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_n"), SNAME("Editor")));
+			spin[5]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_o"), SNAME("Editor")));
+		} break;
+	}
+}
+
+void EditorPropertyEuler4D::_bind_methods() {
+}
+
+void EditorPropertyEuler4D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 6; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyEuler4D::EditorPropertyEuler4D() {
+	GridContainer *g = memnew(GridContainer);
+	g->set_columns(3);
+	add_child(g);
+
+	static const char *desc[6] = { "yz", "zx", "xy", "xw", "yw", "zw" };
+	for (int i = 0; i < 6; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_label(desc[i]);
+		spin[i]->set_flat(true);
+		g->add_child(spin[i]);
+		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyEuler4D::_value_changed), varray(desc[i]));
+	}
+	set_bottom_editor(g);
+}
+
+///////////////////// OCTONION /////////////////////////
+
+void EditorPropertyOctonion::_set_read_only(bool p_read_only) {
+	for (int i = 0; i < 8; i++) {
+		spin[i]->set_read_only(p_read_only);
+	}
+};
+
+void EditorPropertyOctonion::_value_changed(double val, const String &p_name) {
+	if (setting) {
+		return;
+	}
+	Octonion p;
+	for (int i = 0; i < 8; i++) {
+		p[i] = spin[i]->get_value();
+	}
+	emit_changed(get_edited_property(), p, p_name);
+}
+
+void EditorPropertyOctonion::update_property() {
+	Octonion val = get_edited_object()->get(get_edited_property());
+	setting = true;
+	for (int i = 0; i < 8; i++) {
+		spin[i]->set_value(val[i]);
+	}
+	setting = false;
+}
+
+void EditorPropertyOctonion::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			const Color *colors = _get_property_colors();
+			// RIJK are analogous to Quaternion, so roughly use the 3D colors for those (index 0, 1, 2, 3).
+			// LMNO are not analogous to Quaternion, so use other colors for those (index 4, 5, 6, 7).
+			spin[0]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_r_w"), SNAME("Editor")));
+			spin[1]->add_theme_color_override("label_color", colors[0]);
+			spin[2]->add_theme_color_override("label_color", colors[1]);
+			spin[3]->add_theme_color_override("label_color", colors[2]);
+			spin[4]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_l"), SNAME("Editor")));
+			spin[5]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_m"), SNAME("Editor")));
+			spin[6]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_n"), SNAME("Editor")));
+			spin[7]->add_theme_color_override("label_color", get_theme_color(SNAME("property_color_i_o"), SNAME("Editor")));
+		} break;
+	}
+}
+
+void EditorPropertyOctonion::_bind_methods() {
+}
+
+void EditorPropertyOctonion::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+	for (int i = 0; i < 8; i++) {
+		spin[i]->set_min(p_min);
+		spin[i]->set_max(p_max);
+		spin[i]->set_step(p_step);
+		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_allow_greater(true);
+		spin[i]->set_allow_lesser(true);
+		spin[i]->set_suffix(p_suffix);
+	}
+}
+
+EditorPropertyOctonion::EditorPropertyOctonion() {
+	GridContainer *g = memnew(GridContainer);
+	g->set_columns(4);
+	add_child(g);
+
+	static const char *desc[8] = { "r", "i", "j", "k", "l", "m", "n", "o" };
+	for (int i = 0; i < 8; i++) {
+		spin[i] = memnew(EditorSpinSlider);
+		spin[i]->set_label(desc[i]);
+		spin[i]->set_flat(true);
+		g->add_child(spin[i]);
+		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_focusable(spin[i]);
+		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyOctonion::_value_changed), varray(desc[i]));
+	}
+	set_bottom_editor(g);
+}
+
 ////////////// COLOR PICKER //////////////////////
 
 void EditorPropertyColor::_set_read_only(bool p_read_only) {
@@ -3682,6 +4280,43 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
 			return editor;
 
+		} break;
+		// 4D types.
+		case Variant::VECTOR4: {
+			EditorPropertyVector4 *editor = memnew(EditorPropertyVector4(p_wide));
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+		} break;
+		case Variant::VECTOR4I: {
+			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i(p_wide));
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+			editor->setup(hint.min, hint.max, hint.hide_slider, hint.suffix);
+			return editor;
+		} break;
+		case Variant::BASIS4D: {
+			EditorPropertyBasis4D *editor = memnew(EditorPropertyBasis4D);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+		} break;
+		case Variant::TRANSFORM4D: {
+			EditorPropertyTransform4D *editor = memnew(EditorPropertyTransform4D);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+		} break;
+		case Variant::EULER4D: {
+			EditorPropertyEuler4D *editor = memnew(EditorPropertyEuler4D);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
+		} break;
+		case Variant::OCTONION: {
+			EditorPropertyOctonion *editor = memnew(EditorPropertyOctonion);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
+			editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.suffix);
+			return editor;
 		} break;
 
 		// misc types

@@ -344,6 +344,13 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 	p_core_type_words->push_back("AABB");
 	p_core_type_words->push_back("Basis");
 	p_core_type_words->push_back("Transform3D");
+	// 4D types.
+	p_core_type_words->push_back("Vector4");
+	p_core_type_words->push_back("Vector4i");
+	p_core_type_words->push_back("Basis4D");
+	p_core_type_words->push_back("Transform4D");
+	p_core_type_words->push_back("Euler4D");
+	p_core_type_words->push_back("Octonion");
 	p_core_type_words->push_back("Color");
 	p_core_type_words->push_back("StringName");
 	p_core_type_words->push_back("NodePath");
