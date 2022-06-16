@@ -26,7 +26,6 @@ namespace GodotTools.Utils
             public const string FreeBSD = "FreeBSD";
             public const string NetBSD = "NetBSD";
             public const string BSD = "BSD";
-            public const string Server = "Server";
             public const string UWP = "UWP";
             public const string Haiku = "Haiku";
             public const string Android = "Android";
@@ -39,7 +38,6 @@ namespace GodotTools.Utils
             public const string Windows = "windows";
             public const string MacOS = "osx";
             public const string LinuxBSD = "linuxbsd";
-            public const string Server = "server";
             public const string UWP = "uwp";
             public const string Haiku = "haiku";
             public const string Android = "android";
@@ -55,7 +53,6 @@ namespace GodotTools.Utils
             [Names.FreeBSD] = Platforms.LinuxBSD,
             [Names.NetBSD] = Platforms.LinuxBSD,
             [Names.BSD] = Platforms.LinuxBSD,
-            [Names.Server] = Platforms.Server,
             [Names.UWP] = Platforms.UWP,
             [Names.Haiku] = Platforms.Haiku,
             [Names.Android] = Platforms.Android,
@@ -77,13 +74,12 @@ namespace GodotTools.Utils
             new[] { Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD };
 
         private static readonly IEnumerable<string> UnixLikePlatforms =
-            new[] { Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS }
+            new[] { Names.MacOS, Names.Haiku, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isMacOS = new Lazy<bool>(() => IsOS(Names.MacOS));
         private static readonly Lazy<bool> _isLinuxBSD = new Lazy<bool>(() => IsAnyOS(LinuxBSDPlatforms));
-        private static readonly Lazy<bool> _isServer = new Lazy<bool>(() => IsOS(Names.Server));
         private static readonly Lazy<bool> _isUWP = new Lazy<bool>(() => IsOS(Names.UWP));
         private static readonly Lazy<bool> _isHaiku = new Lazy<bool>(() => IsOS(Names.Haiku));
         private static readonly Lazy<bool> _isAndroid = new Lazy<bool>(() => IsOS(Names.Android));
@@ -94,7 +90,6 @@ namespace GodotTools.Utils
         public static bool IsWindows => _isWindows.Value || IsUWP;
         public static bool IsMacOS => _isMacOS.Value;
         public static bool IsLinuxBSD => _isLinuxBSD.Value;
-        public static bool IsServer => _isServer.Value;
         public static bool IsUWP => _isUWP.Value;
         public static bool IsHaiku => _isHaiku.Value;
         public static bool IsAndroid => _isAndroid.Value;

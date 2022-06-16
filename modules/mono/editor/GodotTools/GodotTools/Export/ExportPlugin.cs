@@ -454,7 +454,6 @@ namespace GodotTools.Export
                     return "net_4_x_win";
                 case OS.Platforms.MacOS:
                 case OS.Platforms.LinuxBSD:
-                case OS.Platforms.Server:
                 case OS.Platforms.Haiku:
                     return "net_4_x";
                 case OS.Platforms.Android:
