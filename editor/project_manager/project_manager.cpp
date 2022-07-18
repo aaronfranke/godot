@@ -48,6 +48,7 @@
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -1326,6 +1327,8 @@ void ProjectManager::_open_donate_page() {
 ProjectManager::ProjectManager() {
 	singleton = this;
 
+	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+	add_child(epnp);
 	// Turn off some servers we aren't going to be using in the Project Manager.
 	NavigationServer3D::get_singleton()->set_active(false);
 	PhysicsServer3D::get_singleton()->set_active(false);
