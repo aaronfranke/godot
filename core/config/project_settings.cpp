@@ -50,7 +50,9 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
+#include "editor/inspector/editor_property_name_processor.h"
 
+#include "modules/module_names.gen.h"
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 
@@ -98,6 +100,9 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 #ifdef MODULE_MONO_ENABLED
 	features.append("C#");
 #endif
+	for (const String &s : module_names) {
+		features.append(EditorPropertyNameProcessor::get_singleton()->process_name(s, EditorPropertyNameProcessor::Style::STYLE_CAPITALIZED));
+	}
 	// Allow pinning to a specific patch number or build type by marking
 	// them as supported. They're only used if the user adds them manually.
 	features.append(GODOT_VERSION_BRANCH "." _MKSTR(GODOT_VERSION_PATCH));
