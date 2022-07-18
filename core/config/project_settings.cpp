@@ -41,7 +41,12 @@
 #include "core/os/keyboard.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_property_name_processor.h"
+#include "modules/module_names.gen.h"
 #include "modules/modules_enabled.gen.h" // For mono.
+#endif // TOOLS_ENABLED
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
@@ -75,6 +80,7 @@ String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().plus_file("imported");
 }
 
+#ifdef TOOLS_ENABLED
 // Returns the features that a project must have when opened with this build of Godot.
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
@@ -92,6 +98,9 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 #ifdef MODULE_MONO_ENABLED
 	features.append("C#");
 #endif
+	for (const String &s : module_names) {
+		features.append(EditorPropertyNameProcessor::get_singleton()->process_name(s, EditorPropertyNameProcessor::Style::STYLE_CAPITALIZED));
+	}
 	// Allow pinning to a specific patch number or build type by marking
 	// them as supported. They're only used if the user adds them manually.
 	features.append(VERSION_BRANCH "." _MKSTR(VERSION_PATCH));
@@ -137,6 +146,7 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	features.sort();
 	return features;
 }
+#endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
 	if (resource_path.is_empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||
