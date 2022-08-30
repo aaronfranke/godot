@@ -321,6 +321,19 @@ TEST_CASE("[Vector4] Linear algebra methods") {
 	CHECK_MESSAGE(
 			(vector1 * 2).dot(vector2 * 4) == doctest::Approx((real_t)-25.9 * 8),
 			"Vector4 dot product should work as expected.");
+
+	CHECK_MESSAGE(
+			Math::is_equal_approx(vector_x.cross(vector_x), (real_t)0.0),
+			"Vector4 cross product of parallel vectors should be zero.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(vector_x.cross(vector_y), (real_t)1.0),
+			"Vector4 cross product of perpendicular unit vectors should be one.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(vector1.cross(vector2), (real_t)Math::sqrt(30421.81)),
+			"Vector4 cross product of two vectors should give the expected result.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(vector2.cross(vector1), (real_t)Math::sqrt(30421.81)),
+			"Vector4 cross product of two vectors reversed should give the same result.");
 }
 
 TEST_CASE("[Vector4] Finite number checks") {

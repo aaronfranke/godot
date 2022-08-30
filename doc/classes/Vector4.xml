@@ -64,6 +64,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="cross" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the 4D analog of the cross product for this vector and [param with]. This is the unsigned area of the parallelogram formed by the two vectors.
+				[b]Note:[/b] Cross product is not defined in 4D mathematically. This method is an analog similar to [method Vector2.cross].
+			</description>
+		</method>
 		<method name="cubic_interpolate" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="b" type="Vector4" />

@@ -105,6 +105,7 @@ struct _NO_DISCARD_ Vector4 {
 	Vector4 clamp(const Vector4 &p_min, const Vector4 &p_max) const;
 
 	Vector4 inverse() const;
+	real_t cross(const Vector4 &p_vec4) const;
 	_FORCE_INLINE_ real_t dot(const Vector4 &p_vec4) const;
 
 	_FORCE_INLINE_ void operator+=(const Vector4 &p_vec4);

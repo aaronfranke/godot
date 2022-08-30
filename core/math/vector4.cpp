@@ -72,6 +72,12 @@ real_t Vector4::length() const {
 	return Math::sqrt(length_squared());
 }
 
+real_t Vector4::cross(const Vector4 &p_vec4) const {
+	real_t diagonal = length_squared() * p_vec4.length_squared();
+	real_t non_diagonal = dot(p_vec4);
+	return sqrt(diagonal - non_diagonal * non_diagonal);
+}
+
 void Vector4::normalize() {
 	real_t lengthsq = length_squared();
 	if (lengthsq == 0) {
