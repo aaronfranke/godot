@@ -50,6 +50,13 @@
 				Returns a new vector with all components in absolute values (i.e. positive).
 			</description>
 		</method>
+		<method name="angle_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector4" />
+			<description>
+				Returns the unsigned minimum angle to the given vector, in radians.
+			</description>
+		</method>
 		<method name="ceil" qualifiers="const">
 			<return type="Vector4" />
 			<description>

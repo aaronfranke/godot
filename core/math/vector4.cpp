@@ -109,6 +109,10 @@ Vector4 Vector4::direction_to(const Vector4 &p_to) const {
 	return ret;
 }
 
+real_t Vector4::angle_to(const Vector4 &p_to) const {
+	return Math::acos(dot(p_to) / (length() * p_to.length()));
+}
+
 Vector4 Vector4::abs() const {
 	return Vector4(Math::abs(x), Math::abs(y), Math::abs(z), Math::abs(w));
 }

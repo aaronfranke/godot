@@ -1928,6 +1928,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, clamp, sarray("min", "max"), varray());
 	bind_method(Vector4, normalized, sarray(), varray());
 	bind_method(Vector4, is_normalized, sarray(), varray());
+	bind_method(Vector4, angle_to, sarray("to"), varray());
 	bind_method(Vector4, direction_to, sarray("to"), varray());
 	bind_method(Vector4, distance_to, sarray("to"), varray());
 	bind_method(Vector4, distance_squared_to, sarray("to"), varray());

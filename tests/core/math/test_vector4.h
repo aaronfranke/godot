@@ -46,6 +46,32 @@ TEST_CASE("[Vector4] Constructor methods") {
 			"Vector4 Constructor with no inputs should return a zero Vector4.");
 }
 
+TEST_CASE("[Vector4] Angle methods") {
+	const Vector4 vector_x = Vector4(1, 0, 0, 0);
+	const Vector4 vector_y = Vector4(0, 1, 0, 0);
+	const Vector4 vector_yz = Vector4(0, 1, 1, 0);
+	const Vector4 vector1 = Vector4(1.7, 2.3, 1, 9.1);
+	const Vector4 vector2 = Vector4(-8.2, -16, 3, 2.4);
+	CHECK_MESSAGE(
+			vector_x.angle_to(vector_y) == doctest::Approx(Math_TAU / 4),
+			"Vector4 angle_to should work as expected.");
+	CHECK_MESSAGE(
+			vector_x.angle_to(vector_yz) == doctest::Approx(Math_TAU / 4),
+			"Vector4 angle_to should work as expected.");
+	CHECK_MESSAGE(
+			vector_yz.angle_to(vector_x) == doctest::Approx(Math_TAU / 4),
+			"Vector4 angle_to should work as expected.");
+	CHECK_MESSAGE(
+			vector_y.angle_to(vector_yz) == doctest::Approx(Math_TAU / 8),
+			"Vector4 angle_to should work as expected.");
+	CHECK_MESSAGE(
+			vector1.angle_to(vector2) == doctest::Approx(1.718212531758478876075),
+			"Vector4 angle_to should work as expected.");
+	CHECK_MESSAGE(
+			vector2.angle_to(vector1) == doctest::Approx(1.718212531758478876075),
+			"Vector4 angle_to reversed should give the same result.");
+}
+
 TEST_CASE("[Vector4] Axis methods") {
 	Vector4 vector = Vector4(1.2, 3.4, 5.6, -0.9);
 	CHECK_MESSAGE(
