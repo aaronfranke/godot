@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFPhysicsBody" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents a GLTF physics body.
+	</brief_description>
+	<description>
+		Represents a physics body as defined by the [code]OMI_physics_body[/code] GLTF extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFPhysicsBody" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFPhysicsBody instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="from_node" qualifiers="static">
+			<return type="GLTFPhysicsBody" />
+			<param index="0" name="physics_node" type="CollisionObject3D" />
+			<description>
+				Create a new GLTFPhysicsBody instance from the given Godot [CollisionObject3D] node.
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFPhysicsBody instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node" qualifiers="const">
+			<return type="CollisionObject3D" />
+			<description>
+				Converts this GLTFPhysicsBody instance into a Godot [CollisionObject3D] node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="body_type" type="String" setter="set_body_type" getter="get_body_type" default="&quot;static&quot;">
+			The type of the body. Valid values are "character", "kinematic", "rigid", "static", and "trigger".
+		</member>
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
+			The mass of the physics body, in kilograms. This is only used when the body type is "rigid".
+		</member>
+	</members>
+</class>
