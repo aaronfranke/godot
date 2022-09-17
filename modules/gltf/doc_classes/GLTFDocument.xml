@@ -50,6 +50,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="register_gltf_document_extension" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="extension" type="GLTFDocumentExtension" />
+			<description>
+				Registers this GLTFDocumentExtension instance with GLTFDocument.
+				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly.
+			</description>
+		</method>
 		<method name="write_to_filesystem">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
@@ -58,8 +66,4 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="extensions" type="GLTFDocumentExtension[]" setter="set_extensions" getter="get_extensions" default="[]">
-		</member>
-	</members>
 </class>

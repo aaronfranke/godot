@@ -31,7 +31,7 @@
 #ifndef GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H
 #define GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H
 
-#include "gltf_document_extension.h"
+#include "../gltf_document_extension.h"
 
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
