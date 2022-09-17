@@ -622,6 +622,10 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 					node->light = light;
 				}
 			}
+			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+				ERR_CONTINUE(ext.is_null());
+				ext->parse_node_extensions(state, node, extensions);
+			}
 		}
 
 		if (n.has("children")) {
@@ -5153,6 +5157,11 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, co
 	} else if (cast_to<AnimationPlayer>(p_current)) {
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
 		_convert_animation_player_to_gltf(animation_player, state, p_gltf_parent, p_gltf_root, gltf_node, p_current);
+	} else {
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			ext->convert_scene_node(state, gltf_node, p_current);
+		}
 	}
 	GLTFNodeIndex current_node_i = state->nodes.size();
 	GLTFNodeIndex gltf_root = p_gltf_root;
@@ -5483,6 +5492,14 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		current_node = _generate_camera(state, node_index);
 	} else if (gltf_node->light >= 0) {
 		current_node = _generate_light(state, node_index);
+	} else {
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			current_node = ext->generate_scene_node(state, gltf_node, scene_parent, scene_root);
+			if (current_node) {
+				break;
+			}
+		}
 	}
 
 	// We still have not managed to make a node.
@@ -5565,6 +5582,14 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			current_node = _generate_camera(state, node_index);
 		} else if (gltf_node->light >= 0) {
 			current_node = _generate_light(state, node_index);
+		} else {
+			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+				ERR_CONTINUE(ext.is_null());
+				current_node = ext->generate_scene_node(state, gltf_node, scene_parent, scene_root);
+				if (current_node) {
+					break;
+				}
+			}
 		}
 
 		scene_parent->add_child(current_node, true);

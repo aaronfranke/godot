@@ -48,6 +48,9 @@ public:
 	virtual Error export_preflight(Node *p_state);
 	virtual Error import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
 	virtual Error export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
+	virtual Node3D *generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent, Node *p_scene_owner);
+	virtual void convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node);
+	virtual void parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions);
 	GDVIRTUAL1R(int, _import_preflight, Ref<GLTFState>);
 	GDVIRTUAL1R(int, _import_post_parse, Ref<GLTFState>);
 	GDVIRTUAL4R(int, _import_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);
@@ -55,6 +58,9 @@ public:
 	GDVIRTUAL1R(int, _export_preflight, Node *);
 	GDVIRTUAL4R(int, _export_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);
 	GDVIRTUAL1R(int, _export_post, Ref<GLTFState>);
+	GDVIRTUAL4R(Node3D *, _generate_scene_node, Ref<GLTFState>, Ref<GLTFNode>, Node *, Node *);
+	GDVIRTUAL3(_convert_scene_node, Ref<GLTFState>, Ref<GLTFNode>, Node *);
+	GDVIRTUAL3(_parse_node_extensions, Ref<GLTFState>, Ref<GLTFNode>, Dictionary);
 };
 
 #endif // GLTF_DOCUMENT_EXTENSION_H

@@ -38,6 +38,9 @@ void GLTFDocumentExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_export_preflight, "root");
 	GDVIRTUAL_BIND(_export_node, "state", "gltf_node", "json", "node");
 	GDVIRTUAL_BIND(_export_post, "state");
+	GDVIRTUAL_BIND(_generate_scene_node, "state", "gltf_node", "scene_parent", "scene_owner");
+	GDVIRTUAL_BIND(_convert_scene_node, "state", "gltf_node", "scene_node");
+	GDVIRTUAL_BIND(_parse_node_extensions, "state", "gltf_node", "extensions");
 }
 
 Error GLTFDocumentExtension::import_post(Ref<GLTFState> p_state, Node *p_root) {
@@ -105,4 +108,27 @@ Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 		return Error(err);
 	}
 	return OK;
+}
+
+Node3D *GLTFDocumentExtension::generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent, Node *p_scene_owner) {
+	ERR_FAIL_NULL_V(p_state, nullptr);
+	ERR_FAIL_NULL_V(p_gltf_node, nullptr);
+	ERR_FAIL_NULL_V(p_scene_parent, nullptr);
+	ERR_FAIL_NULL_V(p_scene_owner, nullptr);
+	Node3D *ret_node = nullptr;
+	GDVIRTUAL_CALL(_generate_scene_node, p_state, p_gltf_node, p_scene_parent, p_scene_owner, ret_node);
+	return ret_node;
+}
+
+void GLTFDocumentExtension::convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node) {
+	ERR_FAIL_NULL(p_state);
+	ERR_FAIL_NULL(p_gltf_node);
+	ERR_FAIL_NULL(p_scene_node);
+	GDVIRTUAL_CALL(_convert_scene_node, p_state, p_gltf_node, p_scene_node);
+}
+
+void GLTFDocumentExtension::parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions) {
+	ERR_FAIL_NULL(p_state);
+	ERR_FAIL_NULL(p_gltf_node);
+	GDVIRTUAL_CALL(_parse_node_extensions, p_state, p_gltf_node, p_extensions);
 }
