@@ -220,20 +220,24 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 }
 
 Error GLTFDocument::_serialize_extensions(Ref<GLTFState> state) const {
-	Array extensions_used;
-	Array extensions_required;
+	HashSet<String> extensions_used = state->extensions_used;
+	HashSet<String> extensions_required = state->extensions_required;
 	if (!state->lights.is_empty()) {
-		extensions_used.push_back("KHR_lights_punctual");
+		extensions_used.insert("KHR_lights_punctual");
 	}
 	if (state->use_khr_texture_transform) {
-		extensions_used.push_back("KHR_texture_transform");
-		extensions_required.push_back("KHR_texture_transform");
+		extensions_used.insert("KHR_texture_transform");
+		extensions_required.insert("KHR_texture_transform");
 	}
 	if (!extensions_used.is_empty()) {
-		state->json["extensionsUsed"] = extensions_used;
+		Array extension_array = GLTFTemplateConvert::to_array(extensions_used);
+		extension_array.sort();
+		state->json["extensionsUsed"] = extension_array;
 	}
 	if (!extensions_required.is_empty()) {
-		state->json["extensionsRequired"] = extensions_required;
+		Array extension_array = GLTFTemplateConvert::to_array(extensions_required);
+		extension_array.sort();
+		state->json["extensionsRequired"] = extension_array;
 	}
 	return OK;
 }

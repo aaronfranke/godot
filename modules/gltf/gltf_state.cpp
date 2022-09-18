@@ -31,6 +31,7 @@
 #include "gltf_state.h"
 
 void GLTFState::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_extension_as_used", "extension_name", "required"), &GLTFState::set_extension_as_used);
 	ClassDB::bind_method(D_METHOD("get_json"), &GLTFState::get_json);
 	ClassDB::bind_method(D_METHOD("set_json", "json"), &GLTFState::set_json);
 	ClassDB::bind_method(D_METHOD("get_major_version"), &GLTFState::get_major_version);
@@ -110,6 +111,13 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // RBMap<GLTFSkeletonIndex,
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
+}
+
+void GLTFState::set_extension_as_used(const String &p_extension_name, bool p_required) {
+	extensions_used.insert(p_extension_name);
+	if (p_required) {
+		extensions_required.insert(p_extension_name);
+	}
 }
 
 Dictionary GLTFState::get_json() {
