@@ -40,6 +40,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minor_version", "minor_version"), &GLTFState::set_minor_version);
 	ClassDB::bind_method(D_METHOD("get_glb_data"), &GLTFState::get_glb_data);
 	ClassDB::bind_method(D_METHOD("set_glb_data", "glb_data"), &GLTFState::set_glb_data);
+	ClassDB::bind_method(D_METHOD("get_extra_data"), &GLTFState::get_extra_data);
+	ClassDB::bind_method(D_METHOD("set_extra_data", "extra_data"), &GLTFState::set_extra_data);
 	ClassDB::bind_method(D_METHOD("get_use_named_skin_binds"), &GLTFState::get_use_named_skin_binds);
 	ClassDB::bind_method(D_METHOD("set_use_named_skin_binds", "use_named_skin_binds"), &GLTFState::set_use_named_skin_binds);
 	ClassDB::bind_method(D_METHOD("get_nodes"), &GLTFState::get_nodes);
@@ -90,6 +92,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minor_version"), "set_minor_version", "get_minor_version"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "glb_data"), "set_glb_data", "get_glb_data"); // Vector<uint8_t>
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "extra_data"), "set_extra_data", "get_extra_data"); // Dictionary
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_named_skin_binds"), "set_use_named_skin_binds", "get_use_named_skin_binds"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_nodes", "get_nodes"); // Vector<Ref<GLTFNode>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "buffers"), "set_buffers", "get_buffers"); // Vector<Vector<uint8_t>
@@ -150,6 +153,14 @@ Vector<uint8_t> GLTFState::get_glb_data() {
 
 void GLTFState::set_glb_data(Vector<uint8_t> p_glb_data) {
 	glb_data = p_glb_data;
+}
+
+Dictionary GLTFState::get_extra_data() {
+	return extra_data;
+}
+
+void GLTFState::set_extra_data(Dictionary p_extra_data) {
+	extra_data = p_extra_data;
 }
 
 bool GLTFState::get_use_named_skin_binds() {

@@ -14,6 +14,10 @@
 		</member>
 		<member name="children" type="PackedInt32Array" setter="set_children" getter="get_children" default="PackedInt32Array()">
 		</member>
+		<member name="extra_data" type="Dictionary" setter="set_extra_data" getter="get_extra_data" default="{}">
+			A dictionary of extra data that can be used to keep state data in GLTFDocumentExtension classes (this is important because they are stateless).
+			[b]Note:[/b] This dictionary is used by multiple extensions, so do not manually erase it.
+		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
 		</member>
 		<member name="joint" type="bool" setter="set_joint" getter="get_joint" default="false">

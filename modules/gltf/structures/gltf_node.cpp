@@ -57,6 +57,8 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_children", "children"), &GLTFNode::set_children);
 	ClassDB::bind_method(D_METHOD("get_light"), &GLTFNode::get_light);
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
+	ClassDB::bind_method(D_METHOD("get_extra_data"), &GLTFNode::get_extra_data);
+	ClassDB::bind_method(D_METHOD("set_extra_data", "extra_data"), &GLTFNode::set_extra_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent"), "set_parent", "get_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height"), "set_height", "get_height"); // int
@@ -71,6 +73,7 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "extra_data"), "set_extra_data", "get_extra_data"); // Dictionary
 }
 
 GLTFNodeIndex GLTFNode::get_parent() {
@@ -175,4 +178,12 @@ GLTFLightIndex GLTFNode::get_light() {
 
 void GLTFNode::set_light(GLTFLightIndex p_light) {
 	light = p_light;
+}
+
+Dictionary GLTFNode::get_extra_data() {
+	return extra_data;
+}
+
+void GLTFNode::set_extra_data(Dictionary p_extra_data) {
+	extra_data = p_extra_data;
 }

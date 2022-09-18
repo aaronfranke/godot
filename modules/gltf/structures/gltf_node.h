@@ -53,6 +53,7 @@ private:
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector<int> children;
 	GLTFLightIndex light = -1;
+	Dictionary extra_data;
 
 protected:
 	static void _bind_methods();
@@ -96,6 +97,9 @@ public:
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
+
+	Dictionary get_extra_data();
+	void set_extra_data(Dictionary p_extra_data);
 };
 
 #endif // GLTF_NODE_H

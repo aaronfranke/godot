@@ -206,6 +206,10 @@
 		</member>
 		<member name="create_animations" type="bool" setter="set_create_animations" getter="get_create_animations" default="true">
 		</member>
+		<member name="extra_data" type="Dictionary" setter="set_extra_data" getter="get_extra_data" default="{}">
+			A dictionary of extra data that can be used to keep state data in GLTFDocumentExtension classes (this is important because they are stateless).
+			[b]Note:[/b] This dictionary is used by multiple extensions, so do not manually erase it.
+		</member>
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
 		</member>
 		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
