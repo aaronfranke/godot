@@ -750,7 +750,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_size(const Size2i &p_size);
+	void set_size(const Size2i &p_size); // For property bindings.
+	void internal_set_size(const Size2i &p_size, bool p_force = false); // Real one.
 	Size2i get_size() const;
 
 	void set_size_2d_override(const Size2i &p_size);

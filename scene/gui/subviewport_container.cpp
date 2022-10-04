@@ -85,7 +85,7 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 			continue;
 		}
 
-		c->set_size(get_size() / shrink);
+		c->internal_set_size(get_size() / shrink, true);
 	}
 
 	queue_redraw();
@@ -116,7 +116,7 @@ void SubViewportContainer::_notification(int p_what) {
 					continue;
 				}
 
-				c->set_size(get_size() / shrink);
+				c->internal_set_size(get_size() / shrink, true);
 			}
 		} break;
 

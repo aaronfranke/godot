@@ -4080,9 +4080,18 @@ Viewport::~Viewport() {
 /////////////////////////////////
 
 void SubViewport::set_size(const Size2i &p_size) {
-	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+	internal_set_size(p_size);
+}
 
+void SubViewport::internal_set_size(const Size2i &p_size, bool p_force) {
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+#ifdef DEBUG_ENABLED
+	if (!p_force && c && c->is_stretch_enabled()) {
+		WARN_PRINT("Can't change the size of a `SubViewport` with a `SubViewportContainer` parent that has `stretch` enabled. Set `SubViewportContainer.stretch` to `false` to allow changing the size manually.");
+		return;
+	}
+#endif // DEBUG_ENABLED
+	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
 	if (c) {
 		c->update_minimum_size();
 	}
