@@ -443,7 +443,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MissingNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
-	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
+	GDREGISTER_VIRTUAL_CLASS(CanvasItem);
 
 	GDREGISTER_VIRTUAL_CLASS(Texture);
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);
