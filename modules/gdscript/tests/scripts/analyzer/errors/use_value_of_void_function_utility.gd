@@ -1,2 +1,2 @@
 func test():
-	print(print()) # Built-in utility function.
+	print(printraw()) # Built-in utility function.

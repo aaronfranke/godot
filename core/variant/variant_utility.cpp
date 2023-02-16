@@ -772,7 +772,7 @@ struct VariantUtilityFunctions {
 		return String(error_names[error]);
 	}
 
-	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline Error print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -784,11 +784,11 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
+		return print_line(s);
 	}
 
-	static inline void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline Error print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -800,11 +800,12 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		print_line_rich(s);
 		r_error.error = Callable::CallError::CALL_OK;
+		return print_line_rich(s);
 	}
 
-	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline Error print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			String s;
 			for (int i = 0; i < p_arg_count; i++) {
@@ -820,13 +821,12 @@ struct VariantUtilityFunctions {
 			// No need to use `print_verbose()` as this call already only happens
 			// when verbose mode is enabled. This avoids performing string argument concatenation
 			// when not needed.
-			print_line(s);
+			return print_line(s);
 		}
-
-		r_error.error = Callable::CallError::CALL_OK;
+		return ERR_SKIP;
 	}
 
-	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline Error printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -838,11 +838,11 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		print_error(s);
 		r_error.error = Callable::CallError::CALL_OK;
+		return print_error(s);
 	}
 
-	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline Error printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
@@ -851,11 +851,11 @@ struct VariantUtilityFunctions {
 			s += p_args[i]->operator String();
 		}
 
-		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
+		return print_line(s);
 	}
 
-	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline Error prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			if (i) {
@@ -864,8 +864,8 @@ struct VariantUtilityFunctions {
 			s += p_args[i]->operator String();
 		}
 
-		print_line(s);
 		r_error.error = Callable::CallError::CALL_OK;
+		return print_line(s);
 	}
 
 	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -880,8 +880,8 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		OS::get_singleton()->print("%s", s.utf8().get_data());
 		r_error.error = Callable::CallError::CALL_OK;
+		OS::get_singleton()->print("%s", s.utf8().get_data());
 	}
 
 	static inline void push_error(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
@@ -1413,6 +1413,50 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	};                                                                                                           \
 	register_utility_function<Func_##m_func>(#m_func, m_args)
 
+#define FUNCBINDVARARGRET(m_func, m_ret, m_args, m_category)                                                     \
+	class Func_##m_func {                                                                                        \
+	public:                                                                                                      \
+		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
+			r_error.error = Callable::CallError::CALL_OK;                                                        \
+			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                               \
+		}                                                                                                        \
+		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
+			Callable::CallError c;                                                                               \
+			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                     \
+		}                                                                                                        \
+		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
+			Vector<Variant> args;                                                                                \
+			for (int i = 0; i < p_argcount; i++) {                                                               \
+				args.push_back(PtrToArg<Variant>::convert(p_args[i]));                                           \
+			}                                                                                                    \
+			Vector<const Variant *> argsp;                                                                       \
+			for (int i = 0; i < p_argcount; i++) {                                                               \
+				argsp.push_back(&args[i]);                                                                       \
+			}                                                                                                    \
+			Variant r;                                                                                           \
+			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
+		}                                                                                                        \
+		static int get_argument_count() {                                                                        \
+			return 1;                                                                                            \
+		}                                                                                                        \
+		static Variant::Type get_argument_type(int p_arg) {                                                      \
+			return Variant::NIL;                                                                                 \
+		}                                                                                                        \
+		static Variant::Type get_return_type() {                                                                 \
+			return m_ret;                                                                                        \
+		}                                                                                                        \
+		static bool has_return_type() {                                                                          \
+			return true;                                                                                         \
+		}                                                                                                        \
+		static bool is_vararg() {                                                                                \
+			return true;                                                                                         \
+		}                                                                                                        \
+		static Variant::UtilityFunctionType get_type() {                                                         \
+			return m_category;                                                                                   \
+		}                                                                                                        \
+	};                                                                                                           \
+	register_utility_function<Func_##m_func>(#m_func, m_args)
+
 #define FUNCBIND(m_func, m_args, m_category)                                                                     \
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
@@ -1602,13 +1646,13 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(error_string, sarray("error"), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(print_rich, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGRET(print, Variant::INT, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGRET(print_rich, Variant::INT, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGRET(printerr, Variant::INT, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGRET(printt, Variant::INT, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGRET(prints, Variant::INT, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(printraw, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
-	FUNCBINDVARARGV(print_verbose, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGRET(print_verbose, Variant::INT, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 

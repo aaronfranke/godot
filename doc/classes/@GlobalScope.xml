@@ -809,6 +809,7 @@
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
+			<return type="int" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblocks]
@@ -825,6 +826,7 @@
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
+			<return type="int" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
@@ -844,11 +846,13 @@
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
+			<return type="int" />
 			<description>
 				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">
+			<return type="int" />
 			<description>
 				Prints one or more arguments to strings in the best way possible to standard error line.
 				[codeblocks]
@@ -881,6 +885,7 @@
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
+			<return type="int" />
 			<description>
 				Prints one or more arguments to the console with a space between each argument.
 				[codeblocks]
@@ -894,6 +899,7 @@
 			</description>
 		</method>
 		<method name="printt" qualifiers="vararg">
+			<return type="int" />
 			<description>
 				Prints one or more arguments to the console with a tab between each argument.
 				[codeblocks]
@@ -2647,7 +2653,7 @@
 			[b]Note:[/b] If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].
 		</constant>
 		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
-			Printer on fire error (This is an easter egg, no built-in methods return this error code).
+			Printer on fire error. Returned when a print method is unable to handle printing the given volume of data.
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
 			The property has no hint for the editor.

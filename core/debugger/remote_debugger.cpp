@@ -125,18 +125,18 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 	rd->script_debugger->send_error(String::utf8(p_func), String::utf8(p_file), p_line, String::utf8(p_err), String::utf8(p_descr), p_editor_notify, p_type, si);
 }
 
-void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
+Error RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive prints during flush.
-		return;
+		return ERR_PRINTER_ON_FIRE;
 	}
 
 	String s = p_string;
 	int allowed_chars = MIN(MAX(rd->max_chars_per_second - rd->char_count, 0), s.length());
 
 	if (allowed_chars == 0 && s.length() > 0) {
-		return;
+		return ERR_PRINTER_ON_FIRE;
 	}
 
 	if (allowed_chars < s.length()) {
@@ -167,8 +167,10 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 			output_string.message = "[output overflow, print less text!]";
 			output_string.type = MESSAGE_TYPE_ERROR;
 			rd->output_strings.push_back(output_string);
+			return ERR_PRINTER_ON_FIRE;
 		}
 	}
+	return OK;
 }
 
 RemoteDebugger::ErrorMessage RemoteDebugger::_create_overflow_error(const String &p_what, const String &p_descr) {

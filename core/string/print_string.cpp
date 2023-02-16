@@ -68,26 +68,28 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 	ERR_FAIL_COND(l == nullptr);
 }
 
-void __print_line(String p_string) {
+Error __print_line(String p_string) {
 	if (!CoreGlobals::print_line_enabled) {
-		return;
+		return ERR_SKIP;
 	}
 
 	OS::get_singleton()->print("%s\n", p_string.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
-	while (l) {
-		l->printfunc(l->userdata, p_string, false, false);
+	Error err = Error::OK;
+	while (l && err == Error::OK) {
+		err = l->printfunc(l->userdata, p_string, false, false);
 		l = l->next;
 	}
 
 	_global_unlock();
+	return err;
 }
 
-void __print_line_rich(String p_string) {
+Error __print_line_rich(String p_string) {
 	if (!CoreGlobals::print_line_enabled) {
-		return;
+		return ERR_SKIP;
 	}
 
 	// Convert a subset of BBCode tags to ANSI escape codes for correct display in the terminal.
@@ -168,35 +170,40 @@ void __print_line_rich(String p_string) {
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
-	while (l) {
-		l->printfunc(l->userdata, p_string, false, true);
+	Error err = Error::OK;
+	while (l && err == Error::OK) {
+		err = l->printfunc(l->userdata, p_string, false, true);
 		l = l->next;
 	}
 
 	_global_unlock();
+	return err;
 }
 
-void print_error(String p_string) {
+Error print_error(String p_string) {
 	if (!CoreGlobals::print_error_enabled) {
-		return;
+		return ERR_SKIP;
 	}
 
 	OS::get_singleton()->printerr("%s\n", p_string.utf8().get_data());
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
-	while (l) {
-		l->printfunc(l->userdata, p_string, true, false);
+	Error err = Error::OK;
+	while (l && err == Error::OK) {
+		err = l->printfunc(l->userdata, p_string, true, false);
 		l = l->next;
 	}
 
 	_global_unlock();
+	return err;
 }
 
-void print_verbose(String p_string) {
+Error print_verbose(String p_string) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line(p_string);
+		return print_line(p_string);
 	}
+	return ERR_SKIP;
 }
 
 String stringify_variants(Variant p_var) {
