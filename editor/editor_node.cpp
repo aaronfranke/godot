@@ -7861,17 +7861,18 @@ static Node *_resource_get_edited_scene() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
-void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
+Error EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
 	if (!Thread::is_main_thread()) {
 		callable_mp_static(&EditorNode::_print_handler_impl).call_deferred(p_string, p_error, p_rich);
 	} else {
-		_print_handler_impl(p_string, p_error, p_rich);
+		return _print_handler_impl(p_string, p_error, p_rich);
 	}
+	return OK;
 }
 
-void EditorNode::_print_handler_impl(const String &p_string, bool p_error, bool p_rich) {
+Error EditorNode::_print_handler_impl(const String &p_string, bool p_error, bool p_rich) {
 	if (!singleton) {
-		return;
+		return ERR_PRINTER_ON_FIRE;
 	}
 	if (p_error) {
 		singleton->log->add_message(p_string, EditorLog::MSG_TYPE_ERROR);
@@ -7880,6 +7881,7 @@ void EditorNode::_print_handler_impl(const String &p_string, bool p_error, bool 
 	} else {
 		singleton->log->add_message(p_string, EditorLog::MSG_TYPE_STD);
 	}
+	return OK;
 }
 
 static void _execute_thread(void *p_ud) {

@@ -1,0 +1,19 @@
+GH-000000
+---------
+
+Validate extension JSON: Error: Hash changed for 'utility_functions/print', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'utility_functions/print_rich', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'utility_functions/print_verbose', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'utility_functions/printerr', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'utility_functions/printraw', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'utility_functions/prints', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'utility_functions/printt', from 9DE0016E to D9160DB4. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/print': return_type
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/print_rich': return_type
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/print_verbose': return_type
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/printerr': return_type
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/printraw': return_type
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/prints': return_type
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'utility_functions/printt': return_type
+
+Change return value of print functions from void to Error to allow returning ERR_PRINTER_ON_FIRE.

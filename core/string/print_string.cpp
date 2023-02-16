@@ -38,12 +38,14 @@
 static PrintHandlerList *print_handler_list = nullptr;
 static thread_local bool is_printing = false;
 
-static void __print_fallback(const String &p_string, bool p_err, bool p_reentrance) {
+static Error __print_fallback(const String &p_string, bool p_err, bool p_reentrance) {
 	if (p_reentrance) {
-		fprintf(p_err ? stderr : stdout, "While attempting to print an error, another error was printed:\n");
+		int chars_written = fprintf(p_err ? stderr : stdout, "While attempting to print an error, another error was printed:\n");
+		return chars_written < 0 ? ERR_PRINTER_ON_FIRE : OK;
 	}
 
-	fprintf(p_err ? stderr : stdout, "%s\n", p_string.utf8().get_data());
+	int chars_written = fprintf(p_err ? stderr : stdout, "%s\n", p_string.utf8().get_data());
+	return chars_written < 0 ? ERR_PRINTER_ON_FIRE : OK;
 }
 
 void add_print_handler(PrintHandlerList *p_handler) {
@@ -77,19 +79,17 @@ void remove_print_handler(const PrintHandlerList *p_handler) {
 	ERR_FAIL_NULL(l);
 }
 
-void __print_line(const String &p_string) {
+Error __print_line(const String &p_string) {
 	if (!CoreGlobals::print_line_enabled) {
-		return;
+		return ERR_SKIP;
 	}
 
 	if (!CoreGlobals::print_ready) {
-		__print_fallback(p_string, false, false);
-		return;
+		return __print_fallback(p_string, false, false);
 	}
 
 	if (is_printing) {
-		__print_fallback(p_string, false, true);
-		return;
+		return __print_fallback(p_string, false, true);
 	}
 
 	is_printing = true;
@@ -98,19 +98,21 @@ void __print_line(const String &p_string) {
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
-	while (l) {
-		l->printfunc(l->userdata, p_string, false, false);
+	Error err = Error::OK;
+	while (l && err == Error::OK) {
+		err = l->printfunc(l->userdata, p_string, false, false);
 		l = l->next;
 	}
 
 	_global_unlock();
 
 	is_printing = false;
+	return err;
 }
 
-void __print_line_rich(const String &p_string) {
+Error __print_line_rich(const String &p_string) {
 	if (!CoreGlobals::print_line_enabled) {
-		return;
+		return ERR_SKIP;
 	}
 
 	// Convert a subset of BBCode tags to ANSI escape codes for correct display in the terminal.
@@ -289,13 +291,11 @@ void __print_line_rich(const String &p_string) {
 	output += "\u001b[0m"; // Reset.
 
 	if (!CoreGlobals::print_ready) {
-		__print_fallback(output, false, false);
-		return;
+		return __print_fallback(output, false, false);
 	}
 
 	if (is_printing) {
-		__print_fallback(output, false, true);
-		return;
+		return __print_fallback(output, false, true);
 	}
 
 	is_printing = true;
@@ -304,25 +304,25 @@ void __print_line_rich(const String &p_string) {
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
-	while (l) {
-		l->printfunc(l->userdata, p_string, false, true);
+	Error err = Error::OK;
+	while (l && err == Error::OK) {
+		err = l->printfunc(l->userdata, p_string, false, true);
 		l = l->next;
 	}
 
 	_global_unlock();
 
 	is_printing = false;
+	return err;
 }
 
-void print_raw(const String &p_string) {
+Error print_raw(const String &p_string) {
 	if (!CoreGlobals::print_ready) {
-		__print_fallback(p_string, false, false);
-		return;
+		return __print_fallback(p_string, false, false);
 	}
 
 	if (is_printing) {
-		__print_fallback(p_string, true, true);
-		return;
+		return __print_fallback(p_string, true, true);
 	}
 
 	is_printing = true;
@@ -330,21 +330,20 @@ void print_raw(const String &p_string) {
 	OS::get_singleton()->print("%s", p_string.utf8().get_data());
 
 	is_printing = false;
+	return OK;
 }
 
-void print_error(const String &p_string) {
+Error print_error(const String &p_string) {
 	if (!CoreGlobals::print_error_enabled) {
-		return;
+		return ERR_SKIP;
 	}
 
 	if (!CoreGlobals::print_ready) {
-		__print_fallback(p_string, false, false);
-		return;
+		return __print_fallback(p_string, false, false);
 	}
 
 	if (is_printing) {
-		__print_fallback(p_string, true, true);
-		return;
+		return __print_fallback(p_string, true, true);
 	}
 
 	is_printing = true;
@@ -353,14 +352,16 @@ void print_error(const String &p_string) {
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;
-	while (l) {
-		l->printfunc(l->userdata, p_string, true, false);
+	Error err = Error::OK;
+	while (l && err == Error::OK) {
+		err = l->printfunc(l->userdata, p_string, true, false);
 		l = l->next;
 	}
 
 	_global_unlock();
 
 	is_printing = false;
+	return err;
 }
 
 bool is_print_verbose_enabled() {
