@@ -111,8 +111,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_node(const CollisionObject3D *p_body_
 		physics_body->mass = body->get_mass();
 		physics_body->linear_velocity = body->get_linear_velocity();
 		physics_body->angular_velocity = body->get_angular_velocity();
-		Vector3 inertia_diagonal = body->get_inertia();
-		physics_body->inertia_tensor = Basis(inertia_diagonal.x, 0, 0, 0, inertia_diagonal.y, 0, 0, 0, inertia_diagonal.z);
+		physics_body->inertia_tensor = body->get_inertia_tensor();
 		if (body->get_center_of_mass() != Vector3()) {
 			WARN_PRINT("GLTFPhysicsBody: This rigid body has a center of mass offset from the origin, which will be ignored when exporting to GLTF.");
 		}
@@ -143,7 +142,7 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 		body->set_mass(mass);
 		body->set_linear_velocity(linear_velocity);
 		body->set_angular_velocity(angular_velocity);
-		body->set_inertia(inertia_tensor.get_main_diagonal());
+		body->set_inertia_tensor(inertia_tensor);
 		body->set_center_of_mass_mode(RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM);
 		return body;
 	}
@@ -152,7 +151,7 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 		body->set_mass(mass);
 		body->set_linear_velocity(linear_velocity);
 		body->set_angular_velocity(angular_velocity);
-		body->set_inertia(inertia_tensor.get_main_diagonal());
+		body->set_inertia_tensor(inertia_tensor);
 		body->set_center_of_mass_mode(RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM);
 		return body;
 	}

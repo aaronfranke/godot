@@ -155,7 +155,8 @@ private:
 	FreezeMode freeze_mode = FREEZE_MODE_STATIC;
 
 	real_t mass = 1.0;
-	Vector3 inertia;
+	// The inertia tensor is not a Basis in linear algebra terms, but it is a 3x3 matrix.
+	Basis inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 	CenterOfMassMode center_of_mass_mode = CENTER_OF_MASS_MODE_AUTO;
 	Vector3 center_of_mass;
 
@@ -250,7 +251,10 @@ public:
 	virtual real_t get_inverse_mass() const override { return 1.0 / mass; }
 
 	void set_inertia(const Vector3 &p_inertia);
-	const Vector3 &get_inertia() const;
+	Vector3 get_inertia() const;
+
+	void set_inertia_tensor(Basis p_inertia_tensor);
+	const Basis &get_inertia_tensor() const;
 
 	void set_center_of_mass_mode(CenterOfMassMode p_mode);
 	CenterOfMassMode get_center_of_mass_mode() const;

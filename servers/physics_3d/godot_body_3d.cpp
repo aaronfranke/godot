@@ -34,6 +34,21 @@
 #include "godot_body_direct_state_3d.h"
 #include "godot_space_3d.h"
 
+// We can't use Basis::invert because this isn't a linear algebra basis,
+// it's a 3x3 matrix inertia tensor, stored as a Basis for convenience.
+Basis invert_inertia_tensor(Basis p_inertia_tensor) {
+	return Basis(
+			1.0f / p_inertia_tensor[0][0],
+			1.0f / p_inertia_tensor[0][1],
+			1.0f / p_inertia_tensor[0][2],
+			1.0f / p_inertia_tensor[1][0],
+			1.0f / p_inertia_tensor[1][1],
+			1.0f / p_inertia_tensor[1][2],
+			1.0f / p_inertia_tensor[2][0],
+			1.0f / p_inertia_tensor[2][1],
+			1.0f / p_inertia_tensor[2][2]);
+}
+
 void GodotBody3D::_mass_properties_changed() {
 	if (get_space() && !mass_properties_update_list.in_list() && (calculate_inertia || calculate_center_of_mass)) {
 		get_space()->body_add_to_mass_properties_update_list(&mass_properties_update_list);
@@ -47,9 +62,7 @@ void GodotBody3D::_update_transform_dependent() {
 	// Update inertia tensor.
 	Basis tb = principal_inertia_axes;
 	Basis tbt = tb.transposed();
-	Basis diag;
-	diag.scale(_inv_inertia);
-	_inv_inertia_tensor = tb * diag * tbt;
+	_inv_inertia_tensor = tb * _inv_inertia_tensor * tbt;
 }
 
 void GodotBody3D::update_mass_properties() {
@@ -90,8 +103,7 @@ void GodotBody3D::update_mass_properties() {
 
 			if (calculate_inertia) {
 				// Recompute the inertia tensor.
-				Basis inertia_tensor;
-				inertia_tensor.set_zero();
+				Basis calculated_inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 				bool inertia_set = false;
 
 				for (int i = 0; i < get_shape_count(); i++) {
@@ -118,28 +130,28 @@ void GodotBody3D::update_mass_properties() {
 					shape_inertia_tensor = shape_basis * shape_inertia_tensor * shape_basis.transposed();
 
 					Vector3 shape_origin = shape_transform.origin - center_of_mass_local;
-					inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass_new;
+					calculated_inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass_new;
 				}
 
 				// Set the inertia to a valid value when there are no valid shapes.
 				if (!inertia_set) {
-					inertia_tensor = Basis();
+					calculated_inertia_tensor = Basis();
 				}
 
 				// Handle partial custom inertia.
-				if (inertia.x > 0.0) {
-					inertia_tensor[0][0] = inertia.x;
+				if (inertia_tensor[0][0] > 0.0) {
+					calculated_inertia_tensor[0][0] = inertia_tensor[0][0];
 				}
-				if (inertia.y > 0.0) {
-					inertia_tensor[1][1] = inertia.y;
+				if (inertia_tensor[1][1] > 0.0) {
+					calculated_inertia_tensor[1][1] = inertia_tensor[1][1];
 				}
-				if (inertia.z > 0.0) {
-					inertia_tensor[2][2] = inertia.z;
+				if (inertia_tensor[2][2]) {
+					calculated_inertia_tensor[2][2] = inertia_tensor[2][2];
 				}
 
 				// Compute the principal axes of inertia.
 				principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
-				_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
+				_inv_inertia_tensor = invert_inertia_tensor(inertia_tensor);
 			}
 
 			if (mass) {
@@ -151,7 +163,7 @@ void GodotBody3D::update_mass_properties() {
 		} break;
 		case PhysicsServer3D::BODY_MODE_KINEMATIC:
 		case PhysicsServer3D::BODY_MODE_STATIC: {
-			_inv_inertia = Vector3();
+			_inv_inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			_inv_mass = 0;
 		} break;
 		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
@@ -206,8 +218,11 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_INERTIA: {
-			inertia = p_value;
-			if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
+			Vector3 inertia_diagonal = p_value;
+			inertia_tensor[0][0] = inertia_diagonal.x;
+			inertia_tensor[1][1] = inertia_diagonal.y;
+			inertia_tensor[2][2] = inertia_diagonal.z;
+			if ((inertia_tensor[0][0] <= 0.0) || (inertia_tensor[1][1] <= 0.0) || (inertia_tensor[2][2] <= 0.0)) {
 				calculate_inertia = true;
 				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
 					_mass_properties_changed();
@@ -216,11 +231,27 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 				calculate_inertia = false;
 				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
 					principal_inertia_axes_local = Basis();
-					_inv_inertia = inertia.inverse();
+					_inv_inertia_tensor = invert_inertia_tensor(inertia_tensor);
 					_update_transform_dependent();
 				}
 			}
 		} break;
+		case PhysicsServer3D::BODY_PARAM_INERTIA_TENSOR: {
+			inertia_tensor = p_value;
+			if ((inertia_tensor[0][0] <= 0.0) || (inertia_tensor[1][1] <= 0.0) || (inertia_tensor[2][2] <= 0.0)) {
+				calculate_inertia = true;
+				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+					_mass_properties_changed();
+				}
+			} else {
+				calculate_inertia = false;
+				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+					principal_inertia_axes_local = Basis();
+					_inv_inertia_tensor = invert_inertia_tensor(inertia_tensor);
+					_update_transform_dependent();
+				}
+			}
+		}
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
 			calculate_center_of_mass = false;
 			center_of_mass_local = p_value;
@@ -264,9 +295,19 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 		} break;
 		case PhysicsServer3D::BODY_PARAM_INERTIA: {
 			if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
-				return _inv_inertia.inverse();
+				return invert_inertia_tensor(_inv_inertia_tensor).get_main_diagonal();
 			} else {
 				return Vector3();
+			}
+		} break;
+		case PhysicsServer3D::BODY_PARAM_INERTIA_TENSOR: {
+			if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+				// We need to invert the inverse inertia tensor instead of
+				// getting the inertia tensor because the inverted inertia
+				// tensor includes the real value when auto-calculated.
+				return invert_inertia_tensor(_inv_inertia_tensor);
+			} else {
+				return Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			}
 		} break;
 		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
@@ -304,7 +345,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass = 0;
-			_inv_inertia = Vector3();
+			_inv_inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			_set_static(p_mode == PhysicsServer3D::BODY_MODE_STATIC);
 			set_active(p_mode == PhysicsServer3D::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector3();
@@ -319,7 +360,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			if (!calculate_inertia) {
 				principal_inertia_axes_local = Basis();
-				_inv_inertia = inertia.inverse();
+				_inv_inertia_tensor = invert_inertia_tensor(inertia_tensor);
 				_update_transform_dependent();
 			}
 			_mass_properties_changed();
@@ -329,7 +370,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 		} break;
 		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
-			_inv_inertia = Vector3();
+			_inv_inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 			angular_velocity = Vector3();
 			_update_transform_dependent();
 			_set_static(false);

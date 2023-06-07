@@ -676,12 +676,55 @@ void RigidBody3D::set_inertia(const Vector3 &p_inertia) {
 	ERR_FAIL_COND(p_inertia.y < 0);
 	ERR_FAIL_COND(p_inertia.z < 0);
 
-	inertia = p_inertia;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
+	inertia_tensor[0][0] = p_inertia.x;
+	inertia_tensor[1][1] = p_inertia.y;
+	inertia_tensor[2][2] = p_inertia.z;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA_TENSOR, inertia_tensor);
 }
 
-const Vector3 &RigidBody3D::get_inertia() const {
-	return inertia;
+Vector3 RigidBody3D::get_inertia() const {
+	return inertia_tensor.get_main_diagonal();
+}
+
+void RigidBody3D::set_inertia_tensor(Basis p_inertia_tensor) {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// The inertia tensor is a symmetric matrix. If the user changes one
+		// of the matrix parts in the editor, we should automatically update
+		// the corresponding symmetric part. This improves usability and
+		// serves as implicit documentation of the matrix's symmetry.
+		// But we don't want code to use this, so only do it in the editor.
+		if (!Math::is_equal_approx(inertia_tensor[0][1], p_inertia_tensor[0][1])) {
+			p_inertia_tensor[1][0] = p_inertia_tensor[0][1];
+		} else {
+			p_inertia_tensor[0][1] = p_inertia_tensor[1][0];
+		}
+		if (!Math::is_equal_approx(inertia_tensor[0][2], p_inertia_tensor[0][2])) {
+			p_inertia_tensor[2][0] = p_inertia_tensor[0][2];
+		} else {
+			p_inertia_tensor[0][2] = p_inertia_tensor[2][0];
+		}
+		if (!Math::is_equal_approx(inertia_tensor[1][2], p_inertia_tensor[1][2])) {
+			p_inertia_tensor[2][1] = p_inertia_tensor[1][2];
+		} else {
+			p_inertia_tensor[1][2] = p_inertia_tensor[2][1];
+		}
+	}
+#endif // TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(p_inertia_tensor[0][0] < 0.0);
+	ERR_FAIL_COND(p_inertia_tensor[1][1] < 0.0);
+	ERR_FAIL_COND(p_inertia_tensor[2][2] < 0.0);
+	ERR_FAIL_COND(p_inertia_tensor[0][1] < 0.0);
+	ERR_FAIL_COND(p_inertia_tensor[0][2] < 0.0);
+	ERR_FAIL_COND(p_inertia_tensor[1][2] < 0.0);
+#endif // DEBUG_ENABLED
+	inertia_tensor = p_inertia_tensor;
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA_TENSOR, inertia_tensor);
+}
+
+const Basis &RigidBody3D::get_inertia_tensor() const {
+	return inertia_tensor;
 }
 
 void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
@@ -695,8 +738,8 @@ void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 		case CENTER_OF_MASS_MODE_AUTO: {
 			center_of_mass = Vector3();
 			PhysicsServer3D::get_singleton()->body_reset_mass_properties(get_rid());
-			if (inertia != Vector3()) {
-				PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
+			if (inertia_tensor != Basis(0, 0, 0, 0, 0, 0, 0, 0, 0)) {
+				PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA_TENSOR, inertia_tensor);
 			}
 		} break;
 
@@ -997,6 +1040,9 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &RigidBody3D::set_inertia);
 	ClassDB::bind_method(D_METHOD("get_inertia"), &RigidBody3D::get_inertia);
 
+	ClassDB::bind_method(D_METHOD("set_inertia_tensor", "inertia_tensor"), &RigidBody3D::set_inertia_tensor);
+	ClassDB::bind_method(D_METHOD("get_inertia_tensor"), &RigidBody3D::get_inertia_tensor);
+
 	ClassDB::bind_method(D_METHOD("set_center_of_mass_mode", "mode"), &RigidBody3D::set_center_of_mass_mode);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass_mode"), &RigidBody3D::get_center_of_mass_mode);
 
@@ -1082,10 +1128,6 @@ void RigidBody3D::_bind_methods() {
 	GDVIRTUAL_BIND(_integrate_forces, "state");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia", "get_inertia");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
-	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
@@ -1097,6 +1139,12 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "lock_rotation"), "set_lock_rotation_enabled", "is_lock_rotation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "freeze"), "set_freeze_enabled", "is_freeze_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "freeze_mode", PROPERTY_HINT_ENUM, "Static,Kinematic"), "set_freeze_mode", "get_freeze_mode");
+	ADD_GROUP("Mass Distribution", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
+	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2", PROPERTY_USAGE_NONE), "set_inertia", "get_inertia");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "inertia_tensor", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia_tensor", "get_inertia_tensor");
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity", PROPERTY_HINT_NONE, "suffix:m/s"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_linear_damp_mode", "get_linear_damp_mode");

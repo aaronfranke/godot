@@ -56,7 +56,7 @@ class GodotBody3D : public GodotCollisionObject3D {
 	real_t mass = 1.0;
 	real_t bounce = 0.0;
 	real_t friction = 1.0;
-	Vector3 inertia;
+	Basis inertia_tensor = Basis(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	PhysicsServer3D::BodyDampMode linear_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
 	PhysicsServer3D::BodyDampMode angular_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
@@ -72,7 +72,6 @@ class GodotBody3D : public GodotCollisionObject3D {
 	uint16_t locked_axis = 0;
 
 	real_t _inv_mass = 1.0;
-	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
 	// Relative to the local frame of reference
 	Basis principal_inertia_axes_local;
@@ -308,7 +307,7 @@ public:
 	void reset_mass_properties();
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
-	_FORCE_INLINE_ const Vector3 &get_inv_inertia() const { return _inv_inertia; }
+	_FORCE_INLINE_ Vector3 get_inv_inertia() const { return _inv_inertia_tensor.get_main_diagonal(); }
 	_FORCE_INLINE_ const Basis &get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }

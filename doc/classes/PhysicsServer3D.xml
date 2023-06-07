@@ -1400,6 +1400,9 @@
 		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
 			Constant to set/get a body's inertia.
 		</constant>
+		<constant name="BODY_PARAM_INERTIA_TENSOR" value="10" enum="BodyParameter">
+			Constant to set/get a body's inertia tensor 3x3 matrix.
+		</constant>
 		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
 			Constant to set/get a body's center of mass position in the body's local coordinate system.
 		</constant>
@@ -1418,7 +1421,7 @@
 		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
 			Constant to set/get a body's angular damping factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
+		<constant name="BODY_PARAM_MAX" value="11" enum="BodyParameter">
 			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_DAMP_MODE_COMBINE" value="0" enum="BodyDampMode">

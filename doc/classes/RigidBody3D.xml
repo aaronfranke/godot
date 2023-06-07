@@ -180,16 +180,21 @@
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidBody3D's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
-		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
-			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
-			If set to [code]Vector3.ZERO[/code], inertia is automatically computed (default value).
+		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia">
+			[i]Deprecated.[/i] Use the [member inertia_tensor] property instead.
+			The body's moment of inertia around the principle axes. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis.
+		</member>
+		<member name="inertia_tensor" type="Basis" setter="set_inertia_tensor" getter="get_inertia_tensor" default="Basis(0, 0, 0, 0, 0, 0, 0, 0, 0)">
+			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis.
+			The inertia tensor is exposed as a [Basis], but it is not a basis in linear algebra terms, just a 3x3 matrix. The inertia tensor is a symmetric matrix, and all values must be non-negative. The diagonal values represent the inertia around the principle axes, while the non-diagonal values represent the coupling.
+			If set to all zeros (default value), the inertia tensor is automatically computed from the mass and the shapes.
 			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer3D] to get the computed inertia.
 			[codeblocks]
 			[gdscript]
 			@onready var ball = $Ball
 
-			func get_ball_inertia():
-			    return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia.inverse()
+			func get_ball_inertia_tensor() -&gt; Basis:
+			    return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia_tensor.inverse()
 			[/gdscript]
 			[csharp]
 			private RigidBody3D _ball;
@@ -199,9 +204,9 @@
 			    _ball = GetNode&lt;RigidBody3D&gt;("Ball");
 			}
 
-			private Vector3 GetBallInertia()
+			private Basis GetBallInertiaTensor()
 			{
-			    return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertia.Inverse();
+			    return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertiaTensor.Inverse();
 			}
 			[/csharp]
 			[/codeblocks]
