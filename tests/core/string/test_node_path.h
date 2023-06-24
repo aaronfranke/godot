@@ -168,6 +168,37 @@ TEST_CASE("[NodePath] Empty path") {
 			"The node path should be considered empty.");
 }
 
+TEST_CASE("[NodePath] Get Partial Path") {
+	const NodePath node_path_absolute = NodePath("/root/A");
+	const NodePath node_path_relative = NodePath("A/B");
+
+	CHECK_MESSAGE(
+			node_path_absolute.get_partial_path(0) == NodePath("/"),
+			"The returned partial path with a name count of 0 should match the expected value.");
+	CHECK_MESSAGE(
+			node_path_absolute.get_partial_path(1) == NodePath("/root"),
+			"The returned partial path with a name count of 1 should match the expected value.");
+	CHECK_MESSAGE(
+			node_path_absolute.get_partial_path(2) == NodePath("/root/A"),
+			"The returned partial path with a name count of 2 should match the expected value.");
+	CHECK_MESSAGE(
+			node_path_absolute.get_partial_path(3) == NodePath("/root/A"),
+			"The returned partial path with an invalid name count of 3 should match the expected value.");
+
+	CHECK_MESSAGE(
+			node_path_relative.get_partial_path(0) == NodePath(""),
+			"The returned partial path with a name count of 0 should match the expected value.");
+	CHECK_MESSAGE(
+			node_path_relative.get_partial_path(1) == NodePath("A"),
+			"The returned partial path with a name count of 1 should match the expected value.");
+	CHECK_MESSAGE(
+			node_path_relative.get_partial_path(2) == NodePath("A/B"),
+			"The returned partial path with a name count of 2 should match the expected value.");
+	CHECK_MESSAGE(
+			node_path_relative.get_partial_path(3) == NodePath("A/B"),
+			"The returned partial path with an invalid name count of 3 should match the expected value.");
+}
+
 TEST_CASE("[NodePath] Slice") {
 	const NodePath node_path_relative = NodePath("Parent/Child:prop");
 	const NodePath node_path_absolute = NodePath("/root/Parent/Child:prop");
