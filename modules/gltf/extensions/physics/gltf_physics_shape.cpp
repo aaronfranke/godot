@@ -206,7 +206,7 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_node(const CollisionShape3D *p_coll
 }
 
 CollisionShape3D *GLTFPhysicsShape::to_node(bool p_cache_shapes) {
-	CollisionShape3D *gltf_shape = memnew(CollisionShape3D);
+	CollisionShape3D *godot_shape_node = memnew(CollisionShape3D);
 	if (!p_cache_shapes || _shape_cache == nullptr) {
 		if (shape_type == "box") {
 			Ref<BoxShape3D> box;
@@ -231,49 +231,58 @@ CollisionShape3D *GLTFPhysicsShape::to_node(bool p_cache_shapes) {
 			sphere->set_radius(radius);
 			_shape_cache = sphere;
 		} else if (shape_type == "hull") {
-			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), gltf_shape, "GLTFPhysicsShape: Error converting convex hull shape to a node: The mesh resource is null.");
+			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), godot_shape_node, "GLTFPhysicsShape: Error converting convex hull shape to a node: The mesh resource is null.");
 			Ref<ConvexPolygonShape3D> convex = importer_mesh->get_mesh()->create_convex_shape();
 			_shape_cache = convex;
 		} else if (shape_type == "trimesh") {
-			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), gltf_shape, "GLTFPhysicsShape: Error converting concave mesh shape to a node: The mesh resource is null.");
+			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), godot_shape_node, "GLTFPhysicsShape: Error converting concave mesh shape to a node: The mesh resource is null.");
 			Ref<ConcavePolygonShape3D> concave = importer_mesh->create_trimesh_shape();
 			_shape_cache = concave;
 		} else {
 			ERR_PRINT("GLTFPhysicsShape: Error converting to a node: Shape type '" + shape_type + "' is unknown.");
 		}
 	}
-	gltf_shape->set_shape(_shape_cache);
-	return gltf_shape;
+	godot_shape_node->set_shape(_shape_cache);
+	return godot_shape_node;
 }
 
 Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFPhysicsShape>(), "Failed to parse GLTFPhysicsShape, missing required field 'type'.");
 	Ref<GLTFPhysicsShape> gltf_shape;
 	gltf_shape.instantiate();
-	const String &shape_type = p_dictionary["type"];
+	String shape_type = p_dictionary["type"];
+	if (shape_type == "convex") {
+		shape_type = "hull";
+	}
 	gltf_shape->shape_type = shape_type;
 	if (shape_type != "box" && shape_type != "capsule" && shape_type != "cylinder" && shape_type != "sphere" && shape_type != "hull" && shape_type != "trimesh") {
 		ERR_PRINT("GLTFPhysicsShape: Error parsing unknown shape type '" + shape_type + "'. Only box, capsule, cylinder, sphere, hull, and trimesh are supported.");
 	}
-	if (p_dictionary.has("radius")) {
-		gltf_shape->set_radius(p_dictionary["radius"]);
+	Dictionary properties;
+	if (p_dictionary.has(shape_type)) {
+		properties = p_dictionary[shape_type];
+	} else {
+		properties = p_dictionary;
 	}
-	if (p_dictionary.has("height")) {
-		gltf_shape->set_height(p_dictionary["height"]);
+	if (properties.has("radius")) {
+		gltf_shape->set_radius(properties["radius"]);
 	}
-	if (p_dictionary.has("size")) {
-		const Array &arr = p_dictionary["size"];
+	if (properties.has("height")) {
+		gltf_shape->set_height(properties["height"]);
+	}
+	if (properties.has("size")) {
+		const Array &arr = properties["size"];
 		if (arr.size() == 3) {
 			gltf_shape->set_size(Vector3(arr[0], arr[1], arr[2]));
 		} else {
 			ERR_PRINT("GLTFPhysicsShape: Error parsing the size, it must have exactly 3 numbers.");
 		}
 	}
-	if (p_dictionary.has("isTrigger")) {
-		gltf_shape->set_is_trigger(p_dictionary["isTrigger"]);
+	if (properties.has("isTrigger")) {
+		gltf_shape->set_is_trigger(properties["isTrigger"]);
 	}
-	if (p_dictionary.has("mesh")) {
-		gltf_shape->set_mesh_index(p_dictionary["mesh"]);
+	if (properties.has("mesh")) {
+		gltf_shape->set_mesh_index(properties["mesh"]);
 	}
 	if (unlikely(gltf_shape->get_mesh_index() < 0 && (shape_type == "hull" || shape_type == "trimesh"))) {
 		ERR_PRINT("Error parsing GLTFPhysicsShape: The mesh-based shape type '" + shape_type + "' does not have a valid mesh index.");
