@@ -239,8 +239,9 @@ TEST_CASE("[Transform2D] Is conformal checks") {
 			Transform2D(Vector2(1.2, 0), Vector2(0, 3.4), Vector2()).is_conformal(),
 			"Transform2D with non-uniform scale should not be conformal.");
 
+	Vector2 rot_45_deg = Vector2(Math_SQRT12, Math_SQRT12);
 	CHECK_FALSE_MESSAGE(
-			Transform2D(Vector2(Math_SQRT12, Math_SQRT12), Vector2(0, 1), Vector2()).is_conformal(),
+			Transform2D(rot_45_deg, Vector2(0, 1), Vector2()).is_conformal(),
 			"Transform2D with the X axis skewed 45 degrees should not be conformal.");
 }
 
