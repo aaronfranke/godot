@@ -96,6 +96,10 @@ bool Basis::is_orthogonal() const {
 	return m.is_equal_approx(identity);
 }
 
+bool Basis::is_conformal() const {
+	return is_equal_approx(orthonormalized() * get_uniform_scale());
+}
+
 bool Basis::is_diagonal() const {
 	return (
 			Math::is_zero_approx(rows[0][1]) && Math::is_zero_approx(rows[0][2]) &&

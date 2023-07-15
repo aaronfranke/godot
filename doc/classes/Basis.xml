@@ -106,6 +106,12 @@
 				Returns the inverse of the matrix.
 			</description>
 		</method>
+		<method name="is_conformal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the basis is conformal, meaning it preserves angles and distance ratios, and may only composed of rotation or uniform scale. Returns false if the basis has non-uniform scale or shear/skew. This can be used to validate if the basis is non-distorted, which is important for physics and other use cases.
+			</description>
+		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="b" type="Basis" />
