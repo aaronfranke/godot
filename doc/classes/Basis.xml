@@ -206,6 +206,12 @@
 				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on all vector components.
 			</description>
 		</method>
+		<method name="is_orthogonal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Basis] is orthogonal, meaning that all of its vectors are 90 degrees apart (a quarter turn), and therefore the basis does not have any skew or shear. For validating a [Basis], use either this method or [method is_conformal], but not both (a conformal basis is also orthogonal).
+			</description>
+		</method>
 		<method name="looking_at" qualifiers="static">
 			<return type="Basis" />
 			<param index="0" name="target" type="Vector3" />
