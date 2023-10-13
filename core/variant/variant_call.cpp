@@ -2243,6 +2243,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Basis, is_conformal, sarray(), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, is_finite, sarray(), varray());
+	bind_method(Basis, is_orthogonal, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 	bind_static_method(Basis, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3(0, 1, 0), false));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
