@@ -238,6 +238,8 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		}
 
 		OS::ProcessID pid = 0;
+		instance_args.push_back("--session-number");
+		instance_args.push_back(itos(i + 1));
 		Error err = OS::get_singleton()->create_instance(instance_args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		if (pid != 0) {
