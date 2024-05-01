@@ -15,6 +15,12 @@
 #if defined(__ARM_NEON)
 #include "../simd/arm/emulation.h"
 #else
+// -- GODOT start --
+#if defined(_M_ARM64)
+// Windows MSVC allows for *mmintrin.h on Arm64 but only with USE_SOFT_INTRINSICS.
+#define USE_SOFT_INTRINSICS
+#endif
+// -- GODOT end --
 #include <emmintrin.h>
 #include <xmmintrin.h>
 #include <immintrin.h>

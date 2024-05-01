@@ -58,7 +58,10 @@
 #endif
 
 /* detect 64 bit platform */
-#if defined(__X86_64__) || defined(__aarch64__)
+// -- GODOT start --
+//#if defined(__X86_64__) || defined(__aarch64__)
+#if UINTPTR_MAX == UINT64_MAX
+// -- GODOT end --
 #define __64BIT__
 #endif
 
