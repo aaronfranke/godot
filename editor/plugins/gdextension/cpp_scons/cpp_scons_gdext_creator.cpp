@@ -38,7 +38,19 @@
 
 #include "editor/editor_node.h"
 
-void CppSconsGDExtensionCreator::_git_clone_godot_cpp(const String &p_parent_path, bool p_compile) {
+void CppSconsGDExtensionCreator::_git_clone_godot_cpp(const String &p_clone_path, bool p_compile) {
+	godot_cpp_clone_compile_thread.wait_to_finish();
+	godot_cpp_clone_path = p_clone_path;
+	compile = p_compile;
+	Thread::Settings thread_settings;
+	thread_settings.priority = Thread::PRIORITY_LOW;
+	godot_cpp_clone_compile_thread.start(_git_clone_godot_cpp_thread, this, thread_settings);
+}
+
+void CppSconsGDExtensionCreator::_git_clone_godot_cpp_thread(void *p_self) {
+	CppSconsGDExtensionCreator *self = static_cast<CppSconsGDExtensionCreator *>(p_self);
+	const String clone_path = self->godot_cpp_clone_path;
+	const bool compile = self->compile;
 	EditorProgress ep("Preparing GDExtension C++ plugin", "Preparing GDExtension C++ plugin", 3);
 	List<String> args;
 	args.push_back("clone");
@@ -46,7 +58,7 @@ void CppSconsGDExtensionCreator::_git_clone_godot_cpp(const String &p_parent_pat
 	args.push_back("--branch");
 	args.push_back(VERSION_BRANCH);
 	args.push_back("https://github.com/godotengine/godot-cpp");
-	const String godot_cpp_path = p_parent_path.trim_prefix("res://").path_join("godot-cpp");
+	const String godot_cpp_path = clone_path.trim_prefix("res://").path_join("godot-cpp");
 	args.push_back(godot_cpp_path);
 	ep.step(TTR("Cloning godot-cpp..."), 1);
 	String output = "";
@@ -58,7 +70,7 @@ void CppSconsGDExtensionCreator::_git_clone_godot_cpp(const String &p_parent_pat
 		result = OS::get_singleton()->execute("git", args, &output);
 	}
 	ERR_FAIL_COND_MSG(result != 0 || !dir->dir_exists(godot_cpp_path), "Failed to clone godot-cpp. Please clone godot-cpp manually in order to have a working GDExtension plugin.");
-	if (p_compile) {
+	if (compile) {
 		ep.step(TTR("Performing initial compile... (this may take several minutes)"), 2);
 		result = OS::get_singleton()->execute("scons", List<String>());
 		ERR_FAIL_COND_MSG(result != 0, "Failed to compile godot-cpp. Please ensure SCons is installed, then run the `scons` command in your project.");

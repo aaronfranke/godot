@@ -33,6 +33,8 @@
 
 #include "../gdextension_creator_plugin.h"
 
+#include "core/os/thread.h"
+
 class CppSconsGDExtensionCreator : public GDExtensionCreatorPlugin {
 	// Keep this in sync with get_language_variations().
 	enum LanguageVariation {
@@ -40,18 +42,23 @@ class CppSconsGDExtensionCreator : public GDExtensionCreatorPlugin {
 		LANG_VAR_GDEXT_MODULE,
 	};
 
+	Thread godot_cpp_clone_compile_thread;
+
 	// Used by _process_template.
 	String base_name;
 	String library_name;
 	String example_node_name = "ExampleNode";
 	String res_path;
 	String updir_dots;
+	String godot_cpp_clone_path;
+	bool compile = false;
 	bool strip_module_defines = false;
 
 	bool does_git_exist = false;
 	bool does_scons_exist = false;
 
 	void _git_clone_godot_cpp(const String &p_parent_path, bool p_compile);
+	static void _git_clone_godot_cpp_thread(void *p_self);
 	String _process_template(const String &p_contents);
 	void _write_common_files_and_dirs();
 	void _write_gdext_only_files();
