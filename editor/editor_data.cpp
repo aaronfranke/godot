@@ -1256,7 +1256,8 @@ void EditorSelection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "node"), &EditorSelection::add_node);
 	ClassDB::bind_method(D_METHOD("remove_node", "node"), &EditorSelection::remove_node);
 	ClassDB::bind_method(D_METHOD("get_selected_nodes"), &EditorSelection::get_selected_nodes);
-	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::_get_transformable_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_top_selected_nodes"), &EditorSelection::get_top_selected_nodes);
+	ClassDB::bind_method(D_METHOD("get_transformable_selected_nodes"), &EditorSelection::get_top_selected_nodes);
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 }
 
@@ -1269,7 +1270,7 @@ void EditorSelection::_update_node_list() {
 		return;
 	}
 
-	selected_node_list.clear();
+	top_selected_node_list.clear();
 
 	// If the selection does not have the parent of the selected node, then add the node to the node list.
 	// However, if the parent is already selected, then adding this node is redundant as
@@ -1289,7 +1290,7 @@ void EditorSelection::_update_node_list() {
 		if (skip) {
 			continue;
 		}
-		selected_node_list.push_back(E.key);
+		top_selected_node_list.push_back(E.key);
 	}
 
 	node_list_changed = true;
@@ -1313,10 +1314,10 @@ void EditorSelection::_emit_change() {
 	emitted = false;
 }
 
-TypedArray<Node> EditorSelection::_get_transformable_selected_nodes() {
+TypedArray<Node> EditorSelection::get_top_selected_nodes() {
 	TypedArray<Node> ret;
 
-	for (const Node *E : selected_node_list) {
+	for (const Node *E : top_selected_node_list) {
 		ret.push_back(E);
 	}
 
@@ -1339,7 +1340,7 @@ List<Node *> &EditorSelection::get_selected_node_list() {
 	} else {
 		_update_node_list();
 	}
-	return selected_node_list;
+	return top_selected_node_list;
 }
 
 List<Node *> EditorSelection::get_full_selected_node_list() {
