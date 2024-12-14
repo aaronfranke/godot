@@ -1074,11 +1074,11 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 				return s.substr(2).to_int();
 			} else if (s.begins_with("f:")) {
 				const String sub = s.substr(2);
-				if (sub == "inf") {
+				if (sub == "INF" || sub == "inf") {
 					return Math::INF;
-				} else if (sub == "-inf") {
+				} else if (sub == "-INF" || sub == "-inf") {
 					return -Math::INF;
-				} else if (sub == "nan") {
+				} else if (sub == "NAN" || sub == "nan") {
 					return Math::NaN;
 				}
 				return sub.to_float();
