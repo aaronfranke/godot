@@ -109,7 +109,7 @@ void OpenXRActionSet::set_actions(const Array &p_actions) {
 }
 
 Array OpenXRActionSet::get_actions() const {
-	return actions;
+	return Array(actions);
 }
 
 Ref<OpenXRAction> OpenXRActionSet::get_action(const String &p_name) const {

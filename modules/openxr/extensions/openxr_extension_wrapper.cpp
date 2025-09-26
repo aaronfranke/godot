@@ -100,7 +100,7 @@ HashMap<String, bool *> OpenXRExtensionWrapper::get_requested_extensions(XrVersi
 			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(kv.value);
 			result.insert(kv.key, value);
 		}
-		return result;
+		return HashMap<String, bool *>(result);
 	}
 
 #ifndef DISABLE_DEPRECATED
@@ -378,7 +378,7 @@ bool OpenXRExtensionWrapper::on_event_polled(const XrEventDataBuffer &p_event) {
 void *OpenXRExtensionWrapper::set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, const Dictionary &p_property_values, void *p_next_pointer) {
 	uint64_t pointer = 0;
 
-	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>(p_layer), Dictionary(p_property_values), GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
 
@@ -402,13 +402,13 @@ void OpenXRExtensionWrapper::get_viewport_composition_layer_extension_properties
 Dictionary OpenXRExtensionWrapper::get_viewport_composition_layer_extension_property_defaults() {
 	Dictionary property_defaults;
 	GDVIRTUAL_CALL(_get_viewport_composition_layer_extension_property_defaults, property_defaults);
-	return property_defaults;
+	return Dictionary(property_defaults);
 }
 
 void *OpenXRExtensionWrapper::set_android_surface_swapchain_create_info_and_get_next_pointer(const Dictionary &p_property_values, void *p_next_pointer) {
 	uint64_t pointer = 0;
 
-	if (GDVIRTUAL_CALL(_set_android_surface_swapchain_create_info_and_get_next_pointer, p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+	if (GDVIRTUAL_CALL(_set_android_surface_swapchain_create_info_and_get_next_pointer, Dictionary(p_property_values), GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
 
