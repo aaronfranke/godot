@@ -66,7 +66,7 @@ void OpenXRActionMap::set_action_sets(const Array &p_action_sets) {
 }
 
 Array OpenXRActionMap::get_action_sets() const {
-	return action_sets;
+	return Array(action_sets);
 }
 
 int OpenXRActionMap::get_action_set_count() const {
@@ -130,7 +130,7 @@ void OpenXRActionMap::set_interaction_profiles(const Array &p_interaction_profil
 }
 
 Array OpenXRActionMap::get_interaction_profiles() const {
-	return interaction_profiles;
+	return Array(interaction_profiles);
 }
 
 int OpenXRActionMap::get_interaction_profile_count() const {

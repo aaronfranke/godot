@@ -50,7 +50,7 @@ HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensi
 
 	request_extensions[XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME] = &display_refresh_rate_ext;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRDisplayRefreshRateExtension::on_instance_created(const XrInstance p_instance) {
@@ -122,14 +122,14 @@ Array OpenXRDisplayRefreshRateExtension::get_available_refresh_rates() const {
 			float *display_refresh_rates = (float *)memalloc(sizeof(float) * display_refresh_rate_count);
 			if (display_refresh_rates == nullptr) {
 				print_line("OpenXR: Failed to obtain refresh rates memory buffer [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
-				return arr;
+				return Array(arr);
 			}
 
 			result = xrEnumerateDisplayRefreshRatesFB(OpenXRAPI::get_singleton()->get_session(), display_refresh_rate_count, &display_refresh_rate_count, display_refresh_rates);
 			if (XR_FAILED(result)) {
 				print_line("OpenXR: Failed to obtain refresh rates count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 				memfree(display_refresh_rates);
-				return arr;
+				return Array(arr);
 			}
 
 			for (uint32_t i = 0; i < display_refresh_rate_count; i++) {
@@ -141,5 +141,5 @@ Array OpenXRDisplayRefreshRateExtension::get_available_refresh_rates() const {
 		}
 	}
 
-	return arr;
+	return Array(arr);
 }
