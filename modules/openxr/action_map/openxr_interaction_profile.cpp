@@ -126,7 +126,7 @@ Array OpenXRIPBinding::get_binding_modifiers() const {
 	for (const Ref<OpenXRActionBindingModifier> &binding_modifier : binding_modifiers) {
 		ret.push_back(binding_modifier);
 	}
-	return ret;
+	return Array(ret);
 }
 
 void OpenXRIPBinding::add_binding_modifier(const Ref<OpenXRActionBindingModifier> &p_binding_modifier) {
@@ -281,7 +281,7 @@ void OpenXRInteractionProfile::set_bindings(const Array &p_bindings) {
 }
 
 Array OpenXRInteractionProfile::get_bindings() const {
-	return bindings;
+	return Array(bindings);
 }
 
 Ref<OpenXRIPBinding> OpenXRInteractionProfile::find_binding(const Ref<OpenXRAction> &p_action, const String &p_binding_path) const {
@@ -395,7 +395,7 @@ Array OpenXRInteractionProfile::get_binding_modifiers() const {
 	for (const Ref<OpenXRIPBindingModifier> &binding_modifier : binding_modifiers) {
 		ret.push_back(binding_modifier);
 	}
-	return ret;
+	return Array(ret);
 }
 
 void OpenXRInteractionProfile::add_binding_modifier(const Ref<OpenXRIPBindingModifier> &p_binding_modifier) {

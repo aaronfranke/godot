@@ -435,7 +435,7 @@ public:
 	XRPose::TrackingConfidence transform_from_location(const XrSpaceLocation &p_location, Transform3D &r_transform);
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
-	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	bool xr_result(XrResult p_result, const char *p_format, const Array &p_args = Array()) const;
 	XrPath get_xr_path(const String &p_path);
 	String get_xr_path_name(const XrPath &p_path);
 	bool is_top_level_path_supported(const String &p_toplevel_path);

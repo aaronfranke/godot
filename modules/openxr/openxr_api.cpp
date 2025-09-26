@@ -2896,15 +2896,15 @@ void OpenXRAPI::parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_l
 	}
 }
 
-bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const {
-	if (XR_SUCCEEDED(result)) {
+bool OpenXRAPI::xr_result(XrResult p_result, const char *p_format, const Array &p_args) const {
+	if (XR_SUCCEEDED(p_result)) {
 		return true;
 	}
 
 	char resultString[XR_MAX_RESULT_STRING_SIZE];
-	xrResultToString(instance, result, resultString);
+	xrResultToString(instance, p_result, resultString);
 
-	print_error(String("OpenXR ") + String(format).format(args) + String(" [") + String(resultString) + String("]"));
+	print_error(String("OpenXR ") + String(p_format).format(p_args) + String(" [") + String(resultString) + String("]"));
 
 	return false;
 }

@@ -364,7 +364,7 @@ Dictionary XRServer::get_trackers(int p_tracker_types) {
 		}
 	}
 
-	return res;
+	return Dictionary(res);
 }
 
 Ref<XRTracker> XRServer::get_tracker(const StringName &p_name) const {

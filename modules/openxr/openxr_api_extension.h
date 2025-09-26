@@ -63,7 +63,7 @@ public:
 	// Helper method to convert an XrPosef to a Transform3D.
 	Transform3D transform_from_pose(GDExtensionConstPtr<const void> p_pose);
 
-	bool xr_result(uint64_t result, String format, Array args = Array());
+	bool xr_result(uint64_t p_result, const String &p_format, const Array &p_args = Array());
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 

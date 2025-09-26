@@ -96,7 +96,7 @@ void OpenXRActionSet::clear_actions() {
 	emit_changed();
 }
 
-void OpenXRActionSet::set_actions(Array p_actions) {
+void OpenXRActionSet::set_actions(const Array &p_actions) {
 	// Any actions not retained in p_actions should be freed automatically, those held within our Array will have be relinked to our action set.
 	clear_actions();
 
@@ -107,7 +107,7 @@ void OpenXRActionSet::set_actions(Array p_actions) {
 }
 
 Array OpenXRActionSet::get_actions() const {
-	return actions;
+	return Array(actions);
 }
 
 Ref<OpenXRAction> OpenXRActionSet::get_action(const String p_name) const {

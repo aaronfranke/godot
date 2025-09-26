@@ -123,7 +123,7 @@ void XRInterfaceExtension::uninitialize() {
 Dictionary XRInterfaceExtension::get_system_info() {
 	Dictionary dict;
 	GDVIRTUAL_CALL(_get_system_info, dict);
-	return dict;
+	return Dictionary(dict);
 }
 
 PackedStringArray XRInterfaceExtension::get_suggested_tracker_names() const {

@@ -57,7 +57,7 @@ public:
 	int get_priority() const; // Get the priority of this action set
 
 	int get_action_count() const; // Retrieve the number of actions in our action set
-	void set_actions(Array p_actions); // Set our actions using an array of actions (for loading a resource)
+	void set_actions(const Array &p_actions); // Set our actions using an array of actions (for loading a resource)
 	Array get_actions() const; // Get our actions as an array (for saving a resource)
 
 	Ref<OpenXRAction> get_action(const String p_name) const; // Retrieve an action by name
