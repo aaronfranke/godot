@@ -759,7 +759,7 @@ Dictionary OpenXRInterface::get_system_info() {
 		dict[SNAME("OpenXRVendorID")] = openxr_api->get_vendor_id();
 	}
 
-	return dict;
+	return Dictionary(dict);
 }
 
 bool OpenXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
@@ -955,7 +955,7 @@ Array OpenXRInterface::get_action_sets() const {
 		arr.push_back(action_set->action_set_name);
 	}
 
-	return arr;
+	return Array(arr);
 }
 
 float OpenXRInterface::get_vrs_min_radius() const {
@@ -1365,7 +1365,7 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 		modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 	}
 
-	return modes;
+	return Array(modes);
 }
 
 XRInterface::EnvironmentBlendMode OpenXRInterface::get_environment_blend_mode() const {
