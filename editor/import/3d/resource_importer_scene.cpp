@@ -1598,25 +1598,25 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
 							}
 						}
-						if (!mat_id.is_empty() && extract_mat != 0) {
-							String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
-							String path = spath.path_join(mat_id.validate_filename() + ext);
-							String uid_path = ResourceUID::path_to_uid(path);
-
-							Dictionary matdata = p_material_data[mat_id];
-							matdata["use_external/enabled"] = true;
-							matdata["use_external/path"] = uid_path;
-							matdata["use_external/fallback_path"] = path;
-							if (!FileAccess::exists(path) || extract_mat == 2 /*overwrite*/) {
-								ResourceSaver::save(mat, path);
-							}
-
-							Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
-							if (external_mat.is_valid()) {
-								m->set_surface_material(i, external_mat);
-							}
-						}
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
+							if (extract_mat != 0) {
+								String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
+								String path = spath.path_join(mat_id.validate_filename() + ext);
+								String uid_path = ResourceUID::path_to_uid(path);
+
+								Dictionary matdata = p_material_data[mat_id];
+								matdata["use_external/enabled"] = true;
+								matdata["use_external/path"] = uid_path;
+								matdata["use_external/fallback_path"] = path;
+								if (!FileAccess::exists(path) || extract_mat == 2 /*overwrite*/) {
+									ResourceSaver::save(mat, path);
+								}
+
+								Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
+								if (external_mat.is_valid()) {
+									m->set_surface_material(i, external_mat);
+								}
+							}
 							Dictionary matdata = p_material_data[mat_id];
 							if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
 								String path = matdata["use_external/path"];
