@@ -58,6 +58,10 @@ bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Varia
 		_document->set_fallback_image_quality(p_value);
 		return true;
 	}
+	if (p_name == StringName("binary_format_mode")) {
+		_document->set_binary_format_mode((GLTFDocument::BinaryFormatMode)(int64_t)p_value);
+		return true;
+	}
 	if (p_name == StringName("root_node_mode")) {
 		_document->set_root_node_mode((GLTFDocument::RootNodeMode)(int64_t)p_value);
 		return true;
@@ -88,6 +92,10 @@ bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_
 	}
 	if (p_name == StringName("fallback_image_quality")) {
 		r_ret = _document->get_fallback_image_quality();
+		return true;
+	}
+	if (p_name == StringName("binary_format_mode")) {
+		r_ret = _document->get_binary_format_mode();
 		return true;
 	}
 	if (p_name == StringName("root_node_mode")) {
@@ -124,7 +132,7 @@ void EditorSceneExporterGLTFSettings::_get_property_list(List<PropertyInfo> *p_l
 }
 
 void EditorSceneExporterGLTFSettings::_on_extension_property_list_changed() {
-	generate_property_list(_document);
+	generate_property_list(_document, _file_path);
 	emit_signal(CoreStringName(property_list_changed));
 }
 
@@ -183,9 +191,10 @@ bool is_any_node_invisible(Node *p_node) {
 }
 
 // Run this before popping up the export settings, because the extensions may have changed.
-void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document, Node *p_root) {
+void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document, const String &p_file_path, Node *p_root) {
 	_property_list.clear();
 	_document = p_document;
+	_file_path = p_file_path;
 	String image_format_hint_string = "None,PNG,JPEG";
 	// Add properties from all document extensions.
 	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
@@ -224,6 +233,10 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	_property_list.push_back(fallback_image_format_prop);
 	PropertyInfo fallback_image_quality_prop = PropertyInfo(Variant::FLOAT, "fallback_image_quality", PROPERTY_HINT_RANGE, "0,1,0.01");
 	_property_list.push_back(fallback_image_quality_prop);
+	if (!_file_path.ends_with(".gltf")) {
+		PropertyInfo binary_format_mode_prop = PropertyInfo(Variant::INT, "binary_format_mode", PROPERTY_HINT_ENUM, "Auto,32-bit,64-bit");
+		_property_list.push_back(binary_format_mode_prop);
+	}
 	PropertyInfo root_node_mode_prop = PropertyInfo(Variant::INT, "root_node_mode", PROPERTY_HINT_ENUM, "Single Root,Keep Root,Multi Root");
 	_property_list.push_back(root_node_mode_prop);
 	// If the scene contains any non-visible nodes, show the visibility mode setting.

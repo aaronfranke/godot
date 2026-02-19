@@ -277,15 +277,34 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V(p_file->get_position() != 0, ERR_FILE_CANT_READ);
 	uint32_t magic = p_file->get_32();
 	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
-	p_file->get_32(); // version
-	p_file->get_32(); // length
-	uint32_t chunk_length = p_file->get_32();
-	uint32_t chunk_type = p_file->get_32();
+	uint32_t version = p_file->get_32(); // version
+	uint32_t chunk_type;
+	uint32_t chunk_encoding = 0;
+	uint64_t chunk_length;
+	if (version == 2) {
+		// Binary format version 2 uses 32-bit file size and chunk sizes.
+		p_file->get_32(); // File length (unused).
+		chunk_length = p_file->get_32();
+		chunk_type = p_file->get_32();
+		_binary_format_mode = BinaryFormatMode::BINARY_FORMAT_MODE_32_BIT;
+	} else if (version == 3) {
+		// Binary format version 3 uses 64-bit file size and chunk sizes, and an additional field for chunk encoding.
+		p_file->get_64(); // File length (unused).
+		chunk_type = p_file->get_32();
+		chunk_encoding = p_file->get_32();
+		chunk_length = p_file->get_64();
+		_binary_format_mode = BinaryFormatMode::BINARY_FORMAT_MODE_64_BIT;
+	} else {
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unsupported .glb binary format version: " + itos(version));
+	}
+	if (chunk_encoding != 0) {
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unsupported .glb binary chunk encoding: " + itos(chunk_encoding));
+	}
 
 	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
 	Vector<uint8_t> json_data;
 	json_data.resize(chunk_length);
-	uint32_t len = p_file->get_buffer(json_data.ptrw(), chunk_length);
+	uint64_t len = p_file->get_buffer(json_data.ptrw(), chunk_length);
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
 	String text = String::utf8((const char *)json_data.ptr(), json_data.size());
@@ -298,8 +317,17 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 
 	//data?
 
-	chunk_length = p_file->get_32();
-	chunk_type = p_file->get_32();
+	if (version == 2) {
+		chunk_length = p_file->get_32();
+		chunk_type = p_file->get_32();
+	} else { // if (version == 3)
+		chunk_type = p_file->get_32();
+		chunk_encoding = p_file->get_32();
+		chunk_length = p_file->get_64();
+	}
+	if (chunk_encoding != 0) {
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unsupported .glb binary chunk encoding: " + itos(chunk_encoding));
+	}
 
 	if (p_file->eof_reached()) {
 		return OK; //all good
@@ -6632,8 +6660,12 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V(file.is_null(), FAILED);
 
-		constexpr uint64_t header_size = 12;
-		constexpr uint64_t chunk_header_size = 8;
+		uint64_t file_header_size = 12;
+		uint64_t chunk_header_size = 8;
+		if (_binary_format_mode == BINARY_FORMAT_MODE_64_BIT) {
+			file_header_size = 16;
+			chunk_header_size = 16;
+		}
 		constexpr uint32_t magic = 0x46546C67; // The byte sequence "glTF" as little-endian.
 		constexpr uint32_t text_chunk_type = 0x4E4F534A; // The byte sequence "JSON" as little-endian.
 		constexpr uint32_t binary_chunk_type = 0x004E4942; // The byte sequence "BIN\0" as little-endian.
@@ -6642,26 +6674,43 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		CharString cs = json_string.utf8();
 		uint64_t text_data_length = cs.length();
 		uint64_t text_chunk_length = ((text_data_length + 3) & (~3));
-		uint64_t total_file_length = header_size + chunk_header_size + text_chunk_length;
+		uint64_t total_file_length = file_header_size + chunk_header_size + text_chunk_length;
 		uint64_t binary_data_length = 0;
 		uint64_t binary_chunk_length = 0;
 		if (p_state->buffers.size() > 0) {
 			binary_data_length = p_state->buffers[0].size();
 			binary_chunk_length = ((binary_data_length + 3) & (~3));
-			const uint64_t file_length_with_buffer = total_file_length + chunk_header_size + binary_chunk_length;
+			uint64_t file_length_with_buffer = total_file_length + chunk_header_size + binary_chunk_length;
+			uint64_t max_file_length = (uint64_t)UINT32_MAX;
+			if (_binary_format_mode == BINARY_FORMAT_MODE_64_BIT) {
+				max_file_length = (uint64_t)UINT64_MAX;
+			}
 			// Check if the file length with the buffer is greater than glTF's maximum of 4 GiB.
-			// If it is, we can't write the buffer into the file, but can write it separately.
-			if (unlikely(file_length_with_buffer > (uint64_t)UINT32_MAX)) {
-				err = _encode_buffer_bins(p_state, p_path);
-				ERR_FAIL_COND_V(err != OK, err);
-				// Since the buffer bins were re-encoded, we need to re-convert the JSON to string.
-				json_string = JSON::stringify(p_state->json, "", true, true);
-				cs = json_string.utf8();
-				text_data_length = cs.length();
-				text_chunk_length = ((text_data_length + 3) & (~3));
-				total_file_length = header_size + chunk_header_size + text_chunk_length;
-				binary_data_length = 0;
-				binary_chunk_length = 0;
+			if (unlikely(file_length_with_buffer > max_file_length)) {
+				if (_binary_format_mode == BINARY_FORMAT_MODE_AUTO) {
+					// If the binary format mode is auto, try using the 64-bit format to support larger files.
+					file_header_size = 16;
+					chunk_header_size = 16;
+					max_file_length = (uint64_t)UINT64_MAX;
+					total_file_length = file_header_size + chunk_header_size + text_chunk_length;
+					file_length_with_buffer = total_file_length + chunk_header_size + binary_chunk_length;
+				}
+				if (unlikely(file_length_with_buffer > max_file_length)) {
+					// Still too big? We can't write the buffer into the file, but can write it separately.
+					err = _encode_buffer_bins(p_state, p_path);
+					ERR_FAIL_COND_V(err != OK, err);
+					// Since the buffer bins were re-encoded, we need to re-convert the JSON to string.
+					json_string = JSON::stringify(p_state->json, "", true, true);
+					cs = json_string.utf8();
+					text_data_length = cs.length();
+					text_chunk_length = ((text_data_length + 3) & (~3));
+					total_file_length = file_header_size + chunk_header_size + text_chunk_length;
+					binary_data_length = 0;
+					binary_chunk_length = 0;
+					file_length_with_buffer = total_file_length;
+				} else {
+					total_file_length = file_length_with_buffer;
+				}
 			} else {
 				total_file_length = file_length_with_buffer;
 			}
@@ -6671,12 +6720,23 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 
 		file->create(FileAccess::ACCESS_RESOURCES);
 		file->store_32(magic);
-		file->store_32(p_state->major_version); // version
-		file->store_32(total_file_length);
+		if (file_header_size == 12) {
+			file->store_32(2); // Binary format version.
+			file->store_32(total_file_length);
+		} else { // 16
+			file->store_32(3); // Binary format version.
+			file->store_64(total_file_length);
+		}
 
 		// Write the JSON text chunk.
-		file->store_32(text_chunk_length);
-		file->store_32(text_chunk_type);
+		if (chunk_header_size == 8) {
+			file->store_32(text_chunk_length);
+			file->store_32(text_chunk_type);
+		} else { // 16
+			file->store_32(text_chunk_type);
+			file->store_32(0); // Plain encoding.
+			file->store_64(text_chunk_length);
+		}
 		file->store_buffer((uint8_t *)&cs[0], text_data_length);
 		for (uint64_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
 			file->store_8(' ');
@@ -6684,8 +6744,14 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 
 		// Write a single binary chunk.
 		if (binary_chunk_length) {
-			file->store_32((uint32_t)binary_chunk_length);
-			file->store_32(binary_chunk_type);
+			if (chunk_header_size == 8) {
+				file->store_32((uint32_t)binary_chunk_length);
+				file->store_32(binary_chunk_type);
+			} else { // 16
+				file->store_32(binary_chunk_type);
+				file->store_32(0); // Plain encoding.
+				file->store_64(binary_chunk_length);
+			}
 			file->store_buffer(p_state->buffers[0].ptr(), binary_data_length);
 			for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
 				file->store_8(0);
@@ -6705,6 +6771,10 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 }
 
 void GLTFDocument::_bind_methods() {
+	BIND_ENUM_CONSTANT(BINARY_FORMAT_MODE_AUTO);
+	BIND_ENUM_CONSTANT(BINARY_FORMAT_MODE_32_BIT);
+	BIND_ENUM_CONSTANT(BINARY_FORMAT_MODE_64_BIT);
+
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_SINGLE_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_KEEP_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_MULTI_ROOT);
@@ -6721,6 +6791,8 @@ void GLTFDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_image_format"), &GLTFDocument::get_fallback_image_format);
 	ClassDB::bind_method(D_METHOD("set_fallback_image_quality", "fallback_image_quality"), &GLTFDocument::set_fallback_image_quality);
 	ClassDB::bind_method(D_METHOD("get_fallback_image_quality"), &GLTFDocument::get_fallback_image_quality);
+	ClassDB::bind_method(D_METHOD("set_binary_format_mode", "binary_format_mode"), &GLTFDocument::set_binary_format_mode);
+	ClassDB::bind_method(D_METHOD("get_binary_format_mode"), &GLTFDocument::get_binary_format_mode);
 	ClassDB::bind_method(D_METHOD("set_root_node_mode", "root_node_mode"), &GLTFDocument::set_root_node_mode);
 	ClassDB::bind_method(D_METHOD("get_root_node_mode"), &GLTFDocument::get_root_node_mode);
 	ClassDB::bind_method(D_METHOD("set_visibility_mode", "visibility_mode"), &GLTFDocument::set_visibility_mode);
@@ -6742,6 +6814,7 @@ void GLTFDocument::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "fallback_image_format"), "set_fallback_image_format", "get_fallback_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_image_quality"), "set_fallback_image_quality", "get_fallback_image_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "binary_format_mode"), "set_binary_format_mode", "get_binary_format_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode"), "set_visibility_mode", "get_visibility_mode");
 
@@ -6834,8 +6907,12 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	String json_string = JSON::stringify(p_state->json, "", true, true);
 
-	constexpr uint64_t header_size = 12;
-	constexpr uint64_t chunk_header_size = 8;
+	uint64_t file_header_size = 12;
+	uint64_t chunk_header_size = 8;
+	if (_binary_format_mode == BINARY_FORMAT_MODE_64_BIT) {
+		file_header_size = 16;
+		chunk_header_size = 16;
+	}
 	constexpr uint32_t magic = 0x46546C67; // The byte sequence "glTF" as little-endian.
 	constexpr uint32_t text_chunk_type = 0x4E4F534A; // The byte sequence "JSON" as little-endian.
 	constexpr uint32_t binary_chunk_type = 0x004E4942; // The byte sequence "BIN\0" as little-endian.
@@ -6843,7 +6920,7 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	const uint64_t text_data_length = cs.length();
 	const uint64_t text_chunk_length = ((text_data_length + 3) & (~3));
 
-	uint64_t total_file_length = header_size + chunk_header_size + text_chunk_length;
+	uint64_t total_file_length = file_header_size + chunk_header_size + text_chunk_length;
 	ERR_FAIL_COND_V(total_file_length > (uint64_t)UINT32_MAX, PackedByteArray());
 	uint64_t binary_data_length = 0;
 	if (p_state->buffers.size() > 0) {
@@ -6851,24 +6928,57 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 		const uint64_t file_length_with_buffer = total_file_length + chunk_header_size + binary_data_length;
 		total_file_length = file_length_with_buffer;
 	}
-	ERR_FAIL_COND_V_MSG(total_file_length > (uint64_t)UINT32_MAX, PackedByteArray(),
+	uint64_t max_file_length = (uint64_t)UINT32_MAX;
+	if (_binary_format_mode == BINARY_FORMAT_MODE_64_BIT) {
+		max_file_length = (uint64_t)UINT64_MAX;
+	}
+	if (total_file_length > max_file_length) {
+		if (_binary_format_mode == BINARY_FORMAT_MODE_AUTO) {
+			// If the binary format mode is auto, try using the 64-bit format to support larger files.
+			file_header_size = 16;
+			chunk_header_size = 16;
+			max_file_length = (uint64_t)UINT64_MAX;
+			total_file_length = file_header_size + chunk_header_size + text_chunk_length;
+			if (binary_data_length > 0) {
+				total_file_length += chunk_header_size + binary_data_length;
+			}
+		}
+	}
+	ERR_FAIL_COND_V_MSG(total_file_length > max_file_length, PackedByteArray(),
 			"glTF: File size exceeds glTF Binary's maximum of 4 GiB. Cannot serialize as a single GLB in-memory buffer.");
 	const uint32_t binary_chunk_length = binary_data_length;
 
 	Ref<StreamPeerBuffer> buffer;
 	buffer.instantiate();
 	buffer->put_32(magic);
-	buffer->put_32(p_state->major_version); // version
-	buffer->put_32((uint32_t)total_file_length); // length
-	buffer->put_32((uint32_t)text_chunk_length);
-	buffer->put_32(text_chunk_type);
+	if (file_header_size == 12) {
+		buffer->put_32(2); // Binary format version.
+		buffer->put_32((uint32_t)total_file_length);
+	} else { // 16
+		buffer->put_32(3); // Binary format version.
+		buffer->put_64(total_file_length);
+	}
+	if (chunk_header_size == 8) {
+		buffer->put_32((uint32_t)text_chunk_length);
+		buffer->put_32(text_chunk_type);
+	} else { // 16
+		buffer->put_32(text_chunk_type);
+		buffer->put_32(0); // Plain encoding.
+		buffer->put_64(text_chunk_length);
+	}
 	buffer->put_data((uint8_t *)&cs[0], text_data_length);
 	for (uint64_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
 		buffer->put_8(' ');
 	}
 	if (binary_chunk_length) {
-		buffer->put_32(binary_chunk_length);
-		buffer->put_32(binary_chunk_type);
+		if (chunk_header_size == 8) {
+			buffer->put_32((uint32_t)binary_chunk_length);
+			buffer->put_32(binary_chunk_type);
+		} else { // 16
+			buffer->put_32(binary_chunk_type);
+			buffer->put_32(0); // Plain encoding.
+			buffer->put_64(binary_chunk_length);
+		}
 		buffer->put_data(p_state->buffers[0].ptr(), binary_data_length);
 	}
 	return buffer->get_data_array();
@@ -7226,6 +7336,10 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 		}
 	}
 	return ret;
+}
+
+void GLTFDocument::set_binary_format_mode(BinaryFormatMode p_binary_format_mode) {
+	_binary_format_mode = p_binary_format_mode;
 }
 
 void GLTFDocument::set_root_node_mode(GLTFDocument::RootNodeMode p_root_node_mode) {
