@@ -1424,8 +1424,10 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			if (p_pass_mode == PASS_MODE_COLOR) {
 #ifdef DEBUG_ENABLED
 				bool force_alpha = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW);
+				bool force_depth = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER);
 #else
 				bool force_alpha = false;
+				bool force_depth = false;
 #endif
 				if (!force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
 					rl->add_element(surf);
@@ -1440,7 +1442,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 				if (surf->flags & GeometryInstanceSurface::FLAG_USES_NORMAL_TEXTURE) {
 					scene_state.used_normal_texture = true;
 				}
-				if (surf->flags & GeometryInstanceSurface::FLAG_USES_DEPTH_TEXTURE) {
+				if (force_depth || surf->flags & GeometryInstanceSurface::FLAG_USES_DEPTH_TEXTURE) {
 					scene_state.used_depth_texture = true;
 				}
 				if ((surf->flags & GeometryInstanceSurface::FLAG_USES_STENCIL) && !force_alpha && (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE))) {
@@ -4017,6 +4019,9 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+	}
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
+		copy_effects->copy_depth_to_rect_and_linearize(Rect2(Vector2(), Vector2(1.0, 1.0)), scene_state.data.z_near, scene_state.data.z_far);
 	}
 }
 
