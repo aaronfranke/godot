@@ -51,6 +51,11 @@ public:
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};
+	enum BinaryFormatMode {
+		BINARY_FORMAT_MODE_AUTO,
+		BINARY_FORMAT_MODE_32_BIT,
+		BINARY_FORMAT_MODE_64_BIT
+	};
 	enum RootNodeMode {
 		ROOT_NODE_MODE_SINGLE_ROOT,
 		ROOT_NODE_MODE_KEEP_ROOT,
@@ -69,6 +74,7 @@ private:
 	String _fallback_image_format = "None";
 	float _fallback_image_quality = 0.25f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
+	BinaryFormatMode _binary_format_mode = BinaryFormatMode::BINARY_FORMAT_MODE_AUTO;
 	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
 	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_REQUIRED;
 
@@ -101,6 +107,8 @@ public:
 	void set_fallback_image_quality(float p_fallback_image_quality);
 	float get_fallback_image_quality() const;
 	void set_root_node_mode(RootNodeMode p_root_node_mode);
+	BinaryFormatMode get_binary_format_mode() const { return _binary_format_mode; }
+	void set_binary_format_mode(BinaryFormatMode p_binary_format_mode);
 	RootNodeMode get_root_node_mode() const;
 	void set_visibility_mode(VisibilityMode p_visibility_mode);
 	VisibilityMode get_visibility_mode() const;
@@ -289,5 +297,6 @@ public:
 	Error _parse(Ref<GLTFState> p_state, const String &p_path, Ref<FileAccess> p_file);
 };
 
+VARIANT_ENUM_CAST(GLTFDocument::BinaryFormatMode);
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
 VARIANT_ENUM_CAST(GLTFDocument::VisibilityMode);
