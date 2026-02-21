@@ -34,6 +34,8 @@
 
 #include "scene/resources/3d/importer_mesh.h"
 
+class ImporterMeshInstance3D;
+
 class GLTFMesh : public Resource {
 	GDCLASS(GLTFMesh, Resource);
 
@@ -58,4 +60,6 @@ public:
 	void set_instance_materials(const TypedArray<Material> &p_instance_materials);
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+
+	ImporterMeshInstance3D *import_generate_godot_node() const;
 };

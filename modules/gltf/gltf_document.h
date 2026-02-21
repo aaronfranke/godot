@@ -116,6 +116,7 @@ public:
 
 private:
 	void _build_parent_hierarchy(Ref<GLTFState> p_state);
+	Error _import_parse_models(const Ref<GLTFState> &p_gltf_state);
 	Error _parse_scenes(Ref<GLTFState> p_state);
 	Error _parse_nodes(Ref<GLTFState> p_state);
 	String _sanitize_animation_name(const String &p_name);
@@ -178,7 +179,8 @@ private:
 	Error _parse_animations(Ref<GLTFState> p_state);
 	void _parse_animation_pointer(Ref<GLTFState> p_state, const String &p_animation_json_pointer, const Ref<GLTFAnimation> p_gltf_animation, const GLTFAnimation::Interpolation p_interp, const Vector<double> &p_times, const int p_output_value_accessor_index);
 	Error _serialize_animations(Ref<GLTFState> p_state);
-	bool _does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node);
+	static void _set_node_tree_owner_if_not_set(Node *p_current_node, Node *&p_scene_root);
+	static bool _does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node);
 	BoneAttachment3D *_generate_bone_attachment(Skeleton3D *p_godot_skeleton, const Ref<GLTFNode> &p_bone_node);
 	BoneAttachment3D *_generate_bone_attachment_compat_4pt4(Ref<GLTFState> p_state, Skeleton3D *p_skeleton, const GLTFNodeIndex p_node_index, const GLTFNodeIndex p_bone_index);
 	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
@@ -203,6 +205,7 @@ private:
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(const Ref<BaseMaterial3D> &p_material);
 	Dictionary _serialize_texture_transform_uv2(const Ref<BaseMaterial3D> &p_material);
+	Error _export_serialize_models(Ref<GLTFState> p_gltf_state);
 	Error _serialize_asset_header(Ref<GLTFState> p_state);
 	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;

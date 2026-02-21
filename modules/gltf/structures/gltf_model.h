@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_document_extension_convert_importer_mesh.h                       */
+/*  gltf_model.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,18 +30,29 @@
 
 #pragma once
 
-#include "gltf_document_extension.h"
+#include "gltf_file_reference.h"
 
-class MeshInstance3D;
+class GLTFModel : public GLTFFileReference {
+	GDCLASS(GLTFModel, GLTFFileReference);
 
-class GLTFDocumentExtensionConvertImporterMesh : public GLTFDocumentExtension {
-	GDCLASS(GLTFDocumentExtensionConvertImporterMesh, GLTFDocumentExtension);
+	// Optional. If provided, use this document for import settings.
+	Ref<GLTFDocument> _model_gltf_document;
+	// The actual data of the model.
+	Ref<GLTFState> _model_gltf_state;
+
+	String _get_inferred_mime_type() const;
 
 protected:
-	static void _copy_meta(Object *p_src_object, Object *p_dst_object);
+	static void _bind_methods();
 
 public:
-	static MeshInstance3D *convert_importer_mesh_instance_3d(ImporterMeshInstance3D *p_importer_mesh_instance_3d);
-	static Node *convert_importer_meshes_recursively(Node *p_root_node);
-	Error import_post(Ref<GLTFState> p_state, Node *p_root) override;
+	Ref<GLTFDocument> get_model_gltf_document() const;
+	void set_model_gltf_document(const Ref<GLTFDocument> &p_model_gltf_document);
+
+	Error import_preload_model_data(const Ref<GLTFState> &p_parent_gltf_state);
+	Node *import_instantiate_model(const Ref<GLTFState> &p_parent_gltf_state) const;
+	static int export_pack_nodes_into_model(const Variant p_gltf_document, const Ref<GLTFState> &p_parent_gltf_state, Node *p_node, const bool p_deduplicate = true);
+	Error export_write_model_data(const Ref<GLTFState> &p_parent_gltf_state, const bool p_deduplicate = true, int p_buffer_index = 0);
+
+	static Ref<GLTFModel> from_dictionary(const Dictionary &p_dict);
 };

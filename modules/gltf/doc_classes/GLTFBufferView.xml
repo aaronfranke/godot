@@ -32,6 +32,19 @@
 				Serializes this GLTFBufferView instance into a [Dictionary].
 			</description>
 		</method>
+		<method name="write_new_buffer_view_into_state" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="gltf_state" type="GLTFState" />
+			<param index="1" name="input_data" type="PackedByteArray" />
+			<param index="2" name="alignment" type="int" default="1" />
+			<param index="3" name="target" type="int" enum="GLTFBufferView.ArrayBufferTarget" default="0" />
+			<param index="4" name="byte_stride" type="int" default="-1" />
+			<param index="5" name="buffer_index" type="int" default="0" />
+			<param index="6" name="deduplicate" type="bool" default="true" />
+			<description>
+				Writes the given [param input_data] into a buffer view in the given [GLTFState] with its start byte offset aligned to a multiple of [param alignment]. This is usually a new buffer view, but may refer to an existing buffer view if an identical buffer view already exists and [param deduplicate] is [code]true[/code] (default). When a new buffer view is created, [param buffer_index] determines which buffer the new buffer view will point to, which is buffer 0 by default.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="buffer" type="int" setter="set_buffer" getter="get_buffer" default="-1">
@@ -53,4 +66,15 @@
 			[code]true[/code] if the GLTFBufferView's OpenGL GPU buffer type is an [code]ARRAY_BUFFER[/code] used for vertex attributes (integer constant [code]34962[/code]). [code]false[/code] if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
 		</member>
 	</members>
+	<constants>
+		<constant name="TARGET_NONE" value="0" enum="ArrayBufferTarget">
+			Indicates that the buffer view does not have a target. Non-mesh buffer views should use this target, and mesh buffer views should use either [constant TARGET_ARRAY_BUFFER] or [constant TARGET_ELEMENT_ARRAY_BUFFER].
+		</constant>
+		<constant name="TARGET_ARRAY_BUFFER" value="34962" enum="ArrayBufferTarget">
+			Indicates that the buffer view is an array buffer, which contains mesh vertex attributes such as vertex positions, normals, UVs, etc.
+		</constant>
+		<constant name="TARGET_ELEMENT_ARRAY_BUFFER" value="34963" enum="ArrayBufferTarget">
+			Indicates that the buffer view is an element array buffer, which contains mesh vertex indices.
+		</constant>
+	</constants>
 </class>

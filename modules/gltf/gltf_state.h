@@ -36,6 +36,7 @@
 #include "structures/gltf_buffer_view.h"
 #include "structures/gltf_camera.h"
 #include "structures/gltf_mesh.h"
+#include "structures/gltf_model.h"
 #include "structures/gltf_node.h"
 #include "structures/gltf_object_model_property.h"
 #include "structures/gltf_skeleton.h"
@@ -91,6 +92,7 @@ protected:
 	Vector<AnimationPlayer *> animation_players;
 	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
 	Vector<Ref<Material>> materials;
+	Vector<Ref<GLTFModel>> models;
 
 	String scene_name;
 	Vector<int> root_nodes;
@@ -241,6 +243,11 @@ public:
 	TypedArray<Material> get_materials_bind() const;
 	void set_materials_bind(const TypedArray<Material> &p_materials);
 
+	const Vector<Ref<GLTFModel>> &get_models() const { return models; }
+	void set_models(const Vector<Ref<GLTFModel>> &p_models) { models = p_models; }
+	TypedArray<GLTFModel> get_models_bind() const;
+	void set_models_bind(const TypedArray<GLTFModel> &p_models);
+
 	String get_scene_name() const;
 	void set_scene_name(const String &p_scene_name);
 
@@ -255,6 +262,7 @@ public:
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
+	bool is_text_file() const;
 
 	PackedInt32Array get_root_nodes() const;
 	void set_root_nodes(const PackedInt32Array &p_root_nodes);

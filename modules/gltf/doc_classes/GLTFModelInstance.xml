@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFModelInstance" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Instance of a [GLTFModel] on a [GLTFNode].
+	</brief_description>
+	<description>
+		GLTFModelInstance represents an instance of a [GLTFModel] on a [GLTFNode]. Each node may contain its own model instance, which references a model by index in the [GLTFState]. The model instance allows the instance to be customized, while still referencing the shared data of the model, in a similar way to Godot's "Editable Children" feature of a scene instance.
+	</description>
+	<tutorials>
+		<link title="IANA Model Media Types">https://www.iana.org/assignments/media-types/media-types.xhtml#model</link>
+	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFModelInstance" />
+			<param index="0" name="dict" type="Dictionary" />
+			<description>
+				Converts the given [Dictionary] representing the JSON of a glTF model instance to a [GLTFModelInstance].
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this [GLTFModelInstance] into a [Dictionary] of the JSON representation of the model instance.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="model_index" type="int" setter="set_model_index" getter="get_model_index" default="-1">
+			The index of the [GLTFModel] in the [GLTFState] that this instance references.
+		</member>
+	</members>
+</class>

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_node.h                                                           */
+/*  gltf_file_reference.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -34,88 +34,32 @@
 
 #include "core/io/resource.h"
 
-class Node3D;
+class GLTFFileReference : public Resource {
+	GDCLASS(GLTFFileReference, Resource);
 
-class GLTFNode : public Resource {
-	GDCLASS(GLTFNode, Resource);
-	friend class GLTFDocument;
-	friend class SkinTool;
-	friend class FBXDocument;
-
-private:
-	String original_name;
-	GLTFNodeIndex parent = -1;
-	int height = -1;
-	Transform3D transform;
-	Ref<GLTFModelInstance> model_instance;
-	GLTFMeshIndex mesh = -1;
-	GLTFCameraIndex camera = -1;
-	GLTFSkinIndex skin = -1;
-	GLTFSkeletonIndex skeleton = -1;
-	bool joint = false;
-	bool visible = true;
-	Vector<int> children;
-	GLTFLightIndex light = -1;
-	Dictionary additional_data;
+	String _mime_type = "";
+	String _file_uri = "";
+	GLTFBufferViewIndex _buffer_view_index = -1;
 
 protected:
 	static void _bind_methods();
 
 public:
-	String get_original_name();
-	void set_original_name(const String &p_name);
+	static PackedByteArray parse_data_uri(const String &p_data_uri);
 
-	GLTFNodeIndex get_parent();
-	void set_parent(GLTFNodeIndex p_parent);
+	GLTFBufferViewIndex get_buffer_view_index() const { return _buffer_view_index; }
+	void set_buffer_view_index(GLTFBufferViewIndex p_buffer_view_index) { _buffer_view_index = p_buffer_view_index; }
 
-	int get_height();
-	void set_height(int p_height);
+	String get_mime_type() const { return _mime_type; }
+	void set_mime_type(const String &p_mime_type) { _mime_type = p_mime_type; }
 
-	Transform3D get_xform();
-	void set_xform(const Transform3D &p_xform);
+	String get_file_uri() const { return _file_uri; }
+	void set_file_uri(const String &p_uri) { _file_uri = p_uri; }
 
-	Transform3D get_rest_xform();
-	void set_rest_xform(const Transform3D &p_rest_xform);
+	PackedByteArray read_file_data(const Ref<GLTFState> &p_gltf_state) const;
+	Error create_missing_directories_if_needed(const Ref<GLTFState> &p_gltf_state) const;
+	Error write_file_data(const Ref<GLTFState> &p_gltf_state, const PackedByteArray &p_data, int64_t p_alignment = 4, int p_buffer_index = 0, bool p_deduplicate = true);
 
-	Ref<GLTFModelInstance> get_model_instance() const;
-	void set_model_instance(const Ref<GLTFModelInstance> &p_model_instance);
-
-	GLTFMeshIndex get_mesh();
-	void set_mesh(GLTFMeshIndex p_mesh);
-
-	GLTFCameraIndex get_camera();
-	void set_camera(GLTFCameraIndex p_camera);
-
-	GLTFSkinIndex get_skin();
-	void set_skin(GLTFSkinIndex p_skin);
-
-	GLTFSkeletonIndex get_skeleton();
-	void set_skeleton(GLTFSkeletonIndex p_skeleton);
-
-	Vector3 get_position();
-	void set_position(const Vector3 &p_position);
-
-	Quaternion get_rotation();
-	void set_rotation(const Quaternion &p_rotation);
-
-	Vector3 get_scale();
-	void set_scale(const Vector3 &p_scale);
-
-	Vector<int> get_children();
-	void set_children(const Vector<int> &p_children);
-	void append_child_index(int p_child_index);
-
-	GLTFLightIndex get_light();
-	void set_light(GLTFLightIndex p_light);
-
-	bool get_visible();
-	void set_visible(bool p_visible);
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	bool has_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
-	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
-
-	Node3D *import_generate_godot_node(const Ref<GLTFState> &p_gltf_state, GLTFNodeIndex p_self_index);
+	void read_file_reference_entries_from_dictionary(const Dictionary &p_dict);
+	Dictionary write_file_reference_entries_to_dictionary() const;
 };
