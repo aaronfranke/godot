@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  gltf_model.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,37 +30,29 @@
 
 #pragma once
 
-#include "../gltf_defines.h"
+#include "gltf_file_reference.h"
 
-#include "core/variant/typed_array.h"
-#include "scene/resources/3d/importer_mesh.h"
+class GLTFModel : public GLTFFileReference {
+	GDCLASS(GLTFModel, GLTFFileReference);
 
-class ImporterMeshInstance3D;
+	// Optional. If provided, use this document for import settings.
+	Ref<GLTFDocument> _model_gltf_document;
+	// The actual data of the model.
+	Ref<GLTFState> _model_gltf_state;
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
-
-private:
-	String original_name;
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-	Dictionary additional_data;
+	String _get_inferred_mime_type() const;
 
 protected:
 	static void _bind_methods();
 
 public:
-	String get_original_name();
-	void set_original_name(const String &p_name);
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(const Ref<ImporterMesh> &p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(const Vector<float> &p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(const TypedArray<Material> &p_instance_materials);
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	Ref<GLTFDocument> get_model_gltf_document() const;
+	void set_model_gltf_document(const Ref<GLTFDocument> &p_model_gltf_document);
 
-	ImporterMeshInstance3D *import_generate_godot_node() const;
+	Error import_preload_model_data(const Ref<GLTFState> &p_parent_gltf_state);
+	Node *import_instantiate_model(const Ref<GLTFState> &p_parent_gltf_state) const;
+	static int export_pack_nodes_into_model(const Variant p_gltf_document, const Ref<GLTFState> &p_parent_gltf_state, Node *p_node, const bool p_deduplicate = true);
+	Error export_write_model_data(const Ref<GLTFState> &p_parent_gltf_state, const bool p_deduplicate = true, int p_buffer_index = 0);
+
+	static Ref<GLTFModel> from_dictionary(const Dictionary &p_dict);
 };

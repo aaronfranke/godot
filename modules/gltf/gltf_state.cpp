@@ -66,6 +66,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_animation_player", "anim_player_index"), &GLTFState::get_animation_player);
 	ClassDB::bind_method(D_METHOD("get_materials"), &GLTFState::get_materials_bind);
 	ClassDB::bind_method(D_METHOD("set_materials", "materials"), &GLTFState::set_materials_bind);
+	ClassDB::bind_method(D_METHOD("get_models"), &GLTFState::get_models_bind);
+	ClassDB::bind_method(D_METHOD("set_models", "models"), &GLTFState::set_models_bind);
 	ClassDB::bind_method(D_METHOD("get_scene_name"), &GLTFState::get_scene_name);
 	ClassDB::bind_method(D_METHOD("set_scene_name", "scene_name"), &GLTFState::set_scene_name);
 	ClassDB::bind_method(D_METHOD("get_base_path"), &GLTFState::get_base_path);
@@ -119,6 +121,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessors", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_accessors", "get_accessors"); // Vector<Ref<GLTFAccessor>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "meshes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_meshes", "get_meshes"); // Vector<Ref<GLTFMesh>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "materials", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_materials", "get_materials"); // Vector<Ref<Material>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "models", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_models", "get_models"); // Vector<Ref<GLTFModel>>
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_name"), "set_scene_name", "get_scene_name"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_path"), "set_base_path", "get_base_path"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename"), "set_filename", "get_filename"); // String
@@ -260,6 +263,14 @@ TypedArray<Material> GLTFState::get_materials_bind() const {
 
 void GLTFState::set_materials_bind(const TypedArray<Material> &p_materials) {
 	GLTFTemplateConvert::set_from_array(materials, p_materials);
+}
+
+TypedArray<GLTFModel> GLTFState::get_models_bind() const {
+	return GLTFTemplateConvert::to_array(models);
+}
+
+void GLTFState::set_models_bind(const TypedArray<GLTFModel> &p_models) {
+	GLTFTemplateConvert::set_from_array(models, p_models);
 }
 
 String GLTFState::get_scene_name() const {
@@ -443,6 +454,10 @@ void GLTFState::set_filename(const String &p_filename) {
 	if (extract_prefix.is_empty()) {
 		extract_prefix = p_filename.get_basename();
 	}
+}
+
+bool GLTFState::is_text_file() const {
+	return filename.get_extension().length() > 3;
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {

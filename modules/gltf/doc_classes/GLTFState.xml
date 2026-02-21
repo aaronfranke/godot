@@ -112,6 +112,12 @@
 				Returns an array of all [GLTFMesh]es in the glTF file. These are the meshes that the [member GLTFNode.mesh] index refers to.
 			</description>
 		</method>
+		<method name="get_models" qualifiers="const">
+			<return type="GLTFModel[]" />
+			<description>
+				Returns an array of all [GLTFModel]s in the glTF file. These are separate model files, such as separate glTF files, referenced by or contained within this glTF file. These are the models that the [member GLTFModelInstance.model_index] refers to.
+			</description>
+		</method>
 		<method name="get_node_index" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="scene_node" type="Node" />
@@ -236,6 +242,13 @@
 			<param index="0" name="meshes" type="GLTFMesh[]" />
 			<description>
 				Sets the [GLTFMesh]es in the state. These are the meshes that the [member GLTFNode.mesh] index refers to.
+			</description>
+		</method>
+		<method name="set_models">
+			<return type="void" />
+			<param index="0" name="models" type="GLTFModel[]" />
+			<description>
+				Sets the [GLTFModel]s in the state. These are separate model files, such as separate glTF files, referenced by or contained within this glTF file. These are the models that the [member GLTFModelInstance.model_index] refers to.
 			</description>
 		</method>
 		<method name="set_nodes">

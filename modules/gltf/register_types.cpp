@@ -36,6 +36,8 @@
 #include "extensions/gltf_spec_gloss.h"
 #include "gltf_document.h"
 #include "gltf_state.h"
+#include "structures/gltf_model.h"
+#include "structures/gltf_model_instance.h"
 #include "structures/gltf_object_model_property.h"
 
 #include "core/config/engine.h"
@@ -118,8 +120,11 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFDocument);
 		GDREGISTER_CLASS(GLTFDocumentExtension);
 		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
+		GDREGISTER_CLASS(GLTFFileReference);
 		GDREGISTER_CLASS(GLTFLight);
 		GDREGISTER_CLASS(GLTFMesh);
+		GDREGISTER_CLASS(GLTFModel);
+		GDREGISTER_CLASS(GLTFModelInstance);
 		GDREGISTER_CLASS(GLTFNode);
 		GDREGISTER_CLASS(GLTFObjectModelProperty);
 #ifndef PHYSICS_3D_DISABLED
