@@ -34,6 +34,8 @@
 
 #include "core/io/resource.h"
 
+class Node3D;
+
 class GLTFNode : public Resource {
 	GDCLASS(GLTFNode, Resource);
 	friend class GLTFDocument;
@@ -45,6 +47,7 @@ private:
 	GLTFNodeIndex parent = -1;
 	int height = -1;
 	Transform3D transform;
+	Ref<GLTFModelInstance> model_instance;
 	GLTFMeshIndex mesh = -1;
 	GLTFCameraIndex camera = -1;
 	GLTFSkinIndex skin = -1;
@@ -73,6 +76,9 @@ public:
 
 	Transform3D get_rest_xform();
 	void set_rest_xform(const Transform3D &p_rest_xform);
+
+	Ref<GLTFModelInstance> get_model_instance() const;
+	void set_model_instance(const Ref<GLTFModelInstance> &p_model_instance);
 
 	GLTFMeshIndex get_mesh();
 	void set_mesh(GLTFMeshIndex p_mesh);
@@ -110,4 +116,6 @@ public:
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 
 	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
+
+	Node3D *import_generate_godot_node(const Ref<GLTFState> &p_gltf_state, GLTFNodeIndex p_self_index);
 };

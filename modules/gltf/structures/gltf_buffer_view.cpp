@@ -36,7 +36,12 @@
 #include "core/object/class_db.h"
 
 void GLTFBufferView::_bind_methods() {
+	BIND_ENUM_CONSTANT(TARGET_NONE);
+	BIND_ENUM_CONSTANT(TARGET_ARRAY_BUFFER);
+	BIND_ENUM_CONSTANT(TARGET_ELEMENT_ARRAY_BUFFER);
+
 	ClassDB::bind_method(D_METHOD("load_buffer_view_data", "state"), &GLTFBufferView::load_buffer_view_data);
+	ClassDB::bind_static_method("GLTFBufferView", D_METHOD("write_new_buffer_view_into_state", "gltf_state", "input_data", "alignment", "target", "byte_stride", "buffer_index", "deduplicate"), &GLTFBufferView::write_new_buffer_view_into_state, DEFVAL(1), DEFVAL(ArrayBufferTarget::TARGET_NONE), DEFVAL(-1), DEFVAL(0), DEFVAL(true));
 
 	ClassDB::bind_static_method("GLTFBufferView", D_METHOD("from_dictionary", "dictionary"), &GLTFBufferView::from_dictionary);
 	ClassDB::bind_method(D_METHOD("to_dictionary"), &GLTFBufferView::to_dictionary);

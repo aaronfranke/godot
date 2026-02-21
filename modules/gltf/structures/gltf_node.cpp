@@ -31,8 +31,11 @@
 #include "gltf_node.h"
 
 #include "../gltf_state.h"
+#include "gltf_model_instance.h"
 
 #include "core/object/class_db.h"
+#include "scene/3d/camera_3d.h" // IWYU pragma: keep. Required to assign Camera3D pointers to Node3D variables.
+#include "scene/3d/light_3d.h" // IWYU pragma: keep. Required to assign Light3D pointers to Node3D variables.
 
 void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFNode::get_original_name);
@@ -43,6 +46,8 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &GLTFNode::set_height);
 	ClassDB::bind_method(D_METHOD("get_xform"), &GLTFNode::get_xform);
 	ClassDB::bind_method(D_METHOD("set_xform", "xform"), &GLTFNode::set_xform);
+	ClassDB::bind_method(D_METHOD("get_model_instance"), &GLTFNode::get_model_instance);
+	ClassDB::bind_method(D_METHOD("set_model_instance", "model_instance"), &GLTFNode::set_model_instance);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &GLTFNode::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &GLTFNode::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_camera"), &GLTFNode::get_camera);
@@ -72,6 +77,7 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent"), "set_parent", "get_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height"), "set_height", "get_height"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "xform"), "set_xform", "get_xform"); // Transform3D
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "model_instance", PROPERTY_HINT_RESOURCE_TYPE, "GLTFModelInstance"), "set_model_instance", "get_model_instance"); // Ref<GLTFModelInstance>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh"), "set_mesh", "get_mesh"); // GLTFMeshIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera"), "set_camera", "get_camera"); // GLTFCameraIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skin"), "set_skin", "get_skin"); // GLTFSkinIndex
@@ -113,6 +119,14 @@ Transform3D GLTFNode::get_xform() {
 
 void GLTFNode::set_xform(const Transform3D &p_xform) {
 	transform = p_xform;
+}
+
+Ref<GLTFModelInstance> GLTFNode::get_model_instance() const {
+	return model_instance;
+}
+
+void GLTFNode::set_model_instance(const Ref<GLTFModelInstance> &p_model_instance) {
+	model_instance = p_model_instance;
 }
 
 GLTFMeshIndex GLTFNode::get_mesh() {
@@ -285,4 +299,43 @@ NodePath GLTFNode::get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_ske
 		path.append(".");
 	}
 	return NodePath(path, subpath, false);
+}
+
+Node3D *GLTFNode::import_generate_godot_node(const Ref<GLTFState> &p_gltf_state, GLTFNodeIndex p_self_index) {
+	Node3D *ret;
+	if (model_instance.is_valid()) {
+		const Ref<GLTFModelInstance> &gltf_model_instance = model_instance;
+		Node *node = gltf_model_instance->import_generate_godot_node(p_gltf_state);
+		ret = Object::cast_to<Node3D>(node);
+	} else if (mesh >= 0) {
+		const Vector<Ref<GLTFMesh>> &meshes = p_gltf_state->meshes;
+		ERR_FAIL_INDEX_V(mesh, meshes.size(), nullptr);
+		const Ref<GLTFMesh> &gltf_mesh = meshes[mesh];
+		ret = gltf_mesh->import_generate_godot_node();
+	} else if (camera >= 0) {
+		const Vector<Ref<GLTFCamera>> &cameras = p_gltf_state->cameras;
+		ERR_FAIL_INDEX_V(camera, cameras.size(), nullptr);
+		const Ref<GLTFCamera> &gltf_camera = cameras[camera];
+		ret = gltf_camera->to_node();
+	} else if (light >= 0) {
+		const Vector<Ref<GLTFLight>> &lights = p_gltf_state->lights;
+		ERR_FAIL_INDEX_V(light, lights.size(), nullptr);
+		const Ref<GLTFLight> &gltf_light = lights[light];
+		ret = gltf_light->to_node();
+	} else {
+		ret = memnew(Node3D);
+	}
+	ret->set_name(get_name());
+	ret->set_transform(transform);
+	ret->set_visible(visible);
+	p_gltf_state->scene_nodes.insert(p_self_index, ret);
+	for (const int child_index : children) {
+		ERR_FAIL_INDEX_V(child_index, p_gltf_state->nodes.size(), ret);
+		const Ref<GLTFNode> &child_gltf_node = p_gltf_state->nodes[child_index];
+		Node3D *child_node = child_gltf_node->import_generate_godot_node(p_gltf_state, child_index);
+		if (child_node) {
+			ret->add_child(child_node);
+		}
+	}
+	return ret;
 }

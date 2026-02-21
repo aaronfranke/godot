@@ -31,6 +31,7 @@
 #include "gltf_mesh.h"
 
 #include "core/object/class_db.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {
@@ -89,4 +90,13 @@ Variant GLTFMesh::get_additional_data(const StringName &p_extension_name) {
 
 void GLTFMesh::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
+}
+
+ImporterMeshInstance3D *GLTFMesh::import_generate_godot_node() const {
+	ImporterMeshInstance3D *ret = memnew(ImporterMeshInstance3D);
+	if (mesh.is_valid()) {
+		mesh->merge_meta_from(this);
+		ret->set_mesh(mesh);
+	}
+	return ret;
 }

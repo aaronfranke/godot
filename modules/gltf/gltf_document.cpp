@@ -35,6 +35,7 @@
 #include "gltf_state.h"
 #include "gltf_template_convert.h"
 #include "skin_tool.h"
+#include "structures/gltf_model_instance.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -173,6 +174,12 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 
 	/* STEP SERIALIZE LIGHTS */
 	err = _serialize_lights(p_state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
+	/* STEP SERIALIZE MODELS */
+	err = _export_serialize_models(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -419,6 +426,9 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 		if (!gltf_node->get_name().is_empty()) {
 			node["name"] = gltf_node->get_name();
 		}
+		if (gltf_node->model_instance.is_valid()) {
+			node["modelInstance"] = gltf_node->model_instance->to_dictionary();
+		}
 		if (gltf_node->camera != -1) {
 			node["camera"] = gltf_node->camera;
 		}
@@ -554,6 +564,20 @@ String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> p_state, const GLTFSke
 	return u_name;
 }
 
+Error GLTFDocument::_import_parse_models(const Ref<GLTFState> &p_gltf_state) {
+	if (!p_gltf_state->json.has("models")) {
+		return OK; // No models to parse.
+	}
+	const Array &gltf_models = p_gltf_state->json["models"];
+	for (int model_index = 0; model_index < gltf_models.size(); model_index++) {
+		Ref<GLTFModel> gltf_model = GLTFModel::from_dictionary(gltf_models[model_index]);
+		gltf_model->set_model_gltf_document(this);
+		gltf_model->import_preload_model_data(p_gltf_state);
+		p_gltf_state->models.append(gltf_model);
+	}
+	return OK;
+}
+
 Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 	p_state->unique_names.insert("Skeleton3D"); // Reserve skeleton name.
 	if (!p_state->json.has("scenes")) {
@@ -603,6 +627,10 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 		if (n.has("name")) {
 			node->set_original_name(n["name"]);
 			node->set_name(n["name"]);
+		}
+		if (n.has("modelInstance")) {
+			Dictionary model_instance_dict = n["modelInstance"];
+			node->model_instance = GLTFModelInstance::from_dictionary(model_instance_dict);
 		}
 		if (n.has("camera")) {
 			node->camera = n["camera"];
@@ -707,25 +735,6 @@ void GLTFDocument::_compute_node_heights(Ref<GLTFState> p_state) {
 	}
 }
 
-static Vector<uint8_t> _parse_base64_uri(const String &p_uri) {
-	int start = p_uri.find_char(',');
-	ERR_FAIL_COND_V(start == -1, Vector<uint8_t>());
-
-	CharString substr = p_uri.substr(start + 1).ascii();
-
-	int strlen = substr.length();
-
-	Vector<uint8_t> buf;
-	buf.resize(strlen / 4 * 3 + 1 + 1);
-
-	size_t len = 0;
-	ERR_FAIL_COND_V(CryptoCore::b64_decode(buf.ptrw(), buf.size(), &len, (unsigned char *)substr.get_data(), strlen) != OK, Vector<uint8_t>());
-
-	buf.resize(len);
-
-	return buf;
-}
-
 Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path) {
 	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
 
@@ -735,8 +744,10 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_p
 	Array buffers;
 	if (!p_state->buffers.is_empty()) {
 		Vector<uint8_t> buffer_data = p_state->buffers[0];
+		if (buffer_data.is_empty()) {
+			return OK;
+		}
 		Dictionary gltf_buffer;
-
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
 	}
@@ -815,7 +826,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 						!uri.begins_with("data:application/gltf-buffer;base64")) {
 					ERR_PRINT("glTF: Got buffer with an unknown URI data type: " + uri);
 				}
-				buffer_data = _parse_base64_uri(uri);
+				buffer_data = GLTFFileReference::parse_data_uri(uri);
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_file_decode();
@@ -2214,10 +2225,11 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 		return;
 	}
 #ifdef TOOLS_ENABLED
+	const String imported_files_path = ProjectSettings::get_singleton()->get_imported_files_path();
 	if (Engine::get_singleton()->is_editor_hint() && handling == GLTFState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES) {
 		if (p_state->extract_path.is_empty()) {
 			WARN_PRINT("glTF: Couldn't extract image because the base and extract paths are empty. It will be loaded directly instead, uncompressed.");
-		} else if (p_state->extract_path.begins_with("res://.godot/imported")) {
+		} else if (p_state->extract_path.begins_with(imported_files_path)) {
 			WARN_PRINT(vformat("glTF: Extract path is in the imported directory. Image index '%d' will be loaded directly, uncompressed.", p_index));
 		} else {
 			if (p_image->get_name().is_empty()) {
@@ -2230,7 +2242,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 			Dictionary generator_parameters;
 			String file_path;
 			// If resource_uri is within res:// folder but outside of .godot/imported folder, use it.
-			if (!p_resource_uri.is_empty() && !p_resource_uri.begins_with("res://.godot/imported") && !p_resource_uri.begins_with("res://..")) {
+			if (!p_resource_uri.is_empty() && !p_resource_uri.begins_with(imported_files_path) && !p_resource_uri.begins_with("res://..")) {
 				file_path = p_resource_uri;
 				must_import = true;
 				must_write = !FileAccess::exists(file_path);
@@ -2370,7 +2382,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			// Handles the first two bullet points from the spec (embedded data, or external file).
 			String uri = dict["uri"];
 			if (uri.begins_with("data:")) { // Embedded data using base64.
-				data = _parse_base64_uri(uri);
+				data = GLTFFileReference::parse_data_uri(uri);
 				// mimeType is optional, but if we have it defined in the URI, let's use it.
 				if (mime_type.is_empty() && uri.contains_char(';')) {
 					// Trim "data:" prefix which is 5 characters long, and end at ";base64".
@@ -4162,6 +4174,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 #endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
+	// Convert basic things like the visibility, name, metadata, and transform.
 	if (p_current->has_method("is_visible")) {
 		bool visible = p_current->call("is_visible");
 		if (!visible && _visibility_mode == VISIBILITY_MODE_EXCLUDE) {
@@ -4176,6 +4189,21 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 		Node3D *spatial = Object::cast_to<Node3D>(p_current);
 		_convert_spatial(p_state, spatial, gltf_node);
 	}
+	// Check if this node should be packed into a model.
+	if (p_gltf_parent != -1 && !p_current->get_scene_file_path().is_empty()) {
+		const int model_index = GLTFModel::export_pack_nodes_into_model(this, p_state, p_current, true);
+		if (model_index >= 0) {
+			Ref<GLTFModelInstance> gltf_model_instance;
+			gltf_model_instance.instantiate();
+			gltf_model_instance->set_model_index(model_index);
+			gltf_node->set_model_instance(gltf_model_instance);
+			// Append this one node representing the model instance, then return.
+			// Since the model packs the entire sub-scene, do not recurse into children.
+			p_state->append_gltf_node(gltf_node, p_current, p_gltf_parent);
+			return;
+		}
+	}
+	// If it's not a model, convert the specific data from its type, like mesh, camera, physics, extensions, etc.
 	if (Object::cast_to<MeshInstance3D>(p_current)) {
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_current);
 		_convert_mesh_instance_to_gltf(mi, p_state, gltf_node);
@@ -4492,25 +4520,18 @@ void GLTFDocument::_convert_mesh_instance_to_gltf(MeshInstance3D *p_scene_parent
 	}
 }
 
-void _set_node_tree_owner(Node *p_current_node, Node *&p_scene_root) {
-	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
+void GLTFDocument::_set_node_tree_owner_if_not_set(Node *p_current_node, Node *&p_scene_root) {
 	if (p_scene_root == nullptr) {
 		// If the root node argument is null, this is the root node.
 		p_scene_root = p_current_node;
-		// If multiple nodes were generated under the root node, ensure they have the owner set.
-		if (unlikely(p_current_node->get_child_count() > 0)) {
-			Array args;
-			args.append(p_scene_root);
-			for (int i = 0; i < p_current_node->get_child_count(); i++) {
-				Node *child = p_current_node->get_child(i);
-				child->propagate_call(StringName("set_owner"), args);
-			}
+	} else if (p_current_node->get_owner() == nullptr) {
+		p_current_node->set_owner(p_scene_root);
+	}
+	if (p_current_node->get_child_count() > 0) {
+		for (int i = 0; i < p_current_node->get_child_count(); i++) {
+			Node *child = p_current_node->get_child(i);
+			_set_node_tree_owner_if_not_set(child, p_scene_root);
 		}
-	} else {
-		// Add the node we generated and set the owner to the scene root.
-		Array args;
-		args.append(p_scene_root);
-		p_current_node->propagate_call(StringName("set_owner"), args);
 	}
 }
 
@@ -4539,16 +4560,23 @@ bool GLTFDocument::_does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_
 void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 	Node3D *current_node = nullptr;
-	// Check if any GLTFDocumentExtension classes want to generate a node for us.
-	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
-		ERR_CONTINUE(ext.is_null());
-		current_node = ext->generate_scene_node(p_state, gltf_node, p_scene_parent);
-		if (current_node) {
-			break;
+	// First, generate a model instance if this node is a model instance.
+	if (gltf_node->model_instance.is_valid()) {
+		Node *model_node = gltf_node->model_instance->import_generate_godot_node(p_state);
+		current_node = Object::cast_to<Node3D>(model_node);
+	}
+	// If not a model, check if any GLTFDocumentExtension classes want to generate a node for us.
+	if (current_node == nullptr) {
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			current_node = ext->generate_scene_node(p_state, gltf_node, p_scene_parent);
+			if (current_node) {
+				break;
+			}
 		}
 	}
 	// If none of our GLTFDocumentExtension classes generated us a node, try using built-in glTF types.
-	if (!current_node) {
+	if (current_node == nullptr) {
 		if (gltf_node->mesh >= 0) {
 			current_node = _generate_mesh_instance(p_state, p_node_index);
 			// glTF specifies that skinned meshes should ignore their node transforms,
@@ -4612,7 +4640,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	}
 	// Set the owner of the nodes to the scene root.
 	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
-	_set_node_tree_owner(current_node, p_scene_root);
+	_set_node_tree_owner_if_not_set(current_node, p_scene_root);
 	current_node->set_transform(gltf_node->transform);
 	current_node->set_visible(gltf_node->visible);
 	current_node->merge_meta_from(*gltf_node);
@@ -4683,7 +4711,7 @@ void GLTFDocument::_attach_node_to_skeleton(Ref<GLTFState> p_state, const GLTFNo
 		// This may be overridden later if the joint has a non-joint as a child in need of an attachment.
 		p_current_node = p_godot_skeleton;
 	}
-	_set_node_tree_owner(p_current_node, p_scene_root);
+	_set_node_tree_owner_if_not_set(p_current_node, p_scene_root);
 	p_current_node->merge_meta_from(*gltf_node);
 	p_state->scene_nodes.insert(p_node_index, p_current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -6635,6 +6663,25 @@ Dictionary GLTFDocument::_serialize_texture_transform_uv2(const Ref<BaseMaterial
 	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
+Error GLTFDocument::_export_serialize_models(Ref<GLTFState> p_gltf_state) {
+	const Vector<Ref<GLTFModel>> &state_gltf_models = p_gltf_state->models;
+	const int model_count = state_gltf_models.size();
+	if (model_count == 0) {
+		return OK; // No models to serialize.
+	}
+	Array serialized_models;
+	serialized_models.resize(model_count);
+	for (int i = 0; i < model_count; i++) {
+		Ref<GLTFModel> gltf_model = state_gltf_models[i];
+		ERR_FAIL_COND_V(gltf_model.is_null(), ERR_INVALID_DATA);
+		gltf_model->export_write_model_data(p_gltf_state);
+		Dictionary serialized_model = gltf_model->write_file_reference_entries_to_dictionary();
+		serialized_models[i] = serialized_model;
+	}
+	p_gltf_state->json["models"] = serialized_models;
+	return OK;
+}
+
 Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 	const String version = "2.0";
 	p_state->major_version = version.get_slicec('.', 0).to_int();
@@ -7071,6 +7118,10 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	err = _parse_gltf_extensions(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
+	/* PARSE MODELS */
+	err = _import_parse_models(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
 	/* PARSE SCENE */
 	err = _parse_scenes(p_state);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
@@ -7167,12 +7218,18 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 
 Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	ERR_FAIL_COND_V(p_state.is_null(), nullptr);
+	// Ensure all models have a reference to this document (the working document may have changed).
+	const Vector<Ref<GLTFModel>> &state_gltf_models = p_state->get_models();
+	for (int i = 0; i < state_gltf_models.size(); i++) {
+		Ref<GLTFModel> gltf_model = state_gltf_models[i];
+		ERR_FAIL_COND_V(gltf_model.is_null(), nullptr);
+		gltf_model->set_model_gltf_document(this);
+	}
 	// The glTF file must have nodes, and have some marked as root nodes, in order to generate a scene.
 	if (p_state->nodes.is_empty()) {
 		WARN_PRINT("glTF: This glTF file has no nodes, the generated Godot scene will be empty.");
 	}
 	// Now that we know that we have glTF nodes, we can begin generating a scene from the parsed glTF data.
-	Error err = OK;
 	p_state->set_bake_fps(p_bake_fps);
 	Node *godot_root_node = _generate_scene_node_tree(p_state);
 	ERR_FAIL_NULL_V(godot_root_node, nullptr);
@@ -7197,7 +7254,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 				}
 			}
 			Ref<GLTFNode> gltf_node = p_state->nodes[E.key];
-			err = ext->import_node(p_state, gltf_node, node_json, E.value);
+			Error err = ext->import_node(p_state, gltf_node, node_json, E.value);
 			ERR_CONTINUE(err != OK);
 		}
 	}
@@ -7208,7 +7265,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 	}
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_post(p_state, godot_root_node);
+		Error err = ext->import_post(p_state, godot_root_node);
 		ERR_CONTINUE(err != OK);
 	}
 	ERR_FAIL_NULL_V(godot_root_node, nullptr);

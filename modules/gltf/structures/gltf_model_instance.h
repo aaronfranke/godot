@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_mesh.h                                                           */
+/*  gltf_model_instance.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,35 +32,33 @@
 
 #include "../gltf_defines.h"
 
-#include "core/variant/typed_array.h"
-#include "scene/resources/3d/importer_mesh.h"
+#include "core/io/resource.h"
+#include "core/variant/typed_dictionary.h"
 
-class ImporterMeshInstance3D;
+class GLTFModelInstance : public Resource {
+	GDCLASS(GLTFModelInstance, Resource);
 
-class GLTFMesh : public Resource {
-	GDCLASS(GLTFMesh, Resource);
+	TypedDictionary<String, PackedInt32Array> _node_additional_children;
+	TypedDictionary<String, Dictionary> _node_overrides;
+	GLTFModelIndex _model_index = -1;
 
-private:
-	String original_name;
-	Ref<ImporterMesh> mesh;
-	Vector<float> blend_weights;
-	TypedArray<Material> instance_materials;
-	Dictionary additional_data;
+	Node *_find_node_by_name(Node *p_node, const String &p_node_name) const;
 
 protected:
 	static void _bind_methods();
 
 public:
-	String get_original_name();
-	void set_original_name(const String &p_name);
-	Ref<ImporterMesh> get_mesh();
-	void set_mesh(const Ref<ImporterMesh> &p_mesh);
-	Vector<float> get_blend_weights();
-	void set_blend_weights(const Vector<float> &p_blend_weights);
-	TypedArray<Material> get_instance_materials();
-	void set_instance_materials(const TypedArray<Material> &p_instance_materials);
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	GLTFModelIndex get_model_index() const { return _model_index; }
+	void set_model_index(GLTFModelIndex p_model_index) { _model_index = p_model_index; }
 
-	ImporterMeshInstance3D *import_generate_godot_node() const;
+	TypedDictionary<String, PackedInt32Array> get_node_additional_children() const { return _node_additional_children; }
+	void set_node_additional_children(const TypedDictionary<String, PackedInt32Array> &p_node_additional_children) { _node_additional_children = p_node_additional_children; }
+
+	TypedDictionary<String, Dictionary> get_node_overrides() const { return _node_overrides; }
+	void set_node_overrides(const TypedDictionary<String, Dictionary> &p_node_overrides) { _node_overrides = p_node_overrides; }
+
+	Node *import_generate_godot_node(const Ref<GLTFState> &p_parent_gltf_state) const;
+
+	static Ref<GLTFModelInstance> from_dictionary(const Dictionary &p_dict);
+	Dictionary to_dictionary() const;
 };

@@ -95,3 +95,5 @@ public:
 	static Ref<GLTFBufferView> from_dictionary(const Dictionary &p_dict);
 	Dictionary to_dictionary() const;
 };
+
+VARIANT_ENUM_CAST(GLTFBufferView::ArrayBufferTarget)
