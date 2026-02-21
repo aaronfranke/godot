@@ -2351,12 +2351,13 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.render_shadow_count = p_render_shadow_count;
 	}
 
+#ifdef DEBUG_ENABLED
 	PagedArray<RID> empty;
-
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 	}
+#endif
 
 	bool reverse_cull = render_data.cam_transform.basis.determinant() < 0;
 
@@ -2398,6 +2399,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		tonemap_ubo.contrast = environment_get_adjustments_contrast(render_data.environment);
 		tonemap_ubo.saturation = environment_get_adjustments_saturation(render_data.environment);
 	}
+
+#ifdef DEBUG_ENABLED
+	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER)) {
+		apply_color_adjustments_in_post = false;
+	}
+#endif
 
 	if (scene_state.tonemap_buffer == 0) {
 		// Only create if using 3D
