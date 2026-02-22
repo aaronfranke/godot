@@ -4039,7 +4039,7 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 		}
 	}
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
-		copy_effects->copy_depth_to_rect_and_linearize(Rect2(Vector2(), Vector2(1.0, 1.0)), scene_state.data.z_near, scene_state.data.z_far);
+		copy_effects->copy_depth_to_rect_and_linearize(Rect2(Vector2(), Vector2(1.0, 1.0)), scene_state.ubo.z_near, scene_state.ubo.z_far);
 	}
 }
 
