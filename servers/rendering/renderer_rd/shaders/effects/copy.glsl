@@ -250,9 +250,9 @@ void main() {
 	vec4 color = vec4(depth / params.camera_z_far);
 
 	// Special color if close to z_far
-	if ((params.camera_z_far - depth) < (params.camera_z_far / 1000.0)) {
-		color = vec4(0.0, 0.2705, 0.5490, 1.0);
-	}
+	//if ((params.camera_z_far - depth) < (params.camera_z_far / 1000.0)) {
+	//	color = vec4(0.0, 0.2705, 0.5490, 1.0);
+	//}
 
 	if (bool(params.flags & FLAG_FLIP_Y)) {
 		pos.y = params.section.w - pos.y - 1;
