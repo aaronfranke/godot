@@ -211,7 +211,7 @@ void CopyEffects::copy_cube_to_panorama(float p_mip_level) {
 	draw_screen_quad();
 }
 
-void CopyEffects::copy_depth_to_rect_and_linearize(const Rect2 &p_rect, float p_z_near, float p_z_far) {
+void CopyEffects::copy_depth_to_rect_and_linearize(const Rect2 &p_rect, float p_z_near, float p_z_far, bool p_invert) {
 	CopyShaderGLES3::ShaderVariant variant = CopyShaderGLES3::MODE_COPY_LINEARIZE_DEPTH;
 
 	bool success = copy.shader.version_bind_shader(copy.shader_version, variant);
@@ -222,6 +222,8 @@ void CopyEffects::copy_depth_to_rect_and_linearize(const Rect2 &p_rect, float p_
 	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, variant);
 	copy.shader.version_set_uniform(CopyShaderGLES3::Z_NEAR, p_z_near, copy.shader_version, variant);
 	copy.shader.version_set_uniform(CopyShaderGLES3::Z_FAR, p_z_far, copy.shader_version, variant);
+	// Set shader uniform to optionally invert the linearized depth color output.
+	copy.shader.version_set_uniform(CopyShaderGLES3::SHOULD_INVERT_COLOR, int(p_invert), copy.shader_version, variant);
 	draw_screen_quad();
 }
 

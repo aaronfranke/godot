@@ -1424,7 +1424,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			if (p_pass_mode == PASS_MODE_COLOR) {
 #ifdef DEBUG_ENABLED
 				bool force_alpha = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW);
-				bool force_depth = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER);
+				bool force_depth = unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED);
 #else
 				bool force_alpha = false;
 				bool force_depth = false;
@@ -2329,7 +2329,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 #ifdef DEBUG_ENABLED
 	PagedArray<RID> empty;
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 	}
@@ -2374,7 +2374,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 #ifdef DEBUG_ENABLED
-	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER)) {
+	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED)) {
 		apply_color_adjustments_in_post = false;
 	}
 #endif
@@ -4038,8 +4038,9 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
-		copy_effects->copy_depth_to_rect_and_linearize(Rect2(Vector2(), Vector2(1.0, 1.0)), scene_state.ubo.z_near, scene_state.ubo.z_far);
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED) {
+		bool invert = debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED;
+		copy_effects->copy_depth_to_rect_and_linearize(Rect2(Vector2(), Vector2(1.0, 1.0)), scene_state.ubo.z_near, scene_state.ubo.z_far, invert);
 	}
 }
 

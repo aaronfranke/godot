@@ -35,6 +35,7 @@ layout(push_constant, std430) uniform Params {
 	float camera_z_far;
 	float camera_z_near;
 	uint pad2[2];
+	uint should_invert_color;
 
 	vec4 set_color;
 }
@@ -247,7 +248,13 @@ void main() {
 	float depth = texelFetch(source_color, pos + params.section.xy, 0).r;
 	depth = 1.0 - depth * 2.0; // inverted depth
 	depth = 2.0 * params.camera_z_near * params.camera_z_far / (params.camera_z_far + params.camera_z_near - depth * (params.camera_z_far - params.camera_z_near));
-	vec4 color = vec4(depth / params.camera_z_far);
+
+	vec4 color;
+	if (bool(params.should_invert_color)) {
+		color = vec4(1.0 - depth / params.camera_z_far);
+	} else {
+		color = vec4(depth / params.camera_z_far);
+	}
 
 	// Special color if close to z_far
 	//if ((params.camera_z_far - depth) < (params.camera_z_far / 1000.0)) {
