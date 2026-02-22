@@ -116,6 +116,8 @@ uniform highp sampler2D depth_buffer; // texunit:-7
 
 uniform highp float z_near;
 uniform highp float z_far;
+// If true, invert the depth-based color output.
+uniform bool should_invert_color;
 
 #endif // MODE_COPY_LINEARIZE_DEPTH
 
@@ -205,7 +207,11 @@ void main() {
 	depth = 1.0 - depth * 2.0;
 	depth = (2.0 * z_near * z_far) / (z_far + z_near - depth * (z_far - z_near));
 
-	frag_color = vec4(vec3(depth / z_far), 1.0);
+	if (should_invert_color) {
+		frag_color = vec4(vec3(1.0 - depth / z_far), 1.0);
+	} else {
+		frag_color = vec4(vec3(depth / z_far), 1.0);
+	}
 
 	// Special color if close to z_far
 	//if ((z_far - depth) < (z_far / 1000.0)) {

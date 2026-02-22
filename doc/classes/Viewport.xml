@@ -753,7 +753,10 @@
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEBUG_DRAW_DEPTH_BUFFER" value="27" enum="DebugDraw">
-			Draws the depth buffer of the scene.
+			Draws the depth buffer of the scene, with closer objects appearing darker and further objects appearing lighter.
+		</constant>
+		<constant name="DEBUG_DRAW_DEPTH_BUFFER_INVERTED" value="28" enum="DebugDraw">
+			Draws the depth buffer of the scene, with closer objects appearing lighter and further objects appearing darker.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).

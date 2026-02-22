@@ -986,6 +986,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
 		case RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
 		case RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER:
+		case RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED:
 			can_use_effects = false;
 			break;
 		// Modes that draws information over part of the viewport needs camera effects because we see partially the normal draw mode.
@@ -1098,7 +1099,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, false, RID(), false, false, false, true);
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER && _render_buffers_get_depth_texture(rb).is_valid()) {
+	if ((debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED) && _render_buffers_get_depth_texture(rb).is_valid()) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
 
 		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
@@ -1109,13 +1110,15 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 
 		double z_near = p_render_data->scene_data->cam_projection.get_z_near();
 		double z_far = p_render_data->scene_data->cam_projection.get_z_far();
+		bool invert = debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED;
 		copy_effects->copy_depth_to_rect_and_linearize(
 				_render_buffers_get_depth_texture(rb),
 				debug_depth_texture,
 				Rect2(Vector2(), rtsize),
 				false,
 				z_near,
-				z_far);
+				z_far,
+				invert);
 		copy_effects->copy_to_fb_rect(
 				debug_depth_texture,
 				texture_storage->render_target_get_rd_framebuffer(render_target),
@@ -1469,7 +1472,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED ||
 			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
-			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
@@ -1480,7 +1483,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
 			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING ||
 			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS ||
-			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER) {
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER_INVERTED) {
 		render_data.decals = &empty;
 	}
 
