@@ -208,9 +208,9 @@ void main() {
 	frag_color = vec4(vec3(depth / z_far), 1.0);
 
 	// Special color if close to z_far
-	if ((z_far - depth) < (z_far / 1000.0)) {
-		frag_color = vec4(0.0, 0.2705, 0.5490, 1.0);
-	}
+	//if ((z_far - depth) < (z_far / 1000.0)) {
+	//	frag_color = vec4(0.0, 0.2705, 0.5490, 1.0);
+	//}
 #endif // MODE_COPY_LINEARIZE_DEPTH
 
 // Efficient box filter from Jimenez: http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
