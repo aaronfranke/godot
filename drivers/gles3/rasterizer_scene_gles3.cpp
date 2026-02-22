@@ -2458,6 +2458,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
 	int camera_feed_id = -1;
+	bool disable_fog = false;
 
 	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2514,6 +2515,16 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		sky_reflections |= reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY;
 		bool sky_ambient = ambient_source == RS::ENV_AMBIENT_SOURCE_SKY;
 		sky_ambient |= ambient_source == RS::ENV_AMBIENT_SOURCE_BG && bg_mode == RS::ENV_BG_SKY;
+
+#ifdef DEBUG_ENABLED
+		if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER)) {
+			draw_sky = false;
+			draw_sky_fog_only = false;
+			sky_reflections = false;
+			sky_ambient = false;
+			disable_fog = true;
+		}
+#endif
 
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || sky_reflections || sky_ambient) {
@@ -2703,11 +2714,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 		}
 
-		if (render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
+		if (disable_fog || render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_FOG;
 		}
 
-		if (render_data.environment.is_valid() && environment_get_fog_mode(render_data.environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH) {
+		if (disable_fog || render_data.environment.is_valid() && environment_get_fog_mode(render_data.environment) == RS::EnvironmentFogMode::ENV_FOG_MODE_DEPTH) {
 			spec_constant_base_flags |= SceneShaderGLES3::USE_DEPTH_FOG;
 		}
 
