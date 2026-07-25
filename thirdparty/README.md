@@ -489,6 +489,8 @@ Files generated from upstream source:
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
 5. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot.dat`
 
+Apply `patches` to fix the `-Wunnecessary-virtual-specifier` warning in Clang. Newer versions of ICU4C do not have this warning, this only applies to older versions.
+
 
 ## jolt_physics
 
