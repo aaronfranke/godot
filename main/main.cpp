@@ -81,11 +81,11 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server.h"
-#include "servers/text/text_server_dummy.h"
-
-#include "modules/register_module_types.h"
-#include "platform/register_platform_apis.h"
-
+#include "servers/text/text_server_dummy.h" // change
+// change
+#include "modules/register_module_types.h" // change
+#include "platform/register_platform_apis.h" // change
+// change
 // 2D
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
