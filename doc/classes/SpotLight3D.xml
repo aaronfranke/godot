@@ -35,5 +35,13 @@
 			The maximal range that can be reached by the spotlight. Note that the effectively lit area may appear to be smaller depending on the [member spot_attenuation] in use. No matter the [member spot_attenuation] in use, the light will never reach anything outside this range.
 			[b]Note:[/b] [member spot_range] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
+		<member name="spot_slice_direction" type="float" setter="set_param" getter="get_param" default="0.0">
+			The signed slice-normal component of the normalized direction in which the spotlight emits rays. The value is clamped to the range [code][-1.0, 1.0][/code]. A value of [code]0.0[/code] means the spotlight points entirely within the rendered 3D slice, while [code]1.0[/code] and [code]-1.0[/code] point perpendicular to it. This changes the spotlight's angular attenuation and the [code]LIGHT_SLICE_COMPONENT[/code] built-in passed to spatial shaders.
+			[b]Note:[/b] Shadow maps and projector textures remain projected 3D approximations and do not account for this property.
+		</member>
+		<member name="spot_slice_offset" type="float" setter="set_param" getter="get_param" default="0.0">
+			The signed perpendicular offset from the rendered 3D slice to the spotlight. The sign identifies which side of the slice contains the light. Distance attenuation uses the corresponding 4D distance, and angular attenuation is evaluated together with [member spot_slice_direction]. At [code]0.0[/code], distance attenuation uses the regular 3D distance.
+			[b]Note:[/b] Shadow maps and projector textures remain projected 3D approximations and do not account for this property.
+		</member>
 	</members>
 </class>

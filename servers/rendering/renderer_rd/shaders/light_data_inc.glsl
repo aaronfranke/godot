@@ -20,7 +20,8 @@ struct LightData { //this structure needs to be as packed as possible
 
 	float specular_amount;
 	float shadow_opacity;
-	float pad[2];
+	float slice_direction;
+	float slice_offset;
 
 	vec4 atlas_rect; // rect in the shadow atlas
 	mat4 shadow_matrix;
@@ -72,7 +73,8 @@ struct DirectionalLightData {
 	float shadow_opacity;
 	float fade_from;
 	float fade_to;
-	uvec2 pad;
+	float slice_direction;
+	uint pad;
 	uint bake_mode;
 	float volumetric_fog_energy;
 	vec4 shadow_bias;

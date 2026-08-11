@@ -163,6 +163,8 @@ void LightStorage::_light_initialize(RID p_light, RSE::LightType p_type) {
 	light.param[RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 	light.param[RSE::LIGHT_PARAM_INTENSITY] = p_type == RSE::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
+	light.param[RSE::LIGHT_PARAM_SLICE_DIRECTION] = 0.0;
+	light.param[RSE::LIGHT_PARAM_SLICE_OFFSET] = 0.0;
 
 	light_owner.initialize_rid(p_light, light);
 }
@@ -220,6 +222,9 @@ void LightStorage::light_set_param(RID p_light, RSE::LightParam p_param, float p
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
 	ERR_FAIL_INDEX(p_param, RSE::LIGHT_PARAM_MAX);
+	if (p_param == RSE::LIGHT_PARAM_SLICE_DIRECTION) {
+		p_value = CLAMP(p_value, -1.0f, 1.0f);
+	}
 
 	if (light->param[p_param] == p_value) {
 		return;
@@ -228,6 +233,8 @@ void LightStorage::light_set_param(RID p_light, RSE::LightParam p_param, float p
 	switch (p_param) {
 		case RSE::LIGHT_PARAM_RANGE:
 		case RSE::LIGHT_PARAM_SPOT_ANGLE:
+		case RSE::LIGHT_PARAM_SLICE_DIRECTION:
+		case RSE::LIGHT_PARAM_SLICE_OFFSET:
 		case RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
 		case RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
 		case RSE::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
@@ -512,6 +519,10 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RSE::LIGHT_SPOT: {
 			float len = light->param[RSE::LIGHT_PARAM_RANGE];
+			// Force an oversized AABB for sliced spot lights to prevent accidental culling of the light at some slice angles.
+			if (light->param[RSE::LIGHT_PARAM_SLICE_DIRECTION] != 0.0f || light->param[RSE::LIGHT_PARAM_SLICE_OFFSET] != 0.0f) {
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
 			float angle = Math::deg_to_rad(light->param[RSE::LIGHT_PARAM_SPOT_ANGLE]);
 
 			if (angle > Math::PI * 0.5) {
@@ -750,6 +761,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.direction[0] = direction.x;
 				light_data.direction[1] = direction.y;
 				light_data.direction[2] = direction.z;
+				light_data.slice_direction = CLAMP(light->param[RSE::LIGHT_PARAM_SLICE_DIRECTION], -1.0f, 1.0f);
 
 				float sign = light->negative ? -1 : 1;
 
@@ -1004,6 +1016,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		Color linear_col = light->color.srgb_to_linear();
 
 		light_data.attenuation = light->param[RSE::LIGHT_PARAM_ATTENUATION];
+		light_data.slice_direction = type == RSE::LIGHT_SPOT ? CLAMP(light->param[RSE::LIGHT_PARAM_SLICE_DIRECTION], -1.0f, 1.0f) : 0.0f;
+		light_data.slice_offset = (type == RSE::LIGHT_OMNI || type == RSE::LIGHT_SPOT) ? light->param[RSE::LIGHT_PARAM_SLICE_OFFSET] : 0.0f;
 
 		// Reuse fade begin, fade length and distance for shadow LOD determination later.
 		float fade_begin = 0.0;
@@ -1237,8 +1251,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 		light_instance->cull_mask = light->cull_mask;
 
+		// Force spherical culling for sliced spot lights to prevent accidental culling of the light at some slice angles.
+		const bool force_sphere_culling = type == RSE::LIGHT_SPOT && (light_data.slice_direction != 0.0f || light_data.slice_offset != 0.0f);
+		const float spot_aperture = force_sphere_culling ? 180.0f : spot_angle;
 		// hook for subclass to do further processing.
-		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_angle, area_size);
+		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_aperture, area_size);
 
 		r_positional_light_count++;
 	}

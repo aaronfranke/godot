@@ -36,6 +36,10 @@
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param" default="0.5">
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [constant SHADOW_PARALLEL_4_SPLITS].
 		</member>
+		<member name="directional_slice_direction" type="float" setter="set_param" getter="get_param" default="0.0">
+			The signed slice-normal component of the normalized direction in which the light emits rays. The value is clamped to the range [code][-1.0, 1.0][/code]. A value of [code]0.0[/code] means the rays travel entirely within the rendered 3D slice, while [code]1.0[/code] and [code]-1.0[/code] travel perpendicular to it. Spatial shaders receive the opposite sign in [code]LIGHT_SLICE_COMPONENT[/code], because their [code]LIGHT[/code] vector points toward the light source.
+			[b]Note:[/b] Shadow maps remain projected 3D approximations and do not account for this property.
+		</member>
 		<member name="sky_mode" type="int" setter="set_sky_mode" getter="get_sky_mode" enum="DirectionalLight3D.SkyMode" default="0">
 			Whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene.
 		</member>

@@ -63,6 +63,10 @@ struct DirectionalLightData {
 	float shadow_opacity;
 	float specular;
 	uint mask;
+	float slice_direction;
+	float pad0;
+	float pad1;
+	float pad2;
 };
 
 layout(std140) uniform DirectionalLights { //ubo:4

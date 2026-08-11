@@ -176,6 +176,10 @@ private:
 		float direction[3];
 		uint32_t has_shadow;
 
+		float slice_direction;
+		float slice_offset;
+		float pad[2];
+
 		float area_width[4];
 		float area_height[4];
 		float area_projector_rect[4];
@@ -362,6 +366,10 @@ private:
 			float cos_spot_angle;
 			float inv_spot_attenuation;
 			float radius;
+
+			float slice_direction;
+			float slice_offset;
+			float pad[2];
 
 			float area_width[4];
 			float area_height[4];

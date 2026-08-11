@@ -32,6 +32,10 @@
 
 #include <cstdint>
 
+// Defined when lights support slice offsets, slice directions, and the
+// LIGHT_SLICE_COMPONENT spatial shader built-in.
+#define GODOT_LIGHT_SLICE_PARAMETERS_ENABLED 1
+
 namespace RenderingServerEnums {
 
 enum {
@@ -267,6 +271,8 @@ enum LightParam {
 	LIGHT_PARAM_SHADOW_BLUR,
 	LIGHT_PARAM_TRANSMITTANCE_BIAS,
 	LIGHT_PARAM_INTENSITY,
+	LIGHT_PARAM_SLICE_DIRECTION,
+	LIGHT_PARAM_SLICE_OFFSET,
 	LIGHT_PARAM_MAX,
 };
 

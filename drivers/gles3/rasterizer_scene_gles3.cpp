@@ -797,6 +797,10 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 				sky_light_data.direction[0] = world_direction.x;
 				sky_light_data.direction[1] = world_direction.y;
 				sky_light_data.direction[2] = world_direction.z;
+				sky_light_data.slice_direction = CLAMP(light_storage->light_get_param(base, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f);
+				sky_light_data.pad[0] = 0.0f;
+				sky_light_data.pad[1] = 0.0f;
+				sky_light_data.pad[2] = 0.0f;
 
 				float sign = light_storage->light_is_negative(base) ? -1 : 1;
 				sky_light_data.energy = sign * light_storage->light_get_param(base, RSE::LIGHT_PARAM_ENERGY);
@@ -1750,6 +1754,10 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				light_data.direction[0] = direction.x;
 				light_data.direction[1] = direction.y;
 				light_data.direction[2] = direction.z;
+				light_data.slice_direction = CLAMP(light_storage->light_get_param(base, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f);
+				light_data.pad[0] = 0.0f;
+				light_data.pad[1] = 0.0f;
+				light_data.pad[2] = 0.0f;
 
 				light_data.bake_mode = light_storage->light_get_bake_mode(base);
 
@@ -2026,6 +2034,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		light_data.color[2] = linear_col.b * energy;
 
 		light_data.attenuation = light_storage->light_get_param(base, RSE::LIGHT_PARAM_ATTENUATION);
+		light_data.slice_direction = type == RSE::LIGHT_SPOT ? CLAMP(light_storage->light_get_param(base, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f) : 0.0f;
+		light_data.slice_offset = (type == RSE::LIGHT_OMNI || type == RSE::LIGHT_SPOT) ? light_storage->light_get_param(base, RSE::LIGHT_PARAM_SLICE_OFFSET) : 0.0f;
 
 		light_data.inv_spot_attenuation = 1.0f / light_storage->light_get_param(base, RSE::LIGHT_PARAM_SPOT_ATTENUATION);
 

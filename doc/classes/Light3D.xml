@@ -198,7 +198,13 @@
 		<constant name="PARAM_INTENSITY" value="20" enum="Param">
 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_MAX" value="21" enum="Param">
+		<constant name="PARAM_SLICE_DIRECTION" value="21" enum="Param">
+			Constant for accessing [member SpotLight3D.spot_slice_direction] and [member DirectionalLight3D.directional_slice_direction].
+		</constant>
+		<constant name="PARAM_SLICE_OFFSET" value="22" enum="Param">
+			Constant for accessing [member OmniLight3D.omni_slice_offset] and [member SpotLight3D.spot_slice_offset].
+		</constant>
+		<constant name="PARAM_MAX" value="23" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">

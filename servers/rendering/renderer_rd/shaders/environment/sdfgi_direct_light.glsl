@@ -76,6 +76,10 @@ struct Light {
 	float inv_spot_attenuation;
 	float radius;
 
+	float slice_direction;
+	float slice_offset;
+	vec2 pad;
+
 	vec4 area_width;
 	vec4 area_height;
 	vec4 area_projector_rect;
@@ -122,13 +126,22 @@ vec2 octahedron_encode(vec3 n) {
 	return n.xy;
 }
 
-float get_omni_attenuation(float distance, float inv_range, float decay) {
-	float nd = distance * inv_range;
+float get_omni_attenuation(float distance, float inv_range, float decay, float slice_offset) {
+	float range = 1.0 / inv_range;
+	distance = length(vec2(distance, slice_offset));
+	float range_with_slice = length(vec2(range, slice_offset));
+	float nd = distance / range_with_slice;
 	nd *= nd;
 	nd *= nd; // nd^4
 	nd = max(1.0 - nd, 0.0);
 	nd *= nd; // nd^2
 	return nd * pow(max(distance, 0.0001), -decay);
+}
+
+float get_spot_cosine(vec3 light_direction, float light_slice_component, vec3 spot_direction, float spot_slice_direction) {
+	float light_xyz_component = sqrt(max(1.0 - light_slice_component * light_slice_component, 0.0));
+	float spot_xyz_component = sqrt(max(1.0 - spot_slice_direction * spot_slice_direction, 0.0));
+	return light_xyz_component * spot_xyz_component * dot(-light_direction, spot_direction) - light_slice_component * spot_slice_direction;
 }
 
 void compute_area_light(uint index, vec3 position, out float attenuation, out vec3 light_vec, out float light_distance, out vec3 texture_color) {
@@ -169,7 +182,7 @@ void compute_area_light(uint index, vec3 position, out float attenuation, out ve
 	light_points[2] = lights.data[index].position + h_area_width + h_area_height - position;
 	light_points[3] = lights.data[index].position - h_area_width + h_area_height - position;
 
-	attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[index].radius, lights.data[index].attenuation - 2.0);
+	attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[index].radius, lights.data[index].attenuation - 2.0, 0.0);
 	float ltc_diffuse = 0.0;
 	vec3 normal = light_vec;
 	ltc_evaluate_diff(normal, light_points, lights.data[index].area_projector_rect, max_mipmap, area_light_atlas, linear_sampler_with_mipmaps, ltc_diffuse, texture_color);
@@ -327,21 +340,23 @@ void main() {
 			} break;
 			case LIGHT_TYPE_OMNI: {
 				vec3 rel_vec = lights.data[i].position - position;
-				direction = normalize(rel_vec);
 				light_distance = length(rel_vec);
+				direction = light_distance > 0.0 ? rel_vec / light_distance : vec3(0.0);
 				rel_vec.y /= params.y_mult;
-				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
+				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation, lights.data[i].slice_offset);
 
 			} break;
 			case LIGHT_TYPE_SPOT: {
 				vec3 rel_vec = lights.data[i].position - position;
-				direction = normalize(rel_vec);
 				light_distance = length(rel_vec);
+				direction = light_distance > 0.0 ? rel_vec / light_distance : vec3(0.0);
 				rel_vec.y /= params.y_mult;
-				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
+				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation, lights.data[i].slice_offset);
 
 				float cos_spot_angle = lights.data[i].cos_spot_angle;
-				float cos_angle = dot(-direction, lights.data[i].direction);
+				float slice_distance = length(vec2(light_distance, lights.data[i].slice_offset));
+				float slice_component = lights.data[i].slice_offset / max(slice_distance, 0.0001);
+				float cos_angle = get_spot_cosine(direction, slice_component, lights.data[i].direction, lights.data[i].slice_direction);
 
 				if (cos_angle < cos_spot_angle) {
 					continue;
@@ -365,7 +380,7 @@ void main() {
 			} break;
 		}
 
-		if (attenuation < 0.001) {
+		if (attenuation < 0.001 || dot(direction, direction) == 0.0) {
 			continue;
 		}
 

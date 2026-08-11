@@ -1938,6 +1938,8 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RSE::LIGHT_DIRECTIONAL;
+			lights[idx].slice_direction = CLAMP(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f);
+			lights[idx].slice_offset = 0.0f;
 			lights[idx].energy = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INDIRECT_ENERGY);
 			if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
 				lights[idx].energy *= RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INTENSITY);
@@ -1996,6 +1998,8 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].color[1] = color.g;
 			lights[idx].color[2] = color.b;
 			lights[idx].type = RSG::light_storage->light_get_type(light);
+			lights[idx].slice_direction = lights[idx].type == RSE::LIGHT_SPOT ? CLAMP(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f) : 0.0f;
+			lights[idx].slice_offset = (lights[idx].type == RSE::LIGHT_OMNI || lights[idx].type == RSE::LIGHT_SPOT) ? RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_OFFSET) : 0.0f;
 
 			lights[idx].energy = RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_ENERGY) * RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_INDIRECT_ENERGY);
 			if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
@@ -2467,6 +2471,8 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 				}
 
 				lights[idx].type = RSG::light_storage->light_get_type(light);
+				lights[idx].slice_direction = lights[idx].type == RSE::LIGHT_SPOT ? CLAMP(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f) : 0.0f;
+				lights[idx].slice_offset = (lights[idx].type == RSE::LIGHT_OMNI || lights[idx].type == RSE::LIGHT_SPOT) ? RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_OFFSET) : 0.0f;
 
 				Vector3 dir = -light_transform.basis.get_column(Vector3::AXIS_Z);
 				Vector2 area_size = RSG::light_storage->light_area_get_size(light);
@@ -2982,6 +2988,8 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				RID light = light_storage->light_instance_get_base_light(light_instance);
 
 				l.type = RSG::light_storage->light_get_type(light);
+				l.slice_direction = l.type == RSE::LIGHT_SPOT ? CLAMP(RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_DIRECTION), -1.0f, 1.0f) : 0.0f;
+				l.slice_offset = (l.type == RSE::LIGHT_OMNI || l.type == RSE::LIGHT_SPOT) ? RSG::light_storage->light_get_param(light, RSE::LIGHT_PARAM_SLICE_OFFSET) * to_cell.basis.xform(Vector3(1, 0, 0)).length() : 0.0f;
 				if (l.type == RSE::LIGHT_DIRECTIONAL && RSG::light_storage->light_directional_get_sky_mode(light) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
 					light_count--;
 					continue;

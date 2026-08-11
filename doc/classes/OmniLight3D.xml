@@ -26,6 +26,10 @@
 		</member>
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight3D.ShadowMode" default="1">
 		</member>
+		<member name="omni_slice_offset" type="float" setter="set_param" getter="get_param" default="0.0">
+			The signed perpendicular offset from the rendered 3D slice to the light. The sign identifies which side of the slice contains the light, while attenuation depends on the offset's magnitude. The attenuation curve is evaluated using the combined distance to the light, while [member omni_range] remains the radius of the light's influence within the rendered slice. At the default value of [code]0.0[/code], this behaves like a regular 3D omni light.
+			For a higher-dimensional light with range [code]range[/code] and slice offset [code]slice_offset[/code], set [member omni_range] to [code]sqrt(range * range - slice_offset * slice_offset)[/code].
+		</member>
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
 	</members>
 	<constants>
