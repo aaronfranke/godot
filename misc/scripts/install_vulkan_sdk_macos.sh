@@ -6,7 +6,7 @@ new_ver_full=''
 
 # Check currently installed and latest available Vulkan SDK versions.
 if command -v jq 2>&1 >/dev/null; then
-	curl -L "https://sdk.lunarg.com/sdk/download/latest/mac/config.json" -o /tmp/vulkan-sdk.json
+	curl -L "https://sdk.lunarg.com/sdk/download/1.4.350.1/mac/config.json" -o /tmp/vulkan-sdk.json
 
 	new_ver_full=`jq -r '.version' /tmp/vulkan-sdk.json`
 	new_ver=`echo "$new_ver_full" | awk -F. '{ printf("%d%02d%04d%02d\n", $1,$2,$3,$4); }';`
@@ -28,7 +28,7 @@ else
 fi
 
 # Download and install the Vulkan SDK.
-curl -L "https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.zip" -o /tmp/vulkan-sdk.zip
+curl -L "https://sdk.lunarg.com/sdk/download/1.4.350.1/mac/vulkansdk-macos-1.4.350.1.zip" -o /tmp/vulkan-sdk.zip
 unzip /tmp/vulkan-sdk.zip -d /tmp
 
 if [ -d "/tmp/vulkansdk-macOS-$new_ver_full.app" ]; then
