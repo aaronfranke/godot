@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from pathlib import Path
 
 header = """\
 /**************************************************************************/
@@ -37,6 +38,24 @@ header = """\
 
 fname = sys.argv[1]
 
+# These directories have their own licenses and must not receive Godot headers.
+excluded_directories = (
+    "drivers/d3d3",
+    "drivers/d3d7",
+    "drivers/d3d9",
+    "drivers/fixed_function",
+    "platform/win_9x",
+    "platform/win_nt5",
+    "platform/win_nt6",
+)
+repo_root = Path(__file__).resolve().parents[2]
+file_path = Path(fname.strip()).resolve()
+include_copyright_header = True
+for directory in excluded_directories:
+    if repo_root / directory in file_path.parents:
+        include_copyright_header = False
+        break
+
 # Handle replacing $filename with actual filename and keep alignment
 fsingle = fname.strip()
 if fsingle.find("/") != -1:
@@ -52,11 +71,14 @@ if len_fi < len_fl:
 elif len_fl < len_fi:
     for x in range(len_fi - len_fl):
         rep_fl += " "
-if header.find(rep_fl) != -1:
-    text = header.replace(rep_fl, rep_fi)
-else:
-    text = header.replace("$filename", fsingle)
-text += "\n"
+
+text = ""
+if include_copyright_header:
+    if header.find(rep_fl) != -1:
+        text = header.replace(rep_fl, rep_fi)
+    else:
+        text = header.replace("$filename", fsingle)
+    text += "\n"
 
 # We now have the proper header, so we want to ignore the one in the original file
 # and potentially empty lines and badly formatted lines, while keeping comments that
@@ -90,6 +112,6 @@ while line != "":  # Dump everything until EOF
 fileread.close()
 
 # Write
-filewrite = open(fname.strip(), "w")
+filewrite = open(fname.strip(), "w", newline="\n")
 filewrite.write(text)
 filewrite.close()

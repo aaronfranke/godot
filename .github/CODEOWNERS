@@ -34,7 +34,14 @@ doc_classes/*                       @godotengine/documentation
 /drivers/xaudio2/                   @godotengine/audio
 
 ## Rendering
+/drivers/d3d3/                      @aaronfranke
+/drivers/d3d3/**/SCsub              @aaronfranke @godotengine/buildsystem
+/drivers/d3d7/                      @aaronfranke
+/drivers/d3d7/**/SCsub              @aaronfranke @godotengine/buildsystem
+/drivers/d3d9/                      @aaronfranke
+/drivers/d3d9/**/SCsub              @aaronfranke @godotengine/buildsystem
 /drivers/dummy/                     @godotengine/rendering
+/drivers/fixed_function/            @aaronfranke
 /drivers/gl_context/                @godotengine/rendering
 /drivers/gles2/                     @godotengine/rendering
 /drivers/gles3/                     @godotengine/rendering
@@ -146,6 +153,15 @@ doc_classes/*                       @godotengine/documentation
 /platform/x11/                      @godotengine/linux-bsd
 /platform/osx/                      @godotengine/macos
 /platform/uwp/                      @godotengine/uwp
+/platform/win_9x/                   @aaronfranke
+/platform/win_9x/**/*.py            @aaronfranke @godotengine/buildsystem
+/platform/win_9x/**/SCsub           @aaronfranke @godotengine/buildsystem
+/platform/win_nt5/                  @aaronfranke
+/platform/win_nt5/**/*.py           @aaronfranke @godotengine/buildsystem
+/platform/win_nt5/**/SCsub          @aaronfranke @godotengine/buildsystem
+/platform/win_nt6/                  @aaronfranke
+/platform/win_nt6/**/*.py           @aaronfranke @godotengine/buildsystem
+/platform/win_nt6/**/SCsub          @aaronfranke @godotengine/buildsystem
 /platform/windows/                  @godotengine/windows
 
 # Scene
