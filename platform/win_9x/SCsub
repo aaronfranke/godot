@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+if env["arch"] != "x86_32":
+    print("The Windows 9x platform only supports x86_32 builds. Use arch=x86_32.")
+    Exit(255)
+
+sources = []
+
+env.platform_sources += sources
