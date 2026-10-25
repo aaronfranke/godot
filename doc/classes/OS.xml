@@ -593,6 +593,7 @@
 			<argument index="0" name="driver" type="int" enum="OS.VideoDriver" />
 			<description>
 				Returns the name of the video driver matching the given [code]driver[/code] index. This index is a value from [enum VideoDriver], and you can use [method get_current_video_driver] to get the current backend's index.
+				[b]Note:[/b] Godot 3.x uses capitalized rendering driver names. This is different from Godot 4.x, which uses lowercase names.
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">

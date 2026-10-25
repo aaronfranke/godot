@@ -5659,6 +5659,19 @@ void EditorNode::_update_video_driver_color() {
 		video_driver->add_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (video_driver->get_text() == "GLES3") {
 		video_driver->add_color_override("font_color", Color::hex(0xa5557dff));
+	} else if (video_driver->get_text() == "OpenGL1") {
+		// Official OpenGL color "Wedgewood Blue". https://members.khronos.org/document/dl/30506
+		video_driver->add_color_override("font_color", Color::hex(0x5586a4ff));
+	} else if (video_driver->get_text() == "D3D3 Software") {
+		video_driver->add_color_override("font_color", Color::hex(0xb4bc35ff));
+	} else if (video_driver->get_text() == "D3D7") {
+		video_driver->add_color_override("font_color", Color::hex(0xafcc19ff));
+	} else if (video_driver->get_text() == "D3D9") {
+		video_driver->add_color_override("font_color", Color::hex(0x79b336ff));
+	} else if (video_driver->get_text() == "D3D11") {
+		video_driver->add_color_override("font_color", Color::hex(0x54b948ff));
+	} else if (video_driver->get_text() == "D3D12") {
+		video_driver->add_color_override("font_color", Color::hex(0x1ca813ff));
 	}
 }
 
