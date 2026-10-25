@@ -28,6 +28,20 @@ if env["platform"] != "server":
     SConscript("gles2/SCsub")
     SConscript("gles_common/SCsub")
     SConscript("gl_context/SCsub")
+    d3d3_software = env.get("d3d3_software", False)
+    d3d7 = env.get("d3d7", False)
+    d3d9 = env.get("d3d9", False)
+    opengl1 = env.get("opengl1", False)
+    if d3d3_software or d3d7 or d3d9 or opengl1:
+        SConscript("fixed_function/SCsub")
+    if d3d3_software:
+        SConscript("d3d3_software/SCsub")
+    if d3d7:
+        SConscript("d3d7/SCsub")
+    if d3d9:
+        SConscript("d3d9/SCsub")
+    if opengl1:
+        SConscript("opengl1/SCsub")
 else:
     SConscript("dummy/SCsub")
 
