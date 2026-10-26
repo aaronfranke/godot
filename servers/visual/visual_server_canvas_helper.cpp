@@ -38,7 +38,7 @@ Mutex VisualServerCanvasHelper::_tilemap_mutex;
 
 bool VisualServerCanvasHelper::_multirect_enabled = true;
 
-void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv) {
+void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv, bool p_font_glyph) {
 	bool new_common_data = true;
 
 	Rect2 rect = p_rect;
@@ -47,7 +47,7 @@ void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, 
 	// To make the rendering code as efficient as possible,
 	// a single MultiRect command should have identical flips and transpose etc.
 	// If these change, it flushes the previous multirect and starts a new one.
-	uint32_t flags = 0;
+	uint32_t flags = p_font_glyph ? RasterizerCanvas::CANVAS_RECT_FONT_GLYPH : 0;
 
 	if (p_rect.size.x < 0) {
 		flags |= RasterizerCanvas::CANVAS_RECT_FLIP_H;
@@ -102,6 +102,22 @@ void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, 
 	if (!VisualServerCanvasHelper::_multirect_enabled) {
 		flush();
 	}
+}
+
+void MultiRect::draw_font_glyph(MultiRect *p_batch, RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_source, const Color &p_modulate) {
+	if (p_batch) {
+		p_batch->add_rect(p_canvas_item, p_rect, p_texture, p_source, p_modulate, false, RID(), false, true);
+		return;
+	}
+	Rect2 rect = p_rect;
+	Rect2 source = p_source;
+	const uint32_t flags = flags_from_rects(rect, source) | RasterizerCanvas::CANVAS_RECT_FONT_GLYPH;
+	Vector<Rect2> glyph_rects;
+	Vector<Rect2> glyph_sources;
+	if (glyph_rects.push_back(rect) || glyph_sources.push_back(source)) {
+		return;
+	}
+	VisualServer::get_singleton()->canvas_item_add_texture_multirect_region(p_canvas_item, glyph_rects, p_texture, glyph_sources, p_modulate, flags);
 }
 
 void MultiRect::begin(const VisualServerCanvasHelper::State &p_state) {
@@ -175,7 +191,7 @@ bool MultiRect::add(const Rect2 &p_rect, const Rect2 &p_src_rect, bool p_commit_
 
 void MultiRect::flush() {
 	if (!is_empty()) {
-		if (VisualServerCanvasHelper::_multirect_enabled) {
+		if (VisualServerCanvasHelper::_multirect_enabled || (state.flags & RasterizerCanvas::CANVAS_RECT_FONT_GLYPH)) {
 			VisualServer::get_singleton()->canvas_item_add_texture_multirect_region(state.item, rects, state.texture, sources, state.modulate, state.flags, state.normal_map);
 
 		} else {

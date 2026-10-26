@@ -13,6 +13,7 @@ def can_build():
 
 def get_opts():
     from SCons.Variables import BoolVariable
+
     return [
         ("target_win_version", "Targeted Windows version, >= 0x0400 (Windows 95)", "0x0400"),
         BoolVariable("d3d3_software", "Build the Fixed Function Direct3D 3 software device backend", True),

@@ -186,7 +186,10 @@
 		<method name="get_current_video_driver" qualifiers="const">
 			<return type="int" enum="OS.VideoDriver" />
 			<description>
-				Returns the currently used video driver, using one of the values from [enum VideoDriver].
+				Returns the index of the active video driver as a [enum VideoDriver] value. Fixed Function indices depend on which drivers are compiled into the build. Use [method get_video_driver_name] to identify the active driver by name.
+				[codeblock]
+				var driver_name: String = OS.get_video_driver_name(OS.get_current_video_driver())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -322,7 +325,7 @@
 			<argument index="0" name="handle_type" type="int" enum="OS.HandleType" />
 			<description>
 				Returns internal structure pointers for use in GDNative plugins.
-				[b]Note:[/b] This method is implemented on Linux and Windows (other OSs will soon be supported).
+				[b]Note:[/b] This method is implemented on Linux and Windows. On macOS, the Fixed Function OpenGL1 driver provides the window, view, and OpenGL context handles.
 			</description>
 		</method>
 		<method name="get_power_percent_left">
@@ -592,7 +595,8 @@
 			<return type="String" />
 			<argument index="0" name="driver" type="int" enum="OS.VideoDriver" />
 			<description>
-				Returns the name of the video driver matching the given [code]driver[/code] index. This index is a value from [enum VideoDriver], and you can use [method get_current_video_driver] to get the current backend's index.
+				Returns the name of the video driver at the given [code]driver[/code] index. Pass the result of [method get_current_video_driver] to get the active driver's name. Prefer comparing names in scripts because Fixed Function [enum VideoDriver] values can differ between builds.
+				[b]Note:[/b] Godot 3.x uses capitalized rendering driver names. This is different from Godot 4.x, which uses lowercase names.
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
@@ -1246,6 +1250,18 @@
 		</constant>
 		<constant name="VIDEO_DRIVER_GLES3" value="0" enum="VideoDriver">
 			The GLES3 rendering backend. It uses OpenGL ES 3.0 on mobile devices, OpenGL 3.3 on desktop platforms and WebGL 2.0 on the web.
+		</constant>
+		<constant name="VIDEO_DRIVER_D3D9" value="platform-dependent" enum="VideoDriver">
+			The Direct3D 9 Fixed Function backend. This value may change between builds, and the constant is only available in builds that include the backend. Prefer [method get_video_driver_name] to identify the driver.
+		</constant>
+		<constant name="VIDEO_DRIVER_D3D7" value="platform-dependent" enum="VideoDriver">
+			The Direct3D 7 Fixed Function backend. This value may change between builds, and the constant is only available in builds that include the backend. Prefer [method get_video_driver_name] to identify the driver.
+		</constant>
+		<constant name="VIDEO_DRIVER_OPENGL1" value="platform-dependent" enum="VideoDriver">
+			The desktop OpenGL 1.1 Fixed Function backend. This value may change between builds, and the constant is only available in builds that include the backend. Prefer [method get_video_driver_name] to identify the driver.
+		</constant>
+		<constant name="VIDEO_DRIVER_D3D3_SOFTWARE" value="platform-dependent" enum="VideoDriver">
+			The DirectX 3-era Direct3D Fixed Function software backend. This value may change between builds, and the constant is only available in builds that include the backend. Prefer [method get_video_driver_name] to identify the driver.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

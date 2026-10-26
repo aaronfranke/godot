@@ -1,0 +1,54 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://local_lights_3d.gd" type="Script" id=1]
+
+[sub_resource type="SphereMesh" id=1]
+radius = 0.75
+height = 1.5
+radial_segments = 32
+rings = 16
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 1, 1, 1, 1 )
+
+[sub_resource type="Environment" id=3]
+background_mode = 1
+background_color = Color( 0.03, 0.04, 0.06, 1 )
+ambient_light_color = Color( 0.05, 0.05, 0.05, 1 )
+ambient_light_sky_contribution = 0.0
+
+[sub_resource type="CubeMesh" id=4]
+size = Vector3( 1.5, 1.5, 1.5 )
+
+[node name="LocalLights3D" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="Sphere" type="MeshInstance" parent="."]
+translation = Vector3( -1.1, 0, 0 )
+mesh = SubResource( 1 )
+material_override = SubResource( 2 )
+
+[node name="Cube" type="MeshInstance" parent="."]
+translation = Vector3( 1.1, 0, 0 )
+mesh = SubResource( 4 )
+material_override = SubResource( 2 )
+
+[node name="Omni" type="OmniLight" parent="."]
+translation = Vector3( -2, 1, 1.5 )
+light_color = Color( 1, 0.3, 0.05, 1 )
+light_energy = 2.0
+omni_range = 5.0
+
+[node name="Spot" type="SpotLight" parent="."]
+translation = Vector3( 2, 1, 2 )
+light_color = Color( 0.05, 0.3, 1, 1 )
+light_energy = 2.0
+spot_range = 6.0
+spot_angle = 40.0
+
+[node name="Camera" type="Camera" parent="."]
+translation = Vector3( 0, 1.5, 7 )
+current = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 3 )

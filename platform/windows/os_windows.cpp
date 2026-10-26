@@ -46,6 +46,11 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "windows_terminal_logger.h"
 
+#ifdef FIXED_FUNCTION_ENABLED
+#include "fixed_function/fixed_function_windows.h"
+#include "servers/visual/visual_server_globals.h"
+#endif
+
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
@@ -383,19 +388,50 @@ LRESULT OS_Windows::WndProc(HWND p_window, UINT p_umsg, WPARAM p_wparam, LPARAM 
 			if (video_mode.resizable && !video_mode.fullscreen) {
 				Size2 decor = get_real_window_size() - get_window_size(); // Size of window decorations
 				MINMAXINFO *min_max_info = (MINMAXINFO *)p_lparam;
+				Size2 effective_max = max_size;
+#ifdef FIXED_FUNCTION_ENABLED
+				const Size2i renderer_max = _fixed_function ? _fixed_function->get_max_window_size() : Size2i();
+				if (renderer_max != Size2i()) {
+					const Size2i outer_max = _fixed_function->get_max_window_size(true);
+					decor = Size2(outer_max.x - renderer_max.x, outer_max.y - renderer_max.y);
+					effective_max.x = effective_max.x > 0 ? MIN(effective_max.x, renderer_max.x) : renderer_max.x;
+					effective_max.y = effective_max.y > 0 ? MIN(effective_max.y, renderer_max.y) : renderer_max.y;
+					min_max_info->ptMaxSize.x = MIN(min_max_info->ptMaxSize.x, LONG(effective_max.x + decor.x));
+					min_max_info->ptMaxSize.y = MIN(min_max_info->ptMaxSize.y, LONG(effective_max.y + decor.y));
+				}
+#endif
 				if (min_size != Size2()) {
 					min_max_info->ptMinTrackSize.x = min_size.x + decor.x;
 					min_max_info->ptMinTrackSize.y = min_size.y + decor.y;
 				}
-				if (max_size != Size2()) {
-					min_max_info->ptMaxTrackSize.x = max_size.x + decor.x;
-					min_max_info->ptMaxTrackSize.y = max_size.y + decor.y;
+				if (effective_max != Size2()) {
+					min_max_info->ptMaxTrackSize.x = effective_max.x + decor.x;
+					min_max_info->ptMaxTrackSize.y = effective_max.y + decor.y;
+#ifdef FIXED_FUNCTION_ENABLED
+					if (renderer_max != Size2i()) {
+						min_max_info->ptMinTrackSize.x = MIN(min_max_info->ptMinTrackSize.x, min_max_info->ptMaxTrackSize.x);
+						min_max_info->ptMinTrackSize.y = MIN(min_max_info->ptMinTrackSize.y, min_max_info->ptMaxTrackSize.y);
+					}
+#endif
 				}
 				return 0;
 			} else {
 				break;
 			}
 		}
+#ifdef FIXED_FUNCTION_ENABLED
+		case WM_WINDOWPOSCHANGING: {
+			// Also constrain direct SetWindowPos/MoveWindow calls. Let the renderer
+			// handle the actual desktop size in fullscreen.
+			const Size2i limit = _fixed_function ? _fixed_function->get_max_window_size(true) : Size2i();
+			WINDOWPOS *position = reinterpret_cast<WINDOWPOS *>(p_lparam);
+			if (!video_mode.fullscreen && limit != Size2i() && !(position->flags & SWP_NOSIZE)) {
+				position->cx = MIN(position->cx, limit.x);
+				position->cy = MIN(position->cy, limit.y);
+			}
+			break;
+		}
+#endif
 		case WM_PAINT:
 
 			Main::force_redraw();
@@ -1038,6 +1074,11 @@ LRESULT OS_Windows::WndProc(HWND p_window, UINT p_umsg, WPARAM p_wparam, LPARAM 
 				}
 			}
 
+#ifdef FIXED_FUNCTION_ENABLED
+			if (_fixed_function) {
+				_fixed_function->resize(p_wparam == SIZE_MINIMIZED ? Size2i() : Size2i(video_mode.width, video_mode.height));
+			}
+#endif
 			if (p_wparam == SIZE_MAXIMIZED) {
 				maximized = true;
 				minimized = false;
@@ -1353,7 +1394,48 @@ int OS_Windows::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+int OS_Windows::get_video_driver_count() const {
+	int count = OS::get_video_driver_count();
+#ifdef FIXED_FUNCTION_ENABLED
+	count += FixedFunctionWindows::get_driver_count();
+#endif
+	return count;
+}
+
+const char *OS_Windows::get_video_driver_name(int p_driver) const {
+	ERR_FAIL_INDEX_V(p_driver, get_video_driver_count(), "");
+#ifdef FIXED_FUNCTION_ENABLED
+	if (p_driver >= OS::get_video_driver_count()) {
+		return FixedFunctionWindows::get_driver_name(p_driver - OS::get_video_driver_count());
+	}
+#endif
+	return OS::get_video_driver_name(p_driver);
+}
+
+const char *OS_Windows::get_video_driver_enum_name(int p_driver) const {
+#ifdef FIXED_FUNCTION_ENABLED
+	const int base_driver_count = OS::get_video_driver_count();
+	if (p_driver >= base_driver_count) {
+		return FixedFunctionWindows::get_driver_enum_name(p_driver - base_driver_count);
+	}
+#endif
+	return nullptr;
+}
+
 Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	ERR_FAIL_INDEX_V(p_video_driver, get_video_driver_count(), ERR_INVALID_PARAMETER);
+#ifdef FIXED_FUNCTION_ENABLED
+	if (p_video_driver >= OS::get_video_driver_count()) {
+		if (get_render_thread_mode() == RENDER_SEPARATE_THREAD) {
+			ERR_PRINT("Fixed Function currently requires the main render thread. Use --render-thread safe or unsafe.");
+			return ERR_UNAVAILABLE;
+		}
+		if (p_desired.layered) {
+			ERR_PRINT("Fixed Function currently requires an opaque window.");
+			return ERR_UNAVAILABLE;
+		}
+	}
+#endif
 	main_loop = NULL;
 	outside = true;
 	window_has_focus = true;
@@ -1573,79 +1655,93 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	last_tilt = Vector2();
 	last_pen_inverted = false;
 
-#if defined(OPENGL_ENABLED)
-
-	bool gles3_context = true;
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gles3_context = false;
-	}
-
-	bool editor = Engine::get_singleton()->is_editor_hint();
-	bool gl_initialization_error = false;
-
-	gl_context = NULL;
-	while (!gl_context) {
-		gl_context = memnew(ContextGL_Windows(hWnd, gles3_context));
-
-		if (gl_context->initialize() != OK) {
-			memdelete(gl_context);
-			gl_context = NULL;
-
-			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-				if (p_video_driver == VIDEO_DRIVER_GLES2) {
-					gl_initialization_error = true;
-					break;
-				}
-
-				p_video_driver = VIDEO_DRIVER_GLES2;
-				gles3_context = false;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
+#ifdef FIXED_FUNCTION_ENABLED
+	if (p_video_driver >= OS::get_video_driver_count()) {
+		_fixed_function = memnew(FixedFunctionWindows);
+		const Error error = _fixed_function->install(p_video_driver - OS::get_video_driver_count(), hWnd, Size2i(video_mode.width, video_mode.height), video_mode.use_vsync);
+		if (error != OK) {
+			_cleanup_fixed_function_startup();
+			ERR_PRINT("Unable to install the Fixed Function renderer.");
+			return error;
+		}
+		if (!video_mode.fullscreen && _fixed_function->get_max_window_size() != Size2i()) {
+			set_window_size(get_window_size());
 		}
 	}
+#endif
+#if defined(OPENGL_ENABLED)
+	if (!_fixed_function) {
+		bool gles3_context = true;
+		if (p_video_driver == VIDEO_DRIVER_GLES2) {
+			gles3_context = false;
+		}
 
-	while (true) {
-		if (gles3_context) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
+		bool editor = Engine::get_singleton()->is_editor_hint();
+		bool gl_initialization_error = false;
+
+		gl_context = NULL;
+		while (!gl_context) {
+			gl_context = memnew(ContextGL_Windows(hWnd, gles3_context));
+
+			if (gl_context->initialize() != OK) {
+				memdelete(gl_context);
+				gl_context = NULL;
+
 				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
+					if (p_video_driver == VIDEO_DRIVER_GLES2) {
+						gl_initialization_error = true;
+						break;
+					}
+
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					gles3_context = false;
-					continue;
 				} else {
 					gl_initialization_error = true;
 					break;
 				}
 			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
+		}
+
+		while (true) {
+			if (gles3_context) {
+				if (RasterizerGLES3::is_viable() == OK) {
+					RasterizerGLES3::register_config();
+					RasterizerGLES3::make_current();
+					break;
+				} else {
+					if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
+						p_video_driver = VIDEO_DRIVER_GLES2;
+						gles3_context = false;
+						continue;
+					} else {
+						gl_initialization_error = true;
+						break;
+					}
+				}
 			} else {
-				gl_initialization_error = true;
-				break;
+				if (RasterizerGLES2::is_viable() == OK) {
+					RasterizerGLES2::register_config();
+					RasterizerGLES2::make_current();
+					break;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
 			}
 		}
+
+		if (gl_initialization_error) {
+			OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
+									   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.",
+					"Unable to initialize Video driver");
+			return ERR_UNAVAILABLE;
+		}
+
+		gl_context->set_use_vsync(video_mode.use_vsync);
+		set_vsync_via_compositor(video_mode.vsync_via_compositor);
 	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.",
-				"Unable to initialize Video driver");
-		return ERR_UNAVAILABLE;
-	}
-
-	video_driver_index = p_video_driver;
-
-	gl_context->set_use_vsync(video_mode.use_vsync);
-	set_vsync_via_compositor(video_mode.vsync_via_compositor);
 #endif
+	video_driver_index = p_video_driver;
 
 	visual_server = memnew(VisualServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -1653,6 +1749,18 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	}
 
 	visual_server->init();
+
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_fixed_function && _fixed_function->get_initialization_error() != OK) {
+		const Error error = _fixed_function->get_initialization_error();
+		_cleanup_fixed_function_startup();
+		ERR_PRINT("Unable to initialize the Fixed Function rendering device.");
+		return error;
+	}
+	if (_fixed_function) {
+		print_line(String("Fixed Function ") + get_video_driver_name(p_video_driver) + " Renderer: " + _fixed_function->get_adapter_name());
+	}
+#endif
 
 	input = memnew(InputDefault);
 	joypad = memnew(JoypadWindows(input, &hWnd));
@@ -1714,9 +1822,48 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	return OK;
 }
 
+#ifdef FIXED_FUNCTION_ENABLED
+void OS_Windows::_cleanup_fixed_function_startup() {
+	if (visual_server) {
+		visual_server->finish();
+		memdelete(visual_server);
+		visual_server = nullptr;
+		VSG::rasterizer = nullptr;
+		VSG::storage = nullptr;
+		VSG::canvas = nullptr;
+		VSG::viewport = nullptr;
+		VSG::scene = nullptr;
+		VSG::canvas_render = nullptr;
+		VSG::scene_render = nullptr;
+	}
+	if (_fixed_function) {
+		memdelete(_fixed_function);
+		_fixed_function = nullptr;
+	}
+	if (wintab_available && wtctx) {
+		wintab_WTClose(wtctx);
+		wtctx = nullptr;
+	}
+	if (user_proc) {
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
+		user_proc = nullptr;
+	} else {
+		DestroyWindow(hWnd);
+	}
+	UnregisterClassW(L"Engine", godot_hinstance ? godot_hinstance : GetModuleHandle(NULL));
+	if (restore_mouse_trails > 1) {
+		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
+	}
+	if (tts) {
+		memdelete(tts);
+		tts = nullptr;
+	}
+}
+#endif
+
 bool OS_Windows::is_offscreen_gl_available() const {
 #if defined(OPENGL_ENABLED)
-	return gl_context->is_offscreen_available();
+	return gl_context && gl_context->is_offscreen_available();
 #else
 	return false;
 #endif
@@ -1724,6 +1871,9 @@ bool OS_Windows::is_offscreen_gl_available() const {
 
 void OS_Windows::set_offscreen_gl_current(bool p_current) {
 #if defined(OPENGL_ENABLED)
+	if (!gl_context) {
+		return;
+	}
 	if (p_current) {
 		return gl_context->make_offscreen_current();
 	} else {
@@ -1827,6 +1977,12 @@ void OS_Windows::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_fixed_function) {
+		memdelete(_fixed_function);
+		_fixed_function = nullptr;
+	}
+#endif
 #ifdef OPENGL_ENABLED
 	if (gl_context)
 		memdelete(gl_context);
@@ -2211,6 +2367,13 @@ Size2 OS_Windows::get_real_window_size() const {
 void OS_Windows::set_window_size(const Size2 p_size) {
 	int w = p_size.width;
 	int h = p_size.height;
+#ifdef FIXED_FUNCTION_ENABLED
+	const Size2i limit = _fixed_function ? _fixed_function->get_max_window_size() : Size2i();
+	if (!video_mode.fullscreen && limit != Size2i()) {
+		w = MIN(w, limit.x);
+		h = MIN(h, limit.y);
+	}
+#endif
 
 	video_mode.width = w;
 	video_mode.height = h;
@@ -2400,6 +2563,9 @@ bool OS_Windows::get_window_per_pixel_transparency_enabled() const {
 }
 
 void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+#ifdef FIXED_FUNCTION_ENABLED
+	ERR_FAIL_COND_MSG(_fixed_function && p_enabled, "Fixed Function currently requires an opaque window.");
+#endif
 	if (!is_layered_allowed())
 		return;
 	if (layered_window != p_enabled) {
@@ -2541,9 +2707,9 @@ void *OS_Windows::get_native_handle(int p_handle_type) {
 		case WINDOW_HANDLE:
 			return hWnd;
 		case WINDOW_VIEW:
-			return gl_context->get_hdc();
+			return gl_context ? gl_context->get_hdc() : nullptr;
 		case OPENGL_CONTEXT:
-			return gl_context->get_hglrc();
+			return gl_context ? gl_context->get_hglrc() : nullptr;
 		default:
 			return NULL;
 	}
@@ -3629,15 +3795,21 @@ String OS_Windows::keyboard_get_layout_name(int p_index) const {
 }
 
 void OS_Windows::release_rendering_thread() {
-	gl_context->release_current();
+	if (gl_context) {
+		gl_context->release_current();
+	}
 }
 
 void OS_Windows::make_rendering_thread() {
-	gl_context->make_current();
+	if (gl_context) {
+		gl_context->make_current();
+	}
 }
 
 void OS_Windows::swap_buffers() {
-	gl_context->swap_buffers();
+	if (gl_context) {
+		gl_context->swap_buffers();
+	}
 }
 
 void OS_Windows::force_process_input() {
@@ -3843,6 +4015,12 @@ String OS_Windows::get_joy_guid(int p_device) const {
 }
 
 void OS_Windows::_set_use_vsync(bool p_enable) {
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_fixed_function) {
+		_fixed_function->set_use_vsync(p_enable);
+		return;
+	}
+#endif
 	if (gl_context)
 		gl_context->set_use_vsync(p_enable);
 }
@@ -3980,6 +4158,13 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 };
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
+#ifdef OPENGL_ENABLED
+	gl_context = nullptr;
+#endif
+	_fixed_function = nullptr;
+	visual_server = nullptr;
+	wtctx = nullptr;
+	restore_mouse_trails = 0;
 	drop_events = false;
 	key_event_pos = 0;
 	layered_window = false;

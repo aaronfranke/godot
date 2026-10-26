@@ -1,0 +1,16 @@
+config_version=4
+
+[application]
+config/name="Fixed Function Windows smoke"
+run/main_scene="res://scene.tscn"
+run/low_processor_mode=true
+
+[display]
+window/size/width=320
+window/size/height=200
+window/dpi/allow_hidpi=false
+
+[rendering]
+quality/intended_usage/framebuffer_allocation=0
+environment/default_clear_color=Color(0.125, 0.25, 0.5, 1)
+threads/thread_model=1

@@ -2,4 +2,8 @@
 
 Import("env")
 
+if env["bits"] != "32":
+    print("Direct3D 7 is x86_32 only. Use bits=32, or disable legacy backends with d3d3_software=no d3d7=no.")
+    Exit(255)
+
 env.add_source_files(env.drivers_sources, "*.cpp")

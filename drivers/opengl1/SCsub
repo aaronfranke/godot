@@ -2,4 +2,17 @@
 
 Import("env")
 
-env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_source_files(
+    env.drivers_sources,
+    [
+        "blending_opengl1.cpp",
+        "draw_opengl1.cpp",
+        "framebuffer_opengl1.cpp",
+        "geometry_opengl1.cpp",
+        "graphics_device_opengl1.cpp",
+        "readback_opengl1.cpp",
+        "texture_opengl1.cpp",
+    ],
+)
+if env["platform"] == "windows":
+    env.add_source_files(env.drivers_sources, ["graphics_device_opengl1_factory.cpp", "wgl_context.cpp"])

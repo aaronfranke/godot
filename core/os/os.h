@@ -253,6 +253,8 @@ public:
 
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
+	// Optional script enum constant for a platform-provided driver index.
+	virtual const char *get_video_driver_enum_name(int p_driver) const { return nullptr; }
 	virtual int get_current_video_driver() const = 0;
 
 	virtual bool is_offscreen_gl_available() const;

@@ -78,6 +78,7 @@ def get_opts():
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 backend for X11", False),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
@@ -410,6 +411,8 @@ def configure(env):
     env.Append(CPPDEFINES=["X11_ENABLED", "UNIX_ENABLED", "OPENGL_ENABLED", "GLES_ENABLED", ("_FILE_OFFSET_BITS", 64)])
 
     env.ParseConfig("pkg-config gl --cflags --libs")
+    if env["opengl1"]:
+        env.Append(CPPDEFINES=["OPENGL1_ENABLED"])
 
     env.Append(LIBS=["pthread"])
 

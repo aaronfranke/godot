@@ -34,6 +34,21 @@
 
 #ifdef DEBUG_ENABLED
 
+#ifdef D3D3_SOFTWARE_TESTS_ENABLED
+#include "drivers/d3d3_software/tests/test_graphics_device_d3d3_software.h"
+#endif
+
+#ifdef D3D7_TESTS_ENABLED
+#include "drivers/d3d7/tests/test_graphics_device_d3d7.h"
+#endif
+
+#ifdef D3D9_TESTS_ENABLED
+#include "drivers/d3d9/tests/test_graphics_device_d3d9.h"
+#endif
+#ifdef OPENGL1_TESTS_ENABLED
+#include "drivers/opengl1/tests/test_graphics_device_opengl1.h"
+#endif
+
 #include "test_astar.h"
 #include "test_basis.h"
 #include "test_crypto.h"
@@ -54,6 +69,18 @@
 
 const char **tests_get_names() {
 	static const char *test_names[] = {
+#ifdef D3D3_SOFTWARE_TESTS_ENABLED
+		"d3d3_software",
+#endif
+#ifdef D3D7_TESTS_ENABLED
+		"d3d7",
+#endif
+#ifdef D3D9_TESTS_ENABLED
+		"d3d9",
+#endif
+#ifdef OPENGL1_TESTS_ENABLED
+		"opengl1",
+#endif
 		"string",
 		"math",
 		"basis",
@@ -80,6 +107,29 @@ const char **tests_get_names() {
 }
 
 MainLoop *test_main(String p_test, const List<String> &p_args) {
+#ifdef D3D3_SOFTWARE_TESTS_ENABLED
+	if (p_test == "d3d3_software") {
+		return TestFixedFunctionGraphicsDeviceD3D3Software::test();
+	}
+#endif
+
+#ifdef D3D7_TESTS_ENABLED
+	if (p_test == "d3d7") {
+		return TestFixedFunctionGraphicsDeviceD3D7::test(p_args);
+	}
+#endif
+
+#ifdef D3D9_TESTS_ENABLED
+	if (p_test == "d3d9") {
+		return TestFixedFunctionGraphicsDeviceD3D9::test(p_args);
+	}
+#endif
+#ifdef OPENGL1_TESTS_ENABLED
+	if (p_test == "opengl1") {
+		return TestFixedFunctionGraphicsDeviceOpenGL1::test(p_args);
+	}
+#endif
+
 	if (p_test == "string") {
 		return TestString::test();
 	}

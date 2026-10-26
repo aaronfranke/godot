@@ -727,11 +727,7 @@ float BitmapFont::draw_char_ex(RID p_canvas_item, const Point2 &p_pos, CharType 
 		cpos.y -= ascent;
 		cpos.y += c->v_align;
 
-		if (p_multirect) {
-			p_multirect->add_rect(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
-		} else {
-			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
-		}
+		MultiRect::draw_font_glyph(p_multirect, p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate);
 	}
 
 	return get_char_size(p_char, p_next).width;

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://distance_fog_3d.gd" type="Script" id=1]
+
+[node name="distance_fog_3d" type="Control"]
+script = ExtResource( 1 )

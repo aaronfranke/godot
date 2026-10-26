@@ -34,6 +34,7 @@
 #include "context_gl_x11.h"
 #include "core/local_vector.h"
 #include "core/os/input.h"
+#include "core/os/thread.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
@@ -82,6 +83,10 @@ typedef struct _xrr_monitor_info {
 
 #undef CursorShape
 
+#ifdef OPENGL1_ENABLED
+class FixedFunctionX11;
+#endif // OPENGL1_ENABLED
+
 class OS_X11 : public OS_Unix {
 	Atom wm_delete;
 	Atom xdnd_enter;
@@ -96,8 +101,14 @@ class OS_X11 : public OS_Unix {
 	int xdnd_version;
 
 #if defined(OPENGL_ENABLED)
-	ContextGL_X11 *context_gl;
+	ContextGL_X11 *context_gl = nullptr;
 #endif
+#ifdef OPENGL1_ENABLED
+	FixedFunctionX11 *fixed_function = nullptr;
+	Error _initialize_fixed_function();
+#endif // OPENGL1_ENABLED
+	Error _initialize_gles(int &r_video_driver);
+	void _update_window_size(int p_width, int p_height);
 	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
@@ -244,6 +255,11 @@ class OS_X11 : public OS_Unix {
 	Bool xrandr_ext_ok;
 
 protected:
+#ifdef OPENGL1_ENABLED
+	virtual int get_video_driver_count() const override;
+	virtual const char *get_video_driver_name(int p_driver) const override;
+	virtual const char *get_video_driver_enum_name(int p_driver) const override;
+#endif // OPENGL1_ENABLED
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();

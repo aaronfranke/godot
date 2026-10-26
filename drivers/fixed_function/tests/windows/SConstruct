@@ -1,0 +1,106 @@
+from pathlib import Path
+from SCons.Script import ARGUMENTS, Environment, Default, Dir, SConscript
+
+# Dedicated-process test, linked against an existing modern Windows debug/tools
+# build with matching architecture, default float/pointer RIDs and selected backends.
+folder = Path(Dir("#").abspath)
+root = folder.parents[3]
+arch = ARGUMENTS.get("arch", "x86_32")
+assert arch in ["x86_32", "x86_64"]
+mode = ARGUMENTS.get("mode", "server")
+assert mode in ["server", "cpu"]
+output = root / "bin/fixed_function_server"
+env = Environment(tools=["msvc", "mslink"], TARGET_ARCH="x86" if arch == "x86_32" else "amd64")
+env["arch"] = arch
+env["fixed_function_test_sources"] = []
+# Each present backend owns its factory and architecture/selection rules.
+for script in sorted((root / "drivers").glob("*/tests/windows/SCsub")):
+    SConscript(str(script), exports={"env": env})
+defines = [
+    "WINDOWS_ENABLED",
+    "OPENGL_ENABLED",
+    "WASAPI_ENABLED",
+    "WINMIDI_ENABLED",
+    "TYPED_METHOD_BIND",
+    "DEBUG_ENABLED",
+    "TOOLS_ENABLED",
+    "WIN32",
+    "MSVC",
+    "NOMINMAX",
+    "WINVER=0x0601",
+    "_WIN32_WINNT=0x0601",
+    "_CRT_SECURE_NO_WARNINGS",
+    "PTRCALL_ENABLED",
+]
+if arch == "x86_64":
+    defines.append("_WIN64")
+env.Append(
+    CPPPATH=[str(root), str(root / "platform/windows")],
+    CPPDEFINES=defines,
+    CXXFLAGS=[
+        "/std:c++17",
+        "/MT",
+        "/W3",
+        "/WX",
+        "/EHsc",
+        "/wd4267",
+        "/wd4244",
+        "/wd4305",
+        "/wd4018",
+        "/wd4800",
+        "/w15038",
+    ],
+    LINKFLAGS=["/SUBSYSTEM:CONSOLE", "/STACK:8388608"],
+)
+libraries = [str(p) for p in root.rglob("*windows.tools." + arch + ".lib") if p.parent != root / "bin"]
+env.Append(
+    LIBS=libraries
+    + [
+        "winmm",
+        "opengl32",
+        "dsound",
+        "kernel32",
+        "ole32",
+        "oleaut32",
+        "sapi",
+        "user32",
+        "gdi32",
+        "IPHLPAPI",
+        "Shlwapi",
+        "wsock32",
+        "Ws2_32",
+        "shell32",
+        "advapi32",
+        "dinput8",
+        "dxguid",
+        "imm32",
+        "bcrypt",
+        "Avrt",
+        "dwmapi",
+        "uuid",
+    ]
+)
+objects = [
+    str(p)
+    for p in (root / "platform/windows").rglob("*.windows.tools." + arch + ".obj")
+    if p.stem.split(".")[0] not in ["godot_windows", "godot_res"]
+]
+sources = [
+    env.File(str(folder / (name + ".cpp"))) for name in (["cpu_entry"] if mode == "cpu" else ["entry", "devices"])
+]
+if mode == "server":
+    sources += env["fixed_function_test_sources"]
+program = env.Program(
+    str(output / ("fixed_function_" + mode + "." + arch + ".exe")),
+    [
+        env.Object(
+            str(output / arch / Path(source.abspath).relative_to(root).with_suffix(".obj")),
+            source,
+        )
+        for source in sources
+    ]
+    + objects,
+)
+# Absolute LIBS paths need explicit dependencies so rebuilt engine code relinks.
+env.Depends(program, [env.File(path) for path in libraries])
+Default(program)

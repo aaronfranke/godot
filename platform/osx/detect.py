@@ -24,6 +24,7 @@ def get_opts():
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 backend", False),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
         BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
@@ -218,3 +219,5 @@ def configure(env):
         ]
     )
     env.Append(LIBS=["pthread"])
+    if env["opengl1"]:
+        env.Append(CPPDEFINES=["OPENGL1_ENABLED"])

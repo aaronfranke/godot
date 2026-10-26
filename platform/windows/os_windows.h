@@ -263,6 +263,8 @@ typedef struct {
 } ICONDIR, *LPICONDIR;
 
 class JoypadWindows;
+class FixedFunctionWindows;
+
 class OS_Windows : public OS {
 	String tablet_driver;
 	Vector<String> tablet_drivers;
@@ -322,6 +324,8 @@ class OS_Windows : public OS {
 #if defined(OPENGL_ENABLED)
 	ContextGL_Windows *gl_context;
 #endif
+	// Keep the layout stable: optional-backend defines are platform-local.
+	FixedFunctionWindows *_fixed_function;
 	VisualServer *visual_server;
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
@@ -396,9 +400,13 @@ class OS_Windows : public OS {
 	void _update_window_mouse_passthrough();
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
+	void _cleanup_fixed_function_startup();
 
 	// functions used by main to initialize/deinitialize the OS
 protected:
+	virtual int get_video_driver_count() const;
+	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_enum_name(int p_driver) const;
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();

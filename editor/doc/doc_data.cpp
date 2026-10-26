@@ -188,6 +188,40 @@ void DocData::merge_from(const DocData &p_data) {
 	}
 }
 
+void DocData::preserve_optional_video_driver_constants(const DocData &p_source) {
+	auto *os = class_list.find("OS");
+	if (!os) {
+		return;
+	}
+	const auto *source_os = p_source.class_list.find("OS");
+	Vector<ConstantDoc> &constants = os->get().constants;
+	const auto find_driver = [](const Vector<ConstantDoc> &p_constants, const char *p_name) {
+		for (int i = 0; i < p_constants.size(); i++) {
+			if (p_constants[i].enumeration == "VideoDriver" && p_constants[i].name == p_name) {
+				return i;
+			}
+		}
+		return -1;
+	};
+	const char *const optional_drivers[] = { "VIDEO_DRIVER_D3D9", "VIDEO_DRIVER_D3D7", "VIDEO_DRIVER_OPENGL1", "VIDEO_DRIVER_D3D3_SOFTWARE" };
+	int next = find_driver(constants, "VIDEO_DRIVER_GLES3") + 1;
+	for (const char *driver : optional_drivers) {
+		const int reflected = find_driver(constants, driver);
+		if (reflected >= 0) {
+			constants.write[reflected].is_value_valid = false;
+			next = reflected + 1;
+		} else if (source_os) {
+			const Vector<ConstantDoc> &source_constants = source_os->get().constants;
+			const int saved = find_driver(source_constants, driver);
+			if (saved >= 0) {
+				ConstantDoc constant = source_constants[saved];
+				constant.is_value_valid = false;
+				constants.insert(next++, constant);
+			}
+		}
+	}
+}
+
 void DocData::remove_from(const DocData &p_data) {
 	for (Map<String, ClassDoc>::Element *E = p_data.class_list.front(); E; E = E->next()) {
 		if (class_list.has(E->key())) {

@@ -1,0 +1,11 @@
+#ifndef TEST_FIXED_FUNCTION_GRAPHICS_DEVICE_D3D3_SOFTWARE_H
+#define TEST_FIXED_FUNCTION_GRAPHICS_DEVICE_D3D3_SOFTWARE_H
+
+class MainLoop;
+
+class TestFixedFunctionGraphicsDeviceD3D3Software {
+public:
+	static MainLoop *test();
+};
+
+#endif // TEST_FIXED_FUNCTION_GRAPHICS_DEVICE_D3D3_SOFTWARE_H

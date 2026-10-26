@@ -40,6 +40,10 @@
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 
+#ifdef OPENGL1_ENABLED
+#include "fixed_function_osx.h"
+#endif // OPENGL1_ENABLED
+
 #include <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
@@ -405,6 +409,9 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 		CGLSetParameter((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
 		CGLEnable((CGLContextObj)[OS_OSX::singleton->context CGLContextObj], kCGLCESurfaceBackingSize);
 	}
+#ifdef OPENGL1_ENABLED
+	OS_OSX::singleton->resize_fixed_function();
+#endif // OPENGL1_ENABLED
 
 	/*
 	_GodotInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
@@ -1573,6 +1580,52 @@ int OS_OSX::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+#ifdef OPENGL1_ENABLED
+int OS_OSX::get_video_driver_count() const {
+	return OS::get_video_driver_count() + 1;
+}
+
+const char *OS_OSX::get_video_driver_name(int p_driver) const {
+	return p_driver == OS::get_video_driver_count() ? "OpenGL1" : OS::get_video_driver_name(p_driver);
+}
+
+const char *OS_OSX::get_video_driver_enum_name(int p_driver) const {
+	return p_driver == OS::get_video_driver_count() ? "VIDEO_DRIVER_OPENGL1" : OS::get_video_driver_enum_name(p_driver);
+}
+
+void *OS_OSX::get_native_handle(int p_handle_type) {
+	if (!fixed_function) {
+		return OS::get_native_handle(p_handle_type);
+	}
+	switch (p_handle_type) {
+		case WINDOW_HANDLE:
+			return window_object;
+		case WINDOW_VIEW:
+			return window_view;
+		case OPENGL_CONTEXT:
+			return context;
+		default:
+			return nullptr;
+	}
+}
+
+void OS_OSX::resize_fixed_function() {
+	if (fixed_function) {
+		fixed_function->resize(minimized ? Size2i() : Size2i(window_size));
+	}
+}
+
+void OS_OSX::_release_fixed_function() {
+	memdelete(fixed_function);
+	fixed_function = nullptr;
+	[window_view clearGLContext];
+	[context release];
+	context = nil;
+	[pixelFormat release];
+	pixelFormat = nil;
+}
+#endif // OPENGL1_ENABLED
+
 Error OS_OSX::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
 	return status == errSecSuccess ? OK : FAILED;
@@ -1621,6 +1674,14 @@ void OS_OSX::tts_stop() {
 }
 
 Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+#ifdef OPENGL1_ENABLED
+	const bool use_opengl1 = p_video_driver == OS::get_video_driver_count();
+	ERR_FAIL_COND_V_MSG(use_opengl1 && (p_desired.layered || get_render_thread_mode() == RENDER_SEPARATE_THREAD), ERR_UNAVAILABLE,
+			"Fixed Function requires an opaque window and main-thread rendering.");
+#else
+	const bool use_opengl1 = false;
+#endif // OPENGL1_ENABLED
+
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
@@ -1717,7 +1778,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	ADD_ATTR(NSOpenGLPFADoubleBuffer);
 	ADD_ATTR(NSOpenGLPFAClosestPolicy);
 
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+	if (p_video_driver == VIDEO_DRIVER_GLES2 || use_opengl1) {
 		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy);
 	} else {
 		//we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
@@ -1764,15 +1825,29 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	[window_view setOpenGLContext:context];
 
-	context_offscreen = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
-
-	[context makeCurrentContext];
+	if (!use_opengl1) {
+		context_offscreen = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
+		[context makeCurrentContext];
+	}
 
 	GLint dim[2];
 	dim[0] = window_size.width;
 	dim[1] = window_size.height;
 	CGLSetParameter((CGLContextObj)[context CGLContextObj], kCGLCPSurfaceBackingSize, &dim[0]);
 	CGLEnable((CGLContextObj)[context CGLContextObj], kCGLCESurfaceBackingSize);
+
+#ifdef OPENGL1_ENABLED
+	if (use_opengl1) {
+		fixed_function = memnew(FixedFunctionOSX);
+		const Error error = fixed_function->install(context, Size2i(window_size), p_desired.use_vsync);
+		if (error != OK) {
+			_release_fixed_function();
+			CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
+			CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
+			ERR_FAIL_V_MSG(error, "Could not initialize Fixed Function OpenGL on macOS.");
+		}
+	}
+#endif // OPENGL1_ENABLED
 
 	set_use_vsync(p_desired.use_vsync);
 
@@ -1805,7 +1880,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	bool editor = Engine::get_singleton()->is_editor_hint();
 	bool gl_initialization_error = false;
 
-	while (true) {
+	while (!use_opengl1) {
 		if (gles3) {
 			if (RasterizerGLES3::is_viable() == OK) {
 				RasterizerGLES3::register_config();
@@ -1848,6 +1923,11 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	visual_server->init();
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		print_line("Fixed Function OpenGL1 Renderer: " + visual_server->get_video_adapter_name());
+	}
+#endif // OPENGL1_ENABLED
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
@@ -1887,6 +1967,11 @@ void OS_OSX::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		_release_fixed_function();
+	}
+#endif // OPENGL1_ENABLED
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
@@ -2482,11 +2567,19 @@ String OS_OSX::get_locale() const {
 }
 
 void OS_OSX::swap_buffers() {
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		return; // The Fixed Function device presents its own frames.
+	}
+#endif // OPENGL1_ENABLED
 	[context flushBuffer];
 }
 
 void OS_OSX::wm_minimized(bool p_minimized) {
 	minimized = p_minimized;
+#ifdef OPENGL1_ENABLED
+	resize_fixed_function();
+#endif // OPENGL1_ENABLED
 };
 
 void OS_OSX::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
@@ -2997,6 +3090,9 @@ bool OS_OSX::get_window_per_pixel_transparency_enabled() const {
 }
 
 void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+#ifdef OPENGL1_ENABLED
+	ERR_FAIL_COND_MSG(fixed_function && p_enabled, "Fixed Function requires an opaque window.");
+#endif // OPENGL1_ENABLED
 	if (!is_layered_allowed())
 		return;
 	if (layered_window != p_enabled) {
@@ -3559,7 +3655,15 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 }
 
 void OS_OSX::_set_use_vsync(bool p_enable) {
-	CGLContextObj ctx = CGLGetCurrentContext();
+	CGLContextObj ctx;
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		ctx = [context CGLContextObj];
+	} else
+#endif // OPENGL1_ENABLED
+	{
+		ctx = CGLGetCurrentContext();
+	}
 	if (ctx) {
 		GLint swapInterval = p_enable ? 1 : 0;
 		CGLSetParameter(ctx, kCGLCPSwapInterval, &swapInterval);

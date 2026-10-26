@@ -22,7 +22,20 @@ res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+env_windows = env.Clone()
+
+d3d3_software = env.get("d3d3_software", False)
+d3d7 = env.get("d3d7", False)
+d3d9 = env.get("d3d9", False)
+opengl1 = env.get("opengl1", False)
+if d3d3_software or d3d7 or d3d9 or opengl1:
+    common_win.append("fixed_function/fixed_function_windows.cpp")
+    env_windows.Append(CPPDEFINES=["FIXED_FUNCTION_ENABLED"])
+    for driver in ["d3d3_software", "d3d7", "d3d9", "opengl1"]:
+        if env.get(driver, False):
+            env_windows.Append(CPPDEFINES=[driver.upper() + "_ENABLED"])
+
+prog = env_windows.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
