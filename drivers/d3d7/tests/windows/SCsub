@@ -1,0 +1,9 @@
+from SCons.Script import ARGUMENTS, File
+
+Import("env")
+
+enabled = ARGUMENTS.get("d3d7", "yes" if env["arch"] == "x86_32" else "no")
+assert enabled in ["yes", "no"], "d3d7 must be yes or no."
+assert env["arch"] != "x86_64" or enabled == "no", "D3D7 is unavailable on x86_64."
+if enabled == "yes":
+    env["fixed_function_test_sources"].append(File("device7.cpp"))

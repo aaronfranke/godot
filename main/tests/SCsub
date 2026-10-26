@@ -3,7 +3,25 @@
 Import("env")
 
 env.tests_sources = []
-env.add_source_files(env.tests_sources, "*.cpp")
+env_tests = env.Clone()
+
+d3d3_software = env.get("d3d3_software", False)
+d3d7 = env.get("d3d7", False)
+d3d9 = env.get("d3d9", False)
+if d3d3_software:
+    env_tests.Append(CPPDEFINES=["D3D3_SOFTWARE_TESTS_ENABLED"])
+    env_tests.add_source_files(env.tests_sources, env_tests.Glob("#drivers/d3d3_software/tests/*.cpp"))
+if d3d7:
+    env_tests.Append(CPPDEFINES=["D3D7_TESTS_ENABLED"])
+    env_tests.add_source_files(env.tests_sources, env_tests.Glob("#drivers/d3d7/tests/*.cpp"))
+if d3d9:
+    env_tests.Append(CPPDEFINES=["D3D9_TESTS_ENABLED"])
+    env_tests.add_source_files(env.tests_sources, env_tests.Glob("#drivers/d3d9/tests/*.cpp"))
+if env["platform"] == "windows" and env.get("opengl1", False):
+    env_tests.Append(CPPDEFINES=["OPENGL1_TESTS_ENABLED"])
+    env_tests.add_source_files(env.tests_sources, env_tests.Glob("#drivers/opengl1/tests/*.cpp"))
+
+env_tests.add_source_files(env.tests_sources, "*.cpp")
 
 lib = env.add_library("tests", env.tests_sources)
 env.Prepend(LIBS=[lib])

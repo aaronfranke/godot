@@ -15,6 +15,9 @@ common_x11 = [
     "detect_prime.cpp",
 ]
 
+if env["opengl1"]:
+    common_x11.append("fixed_function_x11.cpp")
+
 if "udev" in env and env["udev"]:
     common_x11.append("libudev-so_wrap.c")
 

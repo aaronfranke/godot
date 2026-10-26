@@ -1,0 +1,8 @@
+from SCons.Script import ARGUMENTS, File
+
+Import("env")
+
+enabled = ARGUMENTS.get("d3d9", "yes")
+assert enabled in ["yes", "no"], "d3d9 must be yes or no."
+if enabled == "yes":
+    env["fixed_function_test_sources"].append(File("device9.cpp"))

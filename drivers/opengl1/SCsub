@@ -3,3 +3,5 @@
 Import("env")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
+if env["platform"] == "windows":
+    env.add_source_files(env.drivers_sources, "windows/*.cpp")
