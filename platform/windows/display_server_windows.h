@@ -193,6 +193,8 @@ class WinRTWindowData;
 
 class JoypadSDL;
 
+class FixedFunctionWindows;
+
 class DisplayServerWindows : public DisplayServer {
 	GDSOFTCLASS(DisplayServerWindows, DisplayServer);
 
@@ -227,6 +229,7 @@ class DisplayServerWindows : public DisplayServer {
 		DRIVER_ID_COMPAT_ANGLE_D3D11 = 1 << 1,
 		DRIVER_ID_RD_VULKAN = 1 << 2,
 		DRIVER_ID_RD_D3D12 = 1 << 3,
+		DRIVER_ID_FIXED_FUNCTION = 1 << 4,
 	};
 	static BitField<DriverID> tested_drivers;
 
@@ -276,6 +279,9 @@ class DisplayServerWindows : public DisplayServer {
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
+	// Keep the class layout identical in translation units without driver defines.
+	FixedFunctionWindows *_fixed_function = nullptr;
+	bool _fixed_function_vsync = false;
 	bool app_focused = false;
 	bool keep_screen_on = false;
 	bool get_object_received = false;

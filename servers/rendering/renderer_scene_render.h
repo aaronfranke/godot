@@ -55,6 +55,7 @@ public:
 	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) = 0;
 	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) = 0;
 	virtual uint32_t geometry_instance_get_pair_mask() = 0;
+	virtual bool supports_visibility_range_fading() const { return true; }
 
 	/* Lights matched up to Geometry Instances */
 	virtual uint32_t get_max_lights_total() = 0;

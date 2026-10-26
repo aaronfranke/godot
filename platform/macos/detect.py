@@ -48,6 +48,7 @@ def get_opts():
         (("SWIFT_COMPILER", "SWIFT_FRONTEND"), "Path to the swiftc binary", ""),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 backend", False),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ["no", "5.0", "devel"], ignorecase=2),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
@@ -303,6 +304,10 @@ def configure(env: "SConsEnvironment"):
     env.Append(LIBS=["pthread", "z"])
 
     extra_frameworks = set()
+
+    if env["opengl1"]:
+        env.Append(CPPDEFINES=["OPENGL1_ENABLED"])
+        extra_frameworks.add("OpenGL")
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])

@@ -208,6 +208,12 @@ def get_opts():
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
         ("mssdk_version", "Windows SDK version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
+        BoolVariable(
+            "d3d3_software", "Build the Fixed Function Direct3D 3 software device backend (x86_32 only)", False
+        ),
+        BoolVariable("d3d7", "Build the Fixed Function Direct3D 7 device backend (x86_32 only)", False),
+        BoolVariable("d3d9", "Build the Fixed Function Direct3D 9 device backend", False),
+        BoolVariable("opengl1", "Build the experimental Fixed Function OpenGL 1.1 device backend", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
@@ -984,6 +990,11 @@ def configure(env: "SConsEnvironment"):
         configure_msvc(env)
     else:
         configure_mingw(env)
+    if env["opengl1"]:
+        if env.msvc:
+            env.Append(LINKFLAGS=["opengl32.lib"])
+        else:
+            env.Append(LIBS=["opengl32"])
 
 
 def check_d3d12_installed(env, suffix):

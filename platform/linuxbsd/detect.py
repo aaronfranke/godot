@@ -63,6 +63,7 @@ def get_opts():
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 backend for X11", False),
         BoolVariable("wayland", "Enable Wayland display", True),
         BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
@@ -247,6 +248,16 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_sowrap"]:
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
+
+    if env["opengl1"]:
+        if not env["x11"]:
+            print_error("opengl1=yes requires x11=yes.")
+            sys.exit(255)
+        if subprocess.run(["pkg-config", "--exists", "gl"], capture_output=True).returncode != 0:
+            print_error("Desktop OpenGL development files (pkg-config gl) are required for opengl1=yes.")
+            sys.exit(255)
+        env.ParseConfig("pkg-config gl --cflags --libs")
+        env.Append(CPPDEFINES=["OPENGL1_ENABLED"])
 
     if env["wayland"]:
         if not env.WhereIs("wayland-scanner"):

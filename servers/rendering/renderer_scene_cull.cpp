@@ -1417,7 +1417,7 @@ void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, f
 	instance->visibility_range_end = p_max;
 	instance->visibility_range_begin_margin = p_min_margin;
 	instance->visibility_range_end_margin = p_max_margin;
-	instance->visibility_range_fade_mode = p_fade_mode;
+	instance->visibility_range_fade_mode = scene_render->supports_visibility_range_fading() ? p_fade_mode : RSE::VISIBILITY_RANGE_FADE_DISABLED;
 
 	_update_instance_visibility_dependencies(instance);
 
@@ -1427,7 +1427,7 @@ void RendererSceneCull::instance_geometry_set_visibility_range(RID p_instance, f
 		vd.range_end = instance->visibility_range_end;
 		vd.range_begin_margin = instance->visibility_range_begin_margin;
 		vd.range_end_margin = instance->visibility_range_end_margin;
-		vd.fade_mode = p_fade_mode;
+		vd.fade_mode = instance->visibility_range_fade_mode;
 	}
 }
 

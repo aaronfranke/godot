@@ -70,6 +70,10 @@
 // Rendering drivers - include after general Godot deps as they imply system includes
 // which may need precise ordering.
 
+#ifdef OPENGL1_ENABLED
+#include "fixed_function_macos.h"
+#endif // OPENGL1_ENABLED
+
 #if defined(GLES3_ENABLED)
 #if defined(ANGLE_ENABLED)
 #include "gl_manager_macos_angle.h"
@@ -801,6 +805,11 @@ void DisplayServerMacOS::window_destroy(DisplayServerEnums::WindowID p_window) {
 }
 
 void DisplayServerMacOS::window_resize(DisplayServerEnums::WindowID p_window, int p_width, int p_height) {
+#ifdef OPENGL1_ENABLED
+	if (fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		fixed_function->resize(Size2i(p_width, p_height));
+	}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_size(p_window, p_width, p_height);
@@ -824,6 +833,15 @@ void DisplayServerMacOS::window_resize(DisplayServerEnums::WindowID p_window, in
 }
 
 bool DisplayServerMacOS::has_feature(DisplayServerEnums::Feature p_feature) const {
+#ifdef OPENGL1_ENABLED
+	if (fixed_function &&
+			(p_feature == DisplayServerEnums::FEATURE_SUBWINDOWS ||
+					p_feature == DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY ||
+					p_feature == DisplayServerEnums::FEATURE_WINDOW_EMBEDDING ||
+					p_feature == DisplayServerEnums::FEATURE_HDR_OUTPUT)) {
+		return false;
+	}
+#endif // OPENGL1_ENABLED
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
 		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
@@ -1805,6 +1823,10 @@ Vector<DisplayServerEnums::WindowID> DisplayServerMacOS::get_window_list() const
 DisplayServerEnums::WindowID DisplayServerMacOS::create_sub_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
+#ifdef OPENGL1_ENABLED
+	ERR_FAIL_COND_V_MSG(fixed_function, DisplayServerEnums::INVALID_WINDOW_ID, "Fixed Function currently supports only the main window.");
+#endif // OPENGL1_ENABLED
+
 	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 
 	uint32_t set_flags = p_flags & ((1 << DisplayServerEnums::WINDOW_FLAG_MAX) - 1); // Clear the flags that are not supported by the window.
@@ -2674,6 +2696,9 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 			}
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_TRANSPARENT: {
+#ifdef OPENGL1_ENABLED
+			ERR_FAIL_COND_MSG(fixed_function && p_enabled, "Fixed Function requires an opaque window.");
+#endif // OPENGL1_ENABLED
 			if (wd.fullscreen) {
 				return;
 			}
@@ -2888,11 +2913,18 @@ int64_t DisplayServerMacOS::window_get_native_handle(DisplayServerEnums::HandleT
 		case DisplayServerEnums::WINDOW_VIEW: {
 			return (int64_t)windows[p_window].window_view;
 		}
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) || defined(OPENGL1_ENABLED)
 		case DisplayServerEnums::OPENGL_CONTEXT: {
+#ifdef OPENGL1_ENABLED
+			if (fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+				return fixed_function->get_context_handle();
+			}
+#endif // OPENGL1_ENABLED
+#ifdef GLES3_ENABLED
 			if (gl_manager_legacy) {
 				return (int64_t)gl_manager_legacy->get_context(p_window);
 			}
+#endif // GLES3_ENABLED
 #if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_context(p_window);
@@ -2952,6 +2984,11 @@ void DisplayServerMacOS::gl_window_make_current(DisplayServerEnums::WindowID p_w
 
 void DisplayServerMacOS::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+#ifdef OPENGL1_ENABLED
+	if (fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		fixed_function->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
+	}
+#endif // OPENGL1_ENABLED
 #if defined(GLES3_ENABLED)
 #if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
@@ -2971,6 +3008,11 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_v
 
 DisplayServerEnums::VSyncMode DisplayServerMacOS::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
+#ifdef OPENGL1_ENABLED
+	if (fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		return fixed_function->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
+	}
+#endif // OPENGL1_ENABLED
 #if defined(GLES3_ENABLED)
 #if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
@@ -3584,6 +3626,11 @@ void DisplayServerMacOS::delete_status_indicator(DisplayServerEnums::IndicatorID
 }
 
 bool DisplayServerMacOS::is_window_transparency_available() const {
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		return false;
+	}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
@@ -3594,7 +3641,7 @@ bool DisplayServerMacOS::is_window_transparency_available() const {
 
 DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
-	if (r_error != OK) {
+	if (r_error != OK && p_rendering_driver != "opengl1") {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
 			if (OS::get_singleton()->get_bundle_resource_dir() == OS::get_singleton()->get_executable_path().get_base_dir()) {
@@ -3634,6 +3681,9 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 	drivers.push_back("opengl3_angle");
 #endif
 #endif
+#ifdef OPENGL1_ENABLED
+	drivers.push_back("opengl1");
+#endif // OPENGL1_ENABLED
 	drivers.push_back("dummy");
 
 	return drivers;
@@ -3901,6 +3951,13 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
+#ifdef OPENGL1_ENABLED
+	if (rendering_driver == "opengl1" && ((p_flags & DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT) || p_parent_window || OS::get_singleton()->is_separate_thread_rendering_enabled())) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Fixed Function requires an opaque, standalone window and main-thread rendering.");
+	}
+#endif // OPENGL1_ENABLED
+
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 #if defined(__x86_64__)
@@ -4000,7 +4057,22 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 	}
 
 	DisplayServerEnums::WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
-	ERR_FAIL_COND(main_window == DisplayServerEnums::INVALID_WINDOW_ID);
+	if (main_window == DisplayServerEnums::INVALID_WINDOW_ID) {
+		r_error = ERR_CANT_CREATE;
+		return;
+	}
+#ifdef OPENGL1_ENABLED
+	if (rendering_driver == "opengl1") {
+		const WindowData &window = windows[main_window];
+		FixedFunctionMacOS *backend = memnew(FixedFunctionMacOS);
+		r_error = backend->install((__bridge void *)window.window_view, window.size, p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
+		if (r_error != OK) {
+			memdelete(backend);
+			ERR_FAIL_MSG("Could not initialize Fixed Function OpenGL on macOS.");
+		}
+		fixed_function = backend;
+	}
+#endif // OPENGL1_ENABLED
 	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(DisplayServerEnums::WindowFlags(i), true, main_window);
@@ -4053,6 +4125,13 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		memdelete(native_menu);
 		native_menu = nullptr;
 	}
+
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		memdelete(fixed_function);
+		fixed_function = nullptr;
+	}
+#endif // OPENGL1_ENABLED
 
 	// Destroy all windows.
 	for (HashMap<DisplayServerEnums::WindowID, WindowData>::Iterator E = windows.begin(); E;) {

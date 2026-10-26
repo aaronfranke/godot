@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://resolution.gd" type="Script" id="1"]
+
+[node name="Resolution" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0.125, 0.25, 0.5, 1 )
+
+[node name="Viewport" type="SubViewport" parent="."]
+size = Vector2( 4608, 288 )
+disable_3d = true
+render_target_update_mode = 3
+
+[node name="Red" type="ColorRect" parent="Viewport"]
+offset_right = 2304.0
+offset_bottom = 288.0
+color = Color( 1, 0, 0, 1 )
+
+[node name="Blue" type="ColorRect" parent="Viewport"]
+offset_left = 2304.0
+offset_right = 4608.0
+offset_bottom = 288.0
+color = Color( 0, 0, 1, 1 )
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 620.0
+offset_bottom = 220.0
+expand_mode = 1

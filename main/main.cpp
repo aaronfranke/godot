@@ -1096,6 +1096,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String default_renderer = "";
 	String default_renderer_mobile = "";
 	String renderer_hints = "";
+	String fixed_function_drivers;
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
@@ -2519,10 +2520,40 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+	// Driver enumeration keeps this optional method available only in builds that provide it.
+	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+		for (const String &driver : DisplayServer::get_create_function_rendering_drivers(i)) {
+			if ((driver == "d3d9" || driver == "d3d7" || driver == "opengl1" || driver == "d3d3_software") && !fixed_function_drivers.contains(driver)) {
+				if (!fixed_function_drivers.is_empty()) {
+					fixed_function_drivers += ",";
+				}
+				fixed_function_drivers += driver;
+			}
+		}
+	}
+	if (!fixed_function_drivers.is_empty()) {
+		if (!renderer_hints.is_empty()) {
+			renderer_hints += ",";
+		}
+		renderer_hints += "fixed_function";
+		// Display order is independent of backend preference (the enumeration's first entry).
+		String driver_hints;
+		for (const char *driver : { "opengl1", "d3d9", "d3d7", "d3d3_software" }) {
+			if (fixed_function_drivers.split(",", false).has(driver)) {
+				if (!driver_hints.is_empty()) {
+					driver_hints += ",";
+				}
+				driver_hints += driver;
+			}
+		}
+		GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/fixed_function/driver", PROPERTY_HINT_ENUM, driver_hints), fixed_function_drivers.get_slicec(',', 0));
+	}
+
 	if (!rendering_method.is_empty()) {
 		if (rendering_method != "forward_plus" &&
 				rendering_method != "mobile" &&
 				rendering_method != "gl_compatibility" &&
+				(rendering_method != "fixed_function" || fixed_function_drivers.is_empty()) &&
 				rendering_method != "dummy") {
 			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
 					rendering_method.utf8().get_data());
@@ -2599,6 +2630,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				rendering_method = "dummy";
 			} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
 				rendering_method = "gl_compatibility";
+			} else if (rendering_driver == "d3d9" || rendering_driver == "d3d7" || rendering_driver == "opengl1" || rendering_driver == "d3d3_software") {
+				rendering_method = "fixed_function";
 			} else {
 				rendering_method = "forward_plus";
 			}
@@ -2628,6 +2661,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("opengl3_es");
 		}
 #endif
+		if (rendering_method == "fixed_function") {
+			for (const String &driver : fixed_function_drivers.split(",", false)) {
+				available_drivers.push_back(driver);
+			}
+		}
 		if (rendering_method == "dummy") {
 			available_drivers.push_back("dummy");
 		}
@@ -2667,8 +2705,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		rendering_method_source = OS::RenderingSource::RENDERING_SOURCE_PROJECT_SETTING;
 	}
 
+	if (rendering_method == "fixed_function" && fixed_function_drivers.is_empty()) {
+		OS::get_singleton()->print("Fixed Function is unavailable in this build.\n");
+		goto error;
+	}
 	if (rendering_driver.is_empty()) {
-		if (rendering_method == "dummy") {
+		if (rendering_method == "fixed_function") {
+			rendering_driver = GLOBAL_GET("rendering/fixed_function/driver");
+			rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_PROJECT_SETTING;
+		} else if (rendering_method == "dummy") {
 			rendering_driver = "dummy";
 		} else if (rendering_method == "gl_compatibility") {
 			rendering_driver = GLOBAL_GET("rendering/gl_compatibility/driver");
@@ -2681,9 +2726,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
+	if ((rendering_method == "fixed_function") != (rendering_driver == "d3d9" || rendering_driver == "d3d7" || rendering_driver == "opengl1" || rendering_driver == "d3d3_software") ||
+			(rendering_method == "fixed_function" && !fixed_function_drivers.split(",", false).has(rendering_driver))) {
+		OS::get_singleton()->print("Invalid Fixed Function rendering method/driver selection '%s' and '%s'.\n", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data());
+		goto error;
+	}
 
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, rendering_driver_source);
 	OS::get_singleton()->set_current_rendering_method(rendering_method, rendering_method_source);
+	if (rendering_method == "fixed_function") {
+		// The display server preflights the compositor before RenderingServer::init registers this setting.
+		GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
+	}
 
 #ifdef TOOLS_ENABLED
 	if (!force_res && project_manager) {
@@ -2796,6 +2850,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if !defined(THREADS_ENABLED)
 	separate_thread_render = 0;
 #endif
+	if (rendering_method == "fixed_function" && separate_thread_render) {
+		OS::get_singleton()->print("Fixed Function currently requires rendering on the main thread.\n");
+		goto error;
+	}
 	OS::get_singleton()->_separate_thread_render = separate_thread_render;
 
 	/* Determine audio and video drivers */
@@ -3345,6 +3403,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 			display_driver = GLOBAL_GET("display/display_server/driver");
 		}
 
+		const String rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
+#if defined(LINUXBSD_ENABLED) && defined(OPENGL1_ENABLED)
+		if (rendering_driver == "opengl1" && (display_driver.is_empty() || display_driver == "default" || display_driver == "wayland")) {
+			print_verbose("OpenGL1 uses the X11 display driver, including on Wayland via XWayland.");
+			display_driver = "x11";
+		}
+#endif
+
 		int display_driver_idx = -1;
 
 		if (display_driver.is_empty() || display_driver == "default") {
@@ -3413,7 +3479,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		accessibility_server->set_mode(accessibility_mode);
 
 		Error err;
-		String rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 		if (err != OK || display_server == nullptr) {
 			String last_name = DisplayServer::get_create_function_name(display_driver_idx);
@@ -3424,6 +3489,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 			for (int i = 0; i < DisplayServer::get_create_function_count() - 1; i++) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
+				}
+				if (rendering_driver == "opengl1" && !DisplayServer::get_create_function_rendering_drivers(i).has(rendering_driver)) {
+					continue;
 				}
 				String name = DisplayServer::get_create_function_name(i);
 				WARN_PRINT(vformat("Display driver %s failed, falling back to %s.", last_name, name));
@@ -3505,7 +3573,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 #endif
-		if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
+		if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS) || OS::get_singleton()->get_current_rendering_method() == "fixed_function") {
 			display_server->show_window(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
 

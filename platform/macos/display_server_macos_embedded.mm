@@ -251,6 +251,12 @@ DisplayServerMacOSEmbedded::~DisplayServerMacOSEmbedded() {
 }
 
 DisplayServer *DisplayServerMacOSEmbedded::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t /* p_parent_window */, Error &r_error) {
+#ifdef OPENGL1_ENABLED
+	if (p_rendering_driver == "opengl1") {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_V_MSG(nullptr, "Fixed Function requires a standalone window.");
+	}
+#endif // OPENGL1_ENABLED
 	return memnew(DisplayServerMacOSEmbedded(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
 }
 

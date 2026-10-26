@@ -9,15 +9,45 @@ Import("env")
 
 # Sources with tests must be explicitly linked first.
 force_link_sources = glob.glob("*/**/*.cpp", recursive=True)
+fixed_function_tests = []
+fixed_function_helpers = []
+fixed_function_force_link = []
+if any(env.get(driver, False) for driver in ("d3d3_software", "d3d7", "d3d9", "opengl1")):
+    # Compiled in the driver's test glob; only force its registration here.
+    fixed_function_force_link.append("#drivers/fixed_function/tests/test_fixed_function_scene_cpu.cpp")
+if env.get("d3d3_software", False):
+    fixed_function_tests.append("#drivers/d3d3_software/tests/test_graphics_device_d3d3_software.cpp")
+if env.get("d3d7", False):
+    fixed_function_tests.append("#drivers/d3d7/tests/test_graphics_device_d3d7.cpp")
+    fixed_function_helpers += [
+        source for source in env.Glob("#drivers/d3d7/tests/*.cpp") if source.name != "test_graphics_device_d3d7.cpp"
+    ]
+if env.get("d3d9", False):
+    fixed_function_tests.append("#drivers/d3d9/tests/test_graphics_device_d3d9.cpp")
+    fixed_function_helpers += [
+        source for source in env.Glob("#drivers/d3d9/tests/*.cpp") if source.name != "test_graphics_device_d3d9.cpp"
+    ]
+if env["platform"] == "windows" and env.get("opengl1", False):
+    fixed_function_tests.append("#drivers/opengl1/tests/test_graphics_device_opengl1.cpp")
+    fixed_function_helpers += [
+        source
+        for source in env.Glob("#drivers/opengl1/tests/*.cpp")
+        if source.name != "test_graphics_device_opengl1.cpp"
+    ]
+force_link_sources += fixed_function_tests
 force_link_header = env.CommandNoCache(
-    "force_link.gen.h", env.Value(force_link_sources), env.Run(test_builders.force_link_builder)
+    "force_link.gen.h",
+    env.Value(force_link_sources + fixed_function_force_link),
+    env.Run(test_builders.force_link_builder),
 )
 env.Depends(force_link_header, "test_builders.py")
 
 tests_obj = []
+env.add_source_files(tests_obj, fixed_function_helpers)
 if env["scu_build"]:
     # HACK: SCU setup doesn't support recursive/dynamic setup, so we must manually pass the files.
     env.add_source_files(tests_obj, glob.glob(".scu/*.cpp"))
+    env.add_source_files(tests_obj, fixed_function_tests)
 else:
     env.add_source_files(tests_obj, glob.glob("*.cpp") + force_link_sources)
 

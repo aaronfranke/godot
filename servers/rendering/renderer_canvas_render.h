@@ -49,6 +49,7 @@ public:
 		CANVAS_RECT_IS_GROUP = 64,
 		CANVAS_RECT_MSDF = 128,
 		CANVAS_RECT_LCD = 256,
+		CANVAS_RECT_FONT_GLYPH = 512,
 	};
 
 	struct Light {

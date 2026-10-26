@@ -54,20 +54,26 @@
 /drivers/sdl/**/SCsub                         @godotengine/input @godotengine/buildsystem
 
 ## Rendering
-/drivers/d3d3/                                @aaronfranke
-/drivers/d3d3/**/SCsub                        @aaronfranke @godotengine/buildsystem
+/drivers/d3d3_software/                       @aaronfranke
+/drivers/d3d3_software/**/SCsub               @aaronfranke @godotengine/buildsystem
+/drivers/d3d3_software/tests/                 @aaronfranke @godotengine/tests
 /drivers/d3d7/                                @aaronfranke
 /drivers/d3d7/**/SCsub                        @aaronfranke @godotengine/buildsystem
+/drivers/d3d7/tests/                          @aaronfranke @godotengine/tests
 /drivers/d3d9/                                @aaronfranke
 /drivers/d3d9/**/SCsub                        @aaronfranke @godotengine/buildsystem
+/drivers/d3d9/shaders/generate_shaders.py     @aaronfranke @godotengine/buildsystem
+/drivers/d3d9/tests/                          @aaronfranke @godotengine/tests
 /drivers/opengl1/                             @aaronfranke
 /drivers/opengl1/**/SCsub                     @aaronfranke @godotengine/buildsystem
+/drivers/opengl1/tests/                       @aaronfranke @godotengine/tests
 /drivers/d3d12/                               @godotengine/rendering
 /drivers/d3d12/**/SCsub                       @godotengine/rendering @godotengine/buildsystem
 /drivers/egl/                                 @godotengine/rendering
 /drivers/egl/**/SCsub                         @godotengine/rendering @godotengine/buildsystem
 /drivers/fixed_function/                      @aaronfranke
 /drivers/fixed_function/**/SCsub              @aaronfranke @godotengine/buildsystem
+/drivers/fixed_function/tests/                @aaronfranke @godotengine/tests
 /drivers/gl_context/                          @godotengine/rendering
 /drivers/gl_context/**/SCsub                  @godotengine/rendering @godotengine/buildsystem
 /drivers/gles3/                               @godotengine/rendering
@@ -446,6 +452,7 @@
 /platform/windows/**/*.py                     @godotengine/windows @godotengine/buildsystem
 /platform/windows/**/SCsub                    @godotengine/windows @godotengine/buildsystem
 /platform/windows/doc_classes/                @godotengine/windows @godotengine/documentation
+/platform/windows/fixed_function/tests/       @godotengine/windows @godotengine/tests
 
 # Scene
 

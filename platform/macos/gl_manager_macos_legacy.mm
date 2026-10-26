@@ -30,7 +30,7 @@
 
 #import "gl_manager_macos_legacy.h"
 
-#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
+#if defined(MACOS_ENABLED) && (defined(GLES3_ENABLED) || defined(OPENGL1_ENABLED))
 
 #include "core/os/os.h"
 
@@ -45,7 +45,7 @@ Error GLManagerLegacy_MacOS::create_context(GLWindow &win) {
 	NSOpenGLPixelFormatAttribute attributes[] = {
 		NSOpenGLPFADoubleBuffer,
 		NSOpenGLPFAClosestPolicy,
-		NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
+		NSOpenGLPFAOpenGLProfile, fixed_function ? NSOpenGLProfileVersionLegacy : NSOpenGLProfileVersion3_2Core,
 		NSOpenGLPFAColorSize, 32,
 		NSOpenGLPFADepthSize, 24,
 		NSOpenGLPFAStencilSize, 8,
@@ -62,7 +62,6 @@ Error GLManagerLegacy_MacOS::create_context(GLWindow &win) {
 	}
 
 	[win.context setView:win.window_view];
-	[win.context makeCurrentContext];
 
 	return OK;
 }
@@ -76,7 +75,9 @@ Error GLManagerLegacy_MacOS::window_create(DisplayServerEnums::WindowID p_window
 	}
 
 	windows[p_window_id] = win;
-	window_make_current(p_window_id);
+	if (!fixed_function) {
+		window_make_current(p_window_id);
+	}
 
 	return OK;
 }
@@ -188,7 +189,8 @@ NSOpenGLContext *GLManagerLegacy_MacOS::get_context(DisplayServerEnums::WindowID
 	return win.context;
 }
 
-GLManagerLegacy_MacOS::GLManagerLegacy_MacOS() {
+GLManagerLegacy_MacOS::GLManagerLegacy_MacOS(bool p_fixed_function) :
+		fixed_function(p_fixed_function) {
 	NSBundle *framework = [NSBundle bundleWithPath:@"/System/Library/Frameworks/OpenGL.framework"];
 	if (framework) {
 		void *library_handle = dlopen([framework.executablePath UTF8String], RTLD_NOW);
@@ -208,4 +210,4 @@ GLManagerLegacy_MacOS::~GLManagerLegacy_MacOS() {
 
 GODOT_CLANG_WARNING_POP
 
-#endif // MACOS_ENABLED && GLES3_ENABLED
+#endif // MACOS_ENABLED && (GLES3_ENABLED || OPENGL1_ENABLED)

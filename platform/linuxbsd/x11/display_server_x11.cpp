@@ -50,6 +50,10 @@
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
+#ifdef OPENGL1_ENABLED
+#include "x11/fixed_function_x11.h"
+#endif // OPENGL1_ENABLED
+
 #include <X11/Xatom.h>
 
 #ifdef SOWRAP_ENABLED
@@ -179,6 +183,11 @@ static String get_atom_name(Display *p_disp, Atom p_atom) {
 }
 
 bool DisplayServerX11::has_feature(DisplayServerEnums::Feature p_feature) const {
+#ifdef OPENGL1_ENABLED
+	if (fixed_function && (p_feature == DisplayServerEnums::FEATURE_SUBWINDOWS || p_feature == DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY)) {
+		return false;
+	}
+#endif // OPENGL1_ENABLED
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
 		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
@@ -1991,6 +2000,9 @@ Vector<DisplayServerEnums::WindowID> DisplayServerX11::get_window_list() const {
 DisplayServerEnums::WindowID DisplayServerX11::create_sub_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
+#ifdef OPENGL1_ENABLED
+	ERR_FAIL_COND_V_MSG(fixed_function, DisplayServerEnums::INVALID_WINDOW_ID, "Fixed Function currently supports only the main window.");
+#endif // OPENGL1_ENABLED
 	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, 0);
 	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -2091,6 +2103,11 @@ void DisplayServerX11::show_window(DisplayServerEnums::WindowID p_id) {
 			}
 
 			wd.size = sz;
+#ifdef OPENGL1_ENABLED
+			if (fixed_function) {
+				fixed_function->resize(sz);
+			}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 			if (rendering_context) {
 				rendering_context->window_set_size(p_id, sz.width, sz.height);
@@ -2185,6 +2202,16 @@ void DisplayServerX11::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 
 int64_t DisplayServerX11::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		if (p_handle_type == DisplayServerEnums::OPENGL_CONTEXT) {
+			return fixed_function->get_context_handle();
+		}
+		if (p_handle_type == DisplayServerEnums::GLX_VISUALID) {
+			return fixed_function->get_visual_id();
+		}
+	}
+#endif // OPENGL1_ENABLED
 	switch (p_handle_type) {
 		case DisplayServerEnums::DISPLAY_HANDLE: {
 			return (int64_t)x11_display;
@@ -2789,6 +2816,11 @@ void DisplayServerX11::window_set_size(const Size2i p_size, DisplayServerEnums::
 	}
 
 	// Keep rendering context window size in sync
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		fixed_function->resize(Size2i(xwa.width, xwa.height));
+	}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_size(p_window, xwa.width, xwa.height);
@@ -3346,6 +3378,9 @@ void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, b
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
+#ifdef OPENGL1_ENABLED
+	ERR_FAIL_COND_MSG(fixed_function && p_enabled && p_flag == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT, "Fixed Function requires an opaque window.");
+#endif // OPENGL1_ENABLED
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
@@ -4626,6 +4661,11 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	wd.position = new_rect.position;
 	wd.size = new_rect.size;
 
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		fixed_function->resize(wd.size);
+	}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_size(window_id, wd.size.width, wd.size.height);
@@ -5885,6 +5925,11 @@ void DisplayServerX11::set_context(DisplayServerEnums::Context p_context) {
 }
 
 bool DisplayServerX11::is_window_transparency_available() const {
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		return false;
+	}
+#endif // OPENGL1_ENABLED
 	CharString net_wm_cm_name = vformat("_NET_WM_CM_S%d", XDefaultScreen(x11_display)).ascii();
 	Atom net_wm_cm = XInternAtom(x11_display, net_wm_cm_name.get_data(), False);
 	if (net_wm_cm == None) {
@@ -5921,6 +5966,11 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 
 void DisplayServerX11::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+#ifdef OPENGL1_ENABLED
+	if (fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		fixed_function->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
+	}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
@@ -5939,6 +5989,11 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsy
 
 DisplayServerEnums::VSyncMode DisplayServerX11::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
+#ifdef OPENGL1_ENABLED
+	if (fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		return fixed_function->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
+	}
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
@@ -6391,6 +6446,9 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
 #endif
+#ifdef OPENGL1_ENABLED
+	drivers.push_back("opengl1");
+#endif // OPENGL1_ENABLED
 	drivers.push_back("dummy");
 
 	return drivers;
@@ -6487,6 +6545,15 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 
 	XVisualInfo visualInfo;
 	bool vi_selected = false;
+
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		if (fixed_function->choose_visual(visualInfo) != OK) {
+			return DisplayServerEnums::INVALID_WINDOW_ID;
+		}
+		vi_selected = true;
+	}
+#endif // OPENGL1_ENABLED
 
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
@@ -7172,6 +7239,17 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 		driver_found = true;
 	}
 
+#ifdef OPENGL1_ENABLED
+	if (rendering_driver == "opengl1") {
+		if ((p_flags & DisplayServerEnums::WINDOW_FLAG_TRANSPARENT_BIT) || OS::get_singleton()->is_separate_thread_rendering_enabled()) {
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Fixed Function requires an opaque window and main-thread rendering.");
+		}
+		fixed_function = memnew(FixedFunctionX11(x11_display));
+		driver_found = true;
+	}
+#endif // OPENGL1_ENABLED
+
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -7328,6 +7406,15 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 		r_error = ERR_CANT_CREATE;
 		return;
 	}
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		const WindowData &window = windows[main_window];
+		r_error = fixed_function->install(window.x11_window, window.size, p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
+		if (r_error != OK) {
+			return;
+		}
+	}
+#endif // OPENGL1_ENABLED
 	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(DisplayServerEnums::WindowFlags(i), true, main_window);
@@ -7538,14 +7625,24 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 
 DisplayServerX11::~DisplayServerX11() {
 	// Send owned clipboard data to clipboard manager before exit.
-	Window x11_main_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
-	if (x11_main_window) {
+	const WindowData *main_window = windows.getptr(DisplayServerEnums::MAIN_WINDOW_ID);
+	if (main_window && main_window->x11_window) {
+		const Window x11_main_window = main_window->x11_window;
 		_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
 		_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 	}
 
-	events_thread_done.set();
-	events_thread.wait_to_finish();
+	if (events_thread.is_started()) {
+		events_thread_done.set();
+		events_thread.wait_to_finish();
+	}
+
+#ifdef OPENGL1_ENABLED
+	if (fixed_function) {
+		memdelete(fixed_function);
+		fixed_function = nullptr;
+	}
+#endif // OPENGL1_ENABLED
 
 	if (native_menu) {
 		memdelete(native_menu);

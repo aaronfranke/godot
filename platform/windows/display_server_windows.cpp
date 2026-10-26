@@ -30,6 +30,10 @@
 
 #include "display_server_windows.h"
 
+#ifdef FIXED_FUNCTION_ENABLED
+#include "fixed_function/fixed_function_windows.h"
+#endif
+
 #include "drop_target_windows.h"
 #include "key_mapping_windows.h"
 #include "native_menu_windows.h"
@@ -169,6 +173,9 @@ static void update_ime_form_positions(HIMC p_himc, const Point2i &p_pos, const R
 }
 
 bool DisplayServerWindows::has_feature(DisplayServerEnums::Feature p_feature) const {
+	if (_fixed_function && (p_feature == DisplayServerEnums::FEATURE_SUBWINDOWS || p_feature == DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY)) {
+		return false;
+	}
 	switch (p_feature) {
 #ifndef DISABLE_DEPRECATED
 		case DisplayServerEnums::FEATURE_GLOBAL_MENU: {
@@ -1914,6 +1921,7 @@ DisplayServerEnums::WindowID DisplayServerWindows::get_window_at_screen_position
 }
 
 DisplayServerEnums::WindowID DisplayServerWindows::create_sub_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent) {
+	ERR_FAIL_COND_V_MSG(_fixed_function, DisplayServerEnums::INVALID_WINDOW_ID, "Fixed Function currently supports only the main window.");
 	_THREAD_SAFE_METHOD_
 
 	bool no_redirection_bitmap = false;
@@ -2130,6 +2138,9 @@ int64_t DisplayServerWindows::window_get_native_handle(DisplayServerEnums::Handl
 		}
 #if defined(GLES3_ENABLED)
 		case DisplayServerEnums::WINDOW_VIEW: {
+			if (_fixed_function) {
+				return 0;
+			}
 			if (gl_manager_native) {
 				return (int64_t)gl_manager_native->get_hdc(p_window);
 			} else {
@@ -2582,6 +2593,13 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, DisplayServerEnu
 
 	int w = p_size.width;
 	int h = p_size.height;
+#ifdef FIXED_FUNCTION_ENABLED
+	const Size2i limit = _fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID ? _fixed_function->get_max_window_size() : Size2i();
+	if (limit != Size2i()) {
+		w = MIN(w, limit.x);
+		h = MIN(h, limit.y);
+	}
+#endif
 	RECT rect;
 	GetWindowRect(wd.hWnd, &rect);
 
@@ -2911,6 +2929,13 @@ void DisplayServerWindows::window_set_mode(DisplayServerEnums::WindowMode p_mode
 		_update_window_style(p_window, false);
 
 		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(cs) : Vector2i();
+#ifdef FIXED_FUNCTION_ENABLED
+		if (_fixed_function && p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+			// The style change recomputes fullscreen from the old rectangle. Restore the
+			// requested state so the following resize bypasses the Restricted window cap.
+			wd.fullscreen = true;
+		}
+#endif
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 
 		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
@@ -2955,6 +2980,7 @@ bool DisplayServerWindows::window_is_maximize_allowed(DisplayServerEnums::Window
 }
 
 void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND_MSG(_fixed_function && p_enabled && p_flag == DisplayServerEnums::WINDOW_FLAG_TRANSPARENT, "Fixed Function requires an opaque window.");
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -5114,6 +5140,15 @@ void DisplayServerWindows::delete_status_indicator(DisplayServerEnums::Indicator
 
 void DisplayServerWindows::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_fixed_function) {
+		ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
+		const bool enabled = p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED;
+		ERR_FAIL_COND(_fixed_function->set_use_vsync(enabled) != OK);
+		_fixed_function_vsync = enabled;
+		return;
+	}
+#endif
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
@@ -5134,6 +5169,9 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServerEnums::VSyncMode p
 
 DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
+	if (_fixed_function) {
+		return _fixed_function_vsync ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
+	}
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
@@ -5438,6 +5476,9 @@ void DisplayServerWindows::set_context(DisplayServerEnums::Context p_context) {
 }
 
 bool DisplayServerWindows::is_window_transparency_available() const {
+	if (_fixed_function) {
+		return false;
+	}
 #if defined(RD_ENABLED)
 	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
 		return false;
@@ -5857,13 +5898,23 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				Size2 decor = window_get_size_with_decorations(window_id) - window_get_size(window_id);
 
 				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
+				Size2i effective_max = windows[window_id].max_size;
+#ifdef FIXED_FUNCTION_ENABLED
+				const Size2i renderer_max = _fixed_function && window_id == DisplayServerEnums::MAIN_WINDOW_ID ? _fixed_function->get_max_window_size() : Size2i();
+				if (renderer_max != Size2i()) {
+					const Size2i outer_max = _fixed_function->get_max_window_size(true);
+					decor = Size2(outer_max.x - renderer_max.x, outer_max.y - renderer_max.y);
+					effective_max.x = effective_max.x > 0 ? MIN(effective_max.x, renderer_max.x) : renderer_max.x;
+					effective_max.y = effective_max.y > 0 ? MIN(effective_max.y, renderer_max.y) : renderer_max.y;
+				}
+#endif
 				if (windows[window_id].min_size != Size2()) {
 					min_max_info->ptMinTrackSize.x = windows[window_id].min_size.x + decor.x;
 					min_max_info->ptMinTrackSize.y = windows[window_id].min_size.y + decor.y;
 				}
-				if (windows[window_id].max_size != Size2()) {
-					min_max_info->ptMaxTrackSize.x = windows[window_id].max_size.x + decor.x;
-					min_max_info->ptMaxTrackSize.y = windows[window_id].max_size.y + decor.y;
+				if (effective_max != Size2i()) {
+					min_max_info->ptMaxTrackSize.x = effective_max.x + decor.x;
+					min_max_info->ptMaxTrackSize.y = effective_max.y + decor.y;
 				}
 				if (windows[window_id].borderless) {
 					Rect2i screen_rect = screen_get_usable_rect(window_get_current_screen(window_id));
@@ -5874,9 +5925,28 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					min_max_info->ptMaxSize.x = screen_rect.size.x;
 					min_max_info->ptMaxSize.y = screen_rect.size.y;
 				}
+#ifdef FIXED_FUNCTION_ENABLED
+				if (renderer_max != Size2i()) {
+					min_max_info->ptMaxSize.x = MIN(min_max_info->ptMaxSize.x, LONG(effective_max.x + decor.x));
+					min_max_info->ptMaxSize.y = MIN(min_max_info->ptMaxSize.y, LONG(effective_max.y + decor.y));
+					min_max_info->ptMinTrackSize.x = MIN(min_max_info->ptMinTrackSize.x, min_max_info->ptMaxTrackSize.x);
+					min_max_info->ptMinTrackSize.y = MIN(min_max_info->ptMinTrackSize.y, min_max_info->ptMaxTrackSize.y);
+				}
+#endif
 				return 0;
 			}
 		} break;
+#ifdef FIXED_FUNCTION_ENABLED
+		case WM_WINDOWPOSCHANGING: {
+			// Constrain ordinary native/programmatic resizing; forced fullscreen uses Stretch.
+			const Size2i limit = _fixed_function && window_id == DisplayServerEnums::MAIN_WINDOW_ID ? _fixed_function->get_max_window_size(true) : Size2i();
+			WINDOWPOS *position = reinterpret_cast<WINDOWPOS *>(lParam);
+			if (!windows[window_id].fullscreen && limit != Size2i() && !(position->flags & SWP_NOSIZE)) {
+				position->cx = MIN(position->cx, limit.x);
+				position->cy = MIN(position->cy, limit.y);
+			}
+		} break;
+#endif
 		case WM_ERASEBKGND: {
 			Color early_color;
 			if (!_get_window_early_clear_override(early_color)) {
@@ -6804,6 +6874,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					rect_changed = true;
 				}
+#ifdef FIXED_FUNCTION_ENABLED
+				if (_fixed_function && window_id == DisplayServerEnums::MAIN_WINDOW_ID) {
+					const Size2i size = window.minimized ? Size2i() : Size2i(window.width + off.x, window.height + off.y);
+					if (_fixed_function->resize(size) != OK) {
+						ERR_PRINT("Fixed Function resize failed.");
+					}
+				}
+#endif
 #if defined(RD_ENABLED)
 				if (window.create_completed && rendering_context && window.rendering_context_window_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
@@ -8437,6 +8515,28 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 #endif
 #endif
 
+#ifdef FIXED_FUNCTION_ENABLED
+	for (int i = 0; i < FixedFunctionWindows::get_driver_count(); i++) {
+		if (rendering_driver == FixedFunctionWindows::get_driver_name(i)) {
+			tested_drivers.set_flag(DRIVER_ID_FIXED_FUNCTION);
+			if ((p_flags & (1 << DisplayServerEnums::WINDOW_FLAG_TRANSPARENT)) || OS::get_singleton()->is_separate_thread_rendering_enabled()) {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Fixed Function requires an opaque window and main-thread rendering.");
+			}
+			_fixed_function = memnew(FixedFunctionWindows);
+			WindowData &window = windows[DisplayServerEnums::MAIN_WINDOW_ID];
+			r_error = _fixed_function->install(i, window.hWnd, Size2i(window.width, window.height), p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
+			if (r_error != OK) {
+				return;
+			}
+			if (!window.fullscreen && !window.maximized && _fixed_function->get_max_window_size() != Size2i()) {
+				window_set_size(Size2i(window.width, window.height), DisplayServerEnums::MAIN_WINDOW_ID);
+			}
+			break;
+		}
+	}
+#endif
+
 	window_set_vsync_mode(p_vsync_mode, DisplayServerEnums::MAIN_WINDOW_ID);
 
 #ifdef SDL_ENABLED
@@ -8528,6 +8628,11 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	drivers.push_back("opengl3_angle");
 #endif
 #endif
+#ifdef FIXED_FUNCTION_ENABLED
+	for (int i = 0; i < FixedFunctionWindows::get_driver_count(); i++) {
+		drivers.push_back(FixedFunctionWindows::get_driver_name(i));
+	}
+#endif
 	drivers.push_back("dummy");
 
 	return drivers;
@@ -8536,7 +8641,9 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
-		if (tested_drivers == 0) {
+		if (tested_drivers.has_flag(DRIVER_ID_FIXED_FUNCTION)) {
+			ERR_PRINT("The selected Fixed Function driver could not initialize.");
+		} else if (tested_drivers == 0) {
 			OS::get_singleton()->alert("Failed to register the window class.", "Unable to initialize DisplayServer");
 		} else if (tested_drivers.has_flag(DRIVER_ID_RD_VULKAN) || tested_drivers.has_flag(DRIVER_ID_RD_D3D12)) {
 			Vector<String> drivers;
@@ -8643,6 +8750,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 #ifdef GLES3_ENABLED
 	// destroy windows .. NYI?
 	// FIXME wglDeleteContext is never called
+#endif
+
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_fixed_function) {
+		memdelete(_fixed_function);
+		_fixed_function = nullptr;
+	}
 #endif
 
 	if (windows.has(DisplayServerEnums::MAIN_WINDOW_ID)) {

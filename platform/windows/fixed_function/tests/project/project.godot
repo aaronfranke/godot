@@ -1,0 +1,22 @@
+config_version=5
+
+[application]
+config/name="Fixed Function Windows smoke"
+run/main_scene="res://smoke.tscn"
+
+[debug]
+file_logging/enable_file_logging=false
+file_logging/enable_file_logging.pc=false
+
+[display]
+window/size/viewport_width=320
+window/size/viewport_height=200
+window/size/window_width_override=320
+window/size/window_height_override=200
+
+[rendering]
+shader_compiler/shader_cache/enabled=false
+renderer/rendering_method="fixed_function"
+renderer/rendering_method.mobile="fixed_function"
+fixed_function/driver="d3d9"
+environment/defaults/default_clear_color=Color(0, 0, 1, 1)

@@ -30,9 +30,7 @@
 
 #pragma once
 
-#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
-
-#include "platform_gl.h"
+#if defined(MACOS_ENABLED) && (defined(GLES3_ENABLED) || defined(OPENGL1_ENABLED))
 
 #include "core/error/error_list.h"
 #include "core/templates/rb_map.h"
@@ -41,6 +39,7 @@
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
+#import <OpenGL/OpenGL.h>
 
 GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
@@ -61,6 +60,7 @@ class GLManagerLegacy_MacOS {
 
 	Error create_context(GLWindow &win);
 
+	bool fixed_function = false;
 	bool framework_loaded = false;
 	bool use_vsync = false;
 	CGLEnablePtr CGLEnable = nullptr;
@@ -86,10 +86,10 @@ public:
 
 	NSOpenGLContext *get_context(DisplayServerEnums::WindowID p_window_id);
 
-	GLManagerLegacy_MacOS();
+	explicit GLManagerLegacy_MacOS(bool p_fixed_function = false);
 	~GLManagerLegacy_MacOS();
 };
 
-GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_POP
 
-#endif // MACOS_ENABLED && GLES3_ENABLED
+#endif // MACOS_ENABLED && (GLES3_ENABLED || OPENGL1_ENABLED)
