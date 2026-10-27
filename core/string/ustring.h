@@ -284,10 +284,10 @@ class [[nodiscard]] _WARN_UNUSED_ String {
 
 	// NULL-terminated c string copy - automatically parse the string to find the length.
 	void append_latin1(const char *p_cstr) {
-		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
+		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : (size_t)0));
 	}
 	void append_utf32(const char32_t *p_cstr) {
-		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
+		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : (size_t)0));
 	}
 	void append_wstring(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED

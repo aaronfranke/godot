@@ -412,7 +412,7 @@ public:
 	}
 
 	RID_Alloc(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) {
-		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
+		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? (size_t)1 : (p_target_chunk_byte_size / sizeof(T));
 		if constexpr (THREAD_SAFE) {
 			chunk_limit = (p_maximum_number_of_elements / elements_in_chunk) + 1;
 			chunks = (Chunk **)memalloc(sizeof(Chunk *) * chunk_limit);

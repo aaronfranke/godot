@@ -303,7 +303,7 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 }
 
 static inline size_t _padding(size_t p_s, size_t p_a) {
-	return (p_s % p_a == 0) ? 0 : (p_a - p_s % p_a);
+	return (p_s % p_a == 0) ? (size_t)0 : (p_a - p_s % p_a);
 }
 
 Error EditorExportPlatformLinuxBSD::fixup_debug_symbol_link(const String &p_path, const String &p_symbol_file) {

@@ -96,13 +96,13 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 
 	void *mem;
 	if constexpr (p_ensure_zero) {
-		mem = calloc(1, p_bytes + (prepad ? DATA_OFFSET : 0));
+		mem = calloc(1, p_bytes + (prepad ? DATA_OFFSET : (size_t)0));
 	} else {
-		mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
+		mem = malloc(p_bytes + (prepad ? DATA_OFFSET : (size_t)0));
 	}
 
 	ERR_FAIL_NULL_V(mem, nullptr);
-	GodotProfileAlloc(mem, p_bytes + (prepad ? DATA_OFFSET : 0));
+	GodotProfileAlloc(mem, p_bytes + (prepad ? DATA_OFFSET : (size_t)0));
 
 	if (prepad) {
 		uint8_t *s8 = (uint8_t *)mem;

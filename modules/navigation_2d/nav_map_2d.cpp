@@ -482,12 +482,12 @@ void NavMap2D::_update_rvo_obstacles_tree() {
 				rvo_obstacle->nextObstacle_->prevObstacle_ = rvo_obstacle;
 			}
 
-			rvo_obstacle->unitDir_ = normalize(rvo_vertices[(i == rvo_vertices.size() - 1 ? 0 : i + 1)] - rvo_vertices[i]);
+			rvo_obstacle->unitDir_ = normalize(rvo_vertices[(i == rvo_vertices.size() - 1 ? (size_t)0 : i + 1)] - rvo_vertices[i]);
 
 			if (rvo_vertices.size() == 2) {
 				rvo_obstacle->isConvex_ = true;
 			} else {
-				rvo_obstacle->isConvex_ = (leftOf(rvo_vertices[(i == 0 ? rvo_vertices.size() - 1 : i - 1)], rvo_vertices[i], rvo_vertices[(i == rvo_vertices.size() - 1 ? 0 : i + 1)]) >= 0.0f);
+				rvo_obstacle->isConvex_ = (leftOf(rvo_vertices[(i == 0 ? rvo_vertices.size() - 1 : i - 1)], rvo_vertices[i], rvo_vertices[(i == rvo_vertices.size() - 1 ? (size_t)0 : i + 1)]) >= 0.0f);
 			}
 
 			rvo_obstacle->id_ = raw_obstacles.size();
