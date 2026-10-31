@@ -5206,7 +5206,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
 	uint64_t value_index = 0;
-	int selected_index = -1;
+	int64_t selected_index = -1;
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;
