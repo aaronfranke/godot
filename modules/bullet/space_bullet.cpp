@@ -670,6 +670,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	gjk_epa_pen_solver = bulletnew(btGjkEpaPenetrationDepthSolver);
 	gjk_simplex_solver = bulletnew(btVoronoiSimplexSolver);
 
+	// The collision configuration needs the world address before placement construction.
 	void *world_mem;
 	if (p_create_soft_world) {
 		world_mem = btAlignedAlloc(sizeof(btSoftRigidDynamicsWorld), alignof(btSoftRigidDynamicsWorld));

@@ -138,7 +138,9 @@ static String locale;
 static bool show_help = false;
 static bool auto_quit = false;
 static OS::ProcessID allow_focus_steal_pid = 0;
+#ifndef TOOLS_ENABLED
 static bool delta_sync_after_draw = false;
+#endif // TOOLS_ENABLED
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
@@ -1367,7 +1369,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec", PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater")); // No negative numbers
 
+#ifdef TOOLS_ENABLED
+	GLOBAL_DEF("application/run/delta_sync_after_draw", false);
+#else
 	delta_sync_after_draw = GLOBAL_DEF("application/run/delta_sync_after_draw", false);
+#endif // TOOLS_ENABLED
 	GLOBAL_DEF("application/run/delta_smoothing", true);
 	if (!delta_smoothing_override) {
 		OS::get_singleton()->set_delta_smoothing(GLOBAL_GET("application/run/delta_smoothing"));
