@@ -285,7 +285,6 @@ class OS_Windows : public OS {
 	int min_pressure;
 	int max_pressure;
 	bool tilt_supported;
-	bool pen_inverted = false;
 	bool block_mm = false;
 
 	int last_pressure_update;
@@ -344,7 +343,6 @@ class OS_Windows : public OS {
 
 	Size2 window_rect;
 	VideoMode video_mode;
-	bool non_ex_fs = false;
 	bool preserve_window_size = false;
 
 	MainLoop *main_loop;

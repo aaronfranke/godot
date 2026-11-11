@@ -425,7 +425,8 @@ def configure_mingw(env):
 
     ## Compile flags
 
-    env.Append(CCFLAGS=["-mwindows"])
+    if not env["use_llvm"]:
+        env.Append(CCFLAGS=["-mwindows"])
     env.Append(LINKFLAGS=["-Wl,--nxcompat"])  # DEP protection. Not enabling ASLR for now, Mono crashes.
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "OPENGL_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(CPPDEFINES=[("WINVER", env["target_win_version"]), ("_WIN32_WINNT", env["target_win_version"])])

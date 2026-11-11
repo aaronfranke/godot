@@ -54,8 +54,6 @@
 #include <regstr.h>
 #include <shlobj.h>
 
-static const WORD MAX_CONSOLE_LINES = 1500;
-
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -2408,7 +2406,7 @@ void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 		if (p_enabled) {
 			//enable per-pixel alpha
 
-			DWM_BLURBEHIND bb = { 0 };
+			DWM_BLURBEHIND bb = {};
 			HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
 			bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
 			bb.hRgnBlur = hRgn;
@@ -2420,7 +2418,7 @@ void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 			//disable per-pixel alpha
 			layered_window = false;
 
-			DWM_BLURBEHIND bb = { 0 };
+			DWM_BLURBEHIND bb = {};
 			HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
 			bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
 			bb.hRgnBlur = hRgn;
