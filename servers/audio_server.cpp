@@ -329,7 +329,7 @@ void AudioDriverManager::initialize(int p_driver) {
 #ifndef GODOT_AUDIO_DRIVER_DISALLOW_MUTING
 		// Note that these can be set differently on different platforms if desired.
 		// e.g. Android may want to ensure mute when app paused etc.
-		_mute_state = mute_driver ? MuteFlags::MUTE_FLAG_DISABLED : 0;
+		_mute_state = mute_driver ? uint32_t(MuteFlags::MUTE_FLAG_DISABLED) : 0;
 
 		// Sensitive to all but focus and quiet mode.
 		_mute_state_mask = MuteFlags::MUTE_FLAG_DISABLED;

@@ -68,6 +68,11 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 static bool default_render_device_changed = false;
 static bool default_capture_device_changed = false;
 
+#if defined(__GNUC__) && !defined(__clang__)
+// COM clients release IMMNotificationClient through Release(). The SDK interface has no virtual destructor.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif // defined(__GNUC__) && !defined(__clang__)
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef;
 	IMMDeviceEnumerator *_pEnumerator;
@@ -137,6 +142,9 @@ public:
 		return S_OK;
 	}
 };
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif // defined(__GNUC__) && !defined(__clang__)
 
 static CMMNotificationClient notif_client;
 
