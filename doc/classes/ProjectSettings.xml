@@ -1770,7 +1770,7 @@
 		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;GLES3&quot;">
 			The video driver to use ("GLES2" or "GLES3").
-			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
+			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. This setting retains the configured value. Pass [method OS.get_current_video_driver] to [method OS.get_video_driver_name] to get the active driver's name.
 		</member>
 		<member name="rendering/quality/driver/fallback_to_gles2" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 driver is not supported.

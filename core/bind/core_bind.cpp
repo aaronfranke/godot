@@ -1611,6 +1611,15 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES2);
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES3);
 
+	const OS *os = OS::get_singleton();
+	const int driver_count = os->get_video_driver_count();
+	for (int driver = 0; driver < driver_count; driver++) {
+		const char *enum_name = os->get_video_driver_enum_name(driver);
+		if (enum_name) {
+			ClassDB::bind_integer_constant(get_class_static(), "VideoDriver", enum_name, driver);
+		}
+	}
+
 	BIND_ENUM_CONSTANT(DAY_SUNDAY);
 	BIND_ENUM_CONSTANT(DAY_MONDAY);
 	BIND_ENUM_CONSTANT(DAY_TUESDAY);

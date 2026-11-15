@@ -1187,7 +1187,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 	GLOBAL_DEF_RST("rendering/quality/driver/driver_name", "GLES3");
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, "GLES2,GLES3"));
+	{
+		// Collect enabled video drivers. Group the OpenGL choices first, with GLES2 and GLES3 at the top.
+		Vector<String> video_drivers;
+		for (int i = 0; i < OS::get_singleton()->get_video_driver_count(); i++) {
+			String driver = OS::get_singleton()->get_video_driver_name(i);
+			if (driver == "GLES2") {
+				video_drivers.insert(0, driver);
+			} else if (driver == "GLES3") {
+				const int position = !video_drivers.empty() && video_drivers[0] == "GLES2" ? 1 : 0;
+				video_drivers.insert(position, driver);
+			} else if (driver == "OpenGL1") {
+				int position = 0;
+				while (position < video_drivers.size() && (video_drivers[position] == "GLES2" || video_drivers[position] == "GLES3")) {
+					position++;
+				}
+				video_drivers.insert(position, driver);
+			} else {
+				video_drivers.push_back(driver);
+			}
+		}
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, String(",").join(video_drivers)));
+	}
 	if (video_driver == "") {
 		video_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
@@ -1396,7 +1417,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	message_queue = memnew(MessageQueue);
 
 	if (p_second_phase) {
-		return setup2();
+		exit_code = setup2();
+		if (exit_code != OK) {
+			goto error;
+		}
+		return OK;
 	}
 	OS::get_singleton()->benchmark_end_measure("core");
 	return OK;
@@ -1887,6 +1912,8 @@ bool Main::start() {
 
 		print_line("Merging docs...");
 		doc.merge_from(docsrc);
+		// The class reference includes drivers that this build may omit or number differently.
+		doc.preserve_optional_video_driver_constants(docsrc);
 		for (Set<String>::Element *E = checked_paths.front(); E; E = E->next()) {
 			print_line("Erasing old docs at: " + E->get());
 			DocData::erase_classes(E->get());

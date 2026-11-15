@@ -122,6 +122,7 @@ public:
 
 public:
 	void merge_from(const DocData &p_data);
+	void preserve_optional_video_driver_constants(const DocData &p_source);
 	void remove_from(const DocData &p_data);
 	void generate(bool p_basic_types = false);
 	Error load_classes(const String &p_dir);
