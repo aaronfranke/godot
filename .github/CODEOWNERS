@@ -68,6 +68,9 @@
 /drivers/vulkan/**/SCsub                      @godotengine/rendering @godotengine/buildsystem
 
 ## OS
+/drivers/win_legacy/                          @aaronfranke
+/drivers/win_legacy/**/*.py                   @aaronfranke @godotengine/buildsystem
+/drivers/win_legacy/**/SCsub                  @aaronfranke @godotengine/buildsystem
 /drivers/apple/                               @godotengine/macos @godotengine/ios
 /drivers/apple/**/SCsub                       @godotengine/macos @godotengine/ios @godotengine/buildsystem
 /drivers/apple_embedded/                      @godotengine/ios
@@ -423,6 +426,18 @@
 /platform/web/**/SCsub                        @godotengine/web @godotengine/buildsystem
 /platform/web/doc_classes/                    @godotengine/web @godotengine/documentation
 /platform/web/editor/                         @godotengine/web @godotengine/editor
+/platform/win_9x/                             @aaronfranke
+/platform/win_9x/**/*.py                      @aaronfranke @godotengine/buildsystem
+/platform/win_9x/**/SCsub                     @aaronfranke @godotengine/buildsystem
+/platform/win_nt4/                            @aaronfranke
+/platform/win_nt4/**/*.py                     @aaronfranke @godotengine/buildsystem
+/platform/win_nt4/**/SCsub                    @aaronfranke @godotengine/buildsystem
+/platform/win_nt5/                            @aaronfranke
+/platform/win_nt5/**/*.py                     @aaronfranke @godotengine/buildsystem
+/platform/win_nt5/**/SCsub                    @aaronfranke @godotengine/buildsystem
+/platform/win_nt6/                            @aaronfranke
+/platform/win_nt6/**/*.py                     @aaronfranke @godotengine/buildsystem
+/platform/win_nt6/**/SCsub                    @aaronfranke @godotengine/buildsystem
 /platform/windows/                            @godotengine/windows
 /platform/windows/**/*.py                     @godotengine/windows @godotengine/buildsystem
 /platform/windows/**/SCsub                    @godotengine/windows @godotengine/buildsystem

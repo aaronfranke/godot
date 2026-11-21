@@ -11,6 +11,7 @@ supported = env.get("supported", [])
 # OS drivers
 SConscript("unix/SCsub")
 SConscript("windows/SCsub")
+SConscript("win_legacy/SCsub")
 
 # Sounds drivers
 SConscript("alsa/SCsub")

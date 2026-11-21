@@ -74,6 +74,10 @@ if env.editor_build:
     env.add_source_files(env.editor_sources, gen_exporters)
     env.add_source_files(env.editor_sources, translation_targets.keys())
 
+    # Keep shared exporters in the same archive as their callers, so single-pass
+    # linkers can resolve them without a backward dependency on the drivers archive.
+    env.add_source_files(env.editor_sources, Glob("#drivers/win_legacy/export/*.cpp"))
+
     SConscript("animation/SCsub")
     SConscript("asset_library/SCsub")
     SConscript("audio/SCsub")
