@@ -6945,7 +6945,17 @@ void EditorNode::_restart_editor(bool p_goto_project_manager) {
 	_exit_editor(EXIT_SUCCESS);
 
 	List<String> args;
+	bool skip_renderer_value = false;
 	for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
+		if (skip_renderer_value) {
+			skip_renderer_value = false;
+			continue;
+		}
+		if (_restart_for_renderer_change && (a == "--rendering-method" || a == "--rendering-driver")) {
+			// A deliberate renderer change supersedes the old CLI choice; ordinary restarts retain it.
+			skip_renderer_value = true;
+			continue;
+		}
 		args.push_back(a);
 	}
 
@@ -8004,6 +8014,7 @@ String EditorNode::_to_rendering_method_display_name(const String &p_rendering_m
 
 void EditorNode::_set_renderer_name_save_and_restart(const String &p_rendering_method) {
 	ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method", p_rendering_method);
+	_restart_for_renderer_change = true;
 
 	if (p_rendering_method == "mobile" || p_rendering_method == "gl_compatibility") {
 		// Also change the mobile override if changing to a compatible renderer.

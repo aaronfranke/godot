@@ -1120,7 +1120,7 @@ ProjectDialog::ProjectDialog() {
 	Container *rvb = memnew(VBoxContainer);
 	rshc->add_child(rvb);
 
-	String default_renderer_type = "forward_plus";
+	String default_renderer_type = OS::get_singleton()->get_current_rendering_method();
 	if (EditorSettings::get_singleton()->has_setting("project_manager/default_renderer")) {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
@@ -1173,6 +1173,18 @@ ProjectDialog::ProjectDialog() {
 		rs_button->set_pressed(true);
 	}
 #endif
+
+	// Saved choices can name a method omitted from this editor build.
+	if (!renderer_button_group->get_pressed_button() || renderer_button_group->get_pressed_button()->is_disabled()) {
+		List<BaseButton *> buttons;
+		renderer_button_group->get_buttons(&buttons);
+		for (BaseButton *button : buttons) {
+			if (!button->is_disabled()) {
+				button->set_pressed(true);
+				break;
+			}
+		}
+	}
 	rshc->add_child(memnew(VSeparator));
 
 	// Right hand side, used for text explaining each choice.

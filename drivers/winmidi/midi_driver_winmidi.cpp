@@ -48,11 +48,11 @@ Error MIDIDriverWinMidi::open() {
 	int device_index = 0;
 	for (UINT i = 0; i < midiInGetNumDevs(); i++) {
 		HMIDIIN midi_in;
-		MIDIINCAPS caps;
+		MIDIINCAPSW caps;
 
 		MMRESULT open_res = midiInOpen(&midi_in, i, (DWORD_PTR)read,
 				(DWORD_PTR)device_index, CALLBACK_FUNCTION);
-		MMRESULT caps_res = midiInGetDevCaps(i, &caps, sizeof(MIDIINCAPS));
+		MMRESULT caps_res = midiInGetDevCapsW(i, &caps, sizeof(caps));
 
 		if (open_res == MMSYSERR_NOERROR) {
 			midiInStart(midi_in);
@@ -67,9 +67,12 @@ Error MIDIDriverWinMidi::open() {
 			// Only increment device index for successfully connected devices.
 			device_index++;
 		} else {
-			char err[256];
-			midiInGetErrorText(open_res, err, 256);
-			ERR_PRINT("midiInOpen error: " + String(err));
+			wchar_t message[256];
+			if (midiInGetErrorTextW(open_res, message, ARRAYSIZE(message)) == MMSYSERR_NOERROR) {
+				ERR_PRINT("midiInOpen error: " + String(message));
+			} else {
+				ERR_PRINT("midiInOpen error: " + itos(open_res));
+			}
 
 			if (caps_res == MMSYSERR_NOERROR) {
 				ERR_PRINT("Can't open MIDI device \"" + String(caps.szPname) + "\", is it being used by another application?");

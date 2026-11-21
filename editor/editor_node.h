@@ -650,6 +650,7 @@ private:
 	void _queue_resource_counter_changed();
 	void _emit_resource_counter_changed();
 
+	bool _restart_for_renderer_change = false;
 	void _renderer_selected(int p_index);
 	void _update_renderer_color();
 	String _to_rendering_method_display_name(const String &p_rendering_method) const;

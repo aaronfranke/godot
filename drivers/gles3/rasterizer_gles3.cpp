@@ -89,9 +89,11 @@
 // We can debug GL if we use GLAD or EGL, so not on iOS or Web.
 #define GL_DEBUG_CALLBACK
 
-#ifdef _WIN32
+#ifdef _MSC_VER
+// Avoid MSVC's deprecated-CRT warning. Other toolchains can target older
+// MSVCRT releases that do not export strcpy_s.
 #define strcpy strcpy_s
-#endif
+#endif // _MSC_VER
 #endif // GLAD_ENABLED || EGL_ENABLED || ANDROID_ENABLED
 
 #ifdef WINDOWS_ENABLED

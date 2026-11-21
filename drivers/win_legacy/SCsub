@@ -2,3 +2,8 @@
 from misc.utility.scons_hints import *
 
 Import("env")
+
+SConscript("common/SCsub")
+
+if env["platform"] == "win_nt6":
+    SConscript("nt/SCsub")

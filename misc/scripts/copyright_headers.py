@@ -55,6 +55,8 @@ for f in sys.argv[1:]:
     elif len_fl < len_fi:
         for x in range(len_fi - len_fl):
             rep_fl += " "
+
+    text = ""
     if header.find(rep_fl) != -1:
         text = header.replace(rep_fl, rep_fi)
     else:

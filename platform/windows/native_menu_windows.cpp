@@ -30,9 +30,8 @@
 
 #include "native_menu_windows.h"
 
-#include "display_server_windows.h"
-
 #include "scene/resources/image_texture.h"
+#include "servers/display/display_server.h"
 
 HBITMAP NativeMenuWindows::_make_bitmap(const Ref<Image> &p_img) const {
 	p_img->convert(Image::FORMAT_RGBA8);
@@ -81,14 +80,16 @@ void NativeMenuWindows::_menu_activate(HMENU p_menu, int p_index) const {
 				if (GetMenuItemInfoW(md->menu, p_index, true, &item)) {
 					MenuItemData *item_data = (MenuItemData *)item.dwItemData;
 					if (item_data) {
-						if (item_data->callback.is_valid()) {
+						const Callable callback = item_data->callback;
+						const Variant tag = item_data->meta;
+						if (callback.is_valid()) {
 							Variant ret;
 							Callable::CallError ce;
-							const Variant *args[1] = { &item_data->meta };
+							const Variant *args[1] = { &tag };
 
-							item_data->callback.callp(args, 1, ret, ce);
+							callback.callp(args, 1, ret, ce);
 							if (ce.error != Callable::CallError::CALL_OK) {
-								ERR_PRINT(vformat("Failed to execute menu callback: %s.", Variant::get_callable_error_text(item_data->callback, args, 1, ce)));
+								ERR_PRINT(vformat("Failed to execute menu callback: %s.", Variant::get_callable_error_text(callback, args, 1, ce)));
 							}
 						}
 					}
@@ -170,20 +171,22 @@ void NativeMenuWindows::popup(const RID &p_rid, const Vector2i &p_position) {
 	const MenuData *md = menus.get_or_null(p_rid);
 	ERR_FAIL_NULL(md);
 
+	// Both Windows display servers use the same Win32 popup code via the native window handle.
 	HWND hwnd = (HWND)DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, DisplayServerEnums::MAIN_WINDOW_ID);
 	UINT flags = TPM_HORIZONTAL | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_VERPOSANIMATION;
 	if (md->is_rtl) {
 		flags |= TPM_LAYOUTRTL;
 	}
+	const Callable close_callback = md->close_cb;
 	SetForegroundWindow(hwnd);
 	TrackPopupMenuEx(md->menu, flags, p_position.x, p_position.y, hwnd, nullptr);
 
-	if (md->close_cb.is_valid()) {
+	if (close_callback.is_valid()) {
 		Variant ret;
 		Callable::CallError ce;
-		md->close_cb.callp(nullptr, 0, ret, ce);
+		close_callback.callp(nullptr, 0, ret, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat("Failed to execute popup close callback: %s.", Variant::get_callable_error_text(md->close_cb, nullptr, 0, ce)));
+			ERR_PRINT(vformat("Failed to execute popup close callback: %s.", Variant::get_callable_error_text(close_callback, nullptr, 0, ce)));
 		}
 	}
 
