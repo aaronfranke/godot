@@ -10,7 +10,7 @@ This folder contains shared code for old Windows platforms. Named "win" to fit i
 - Code just for Windows NT5 goes in `platform/win_nt5/`.
 - Code just for Windows NT6 in `platform/win_nt6/`.
 
-NT6 provides its OS and DisplayServer subclasses over the shared NT implementation. The platform owns its build options, API baseline, entry point, feature tags, and exporter identity.
+NT5 and NT6 each provide their own OS and DisplayServer subclasses over the shared NT implementation. Each platform owns its build options, API baseline, entry point, feature tags, and exporter identity.
 
 Shared runtime sources are selected by this folder's `SCsub`. Windowed builds define `WIN_LEGACY_WINDOWED_ENABLED`; dedicated headless builds omit the window and device sources. Shared export packaging is compiled for editor builds on every host platform.
 

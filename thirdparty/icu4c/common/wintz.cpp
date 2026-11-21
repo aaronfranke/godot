@@ -87,13 +87,21 @@ typedef struct _REG_TZI_FORMAT {
 U_CAPI const char* U_EXPORT2
 uprv_detectWindowsTimeZone()
 {
+#ifdef WIN_NT5_ENABLED
+    // NT 5 supplies the legacy fields used by the registry lookup below.
+    TIME_ZONE_INFORMATION tzi = {};
+    if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_INVALID) {
+        return nullptr;
+    }
+    WCHAR *windowsTimeZoneName = nullptr;
+#else
     // We first try to obtain the time zone directly by using the TimeZoneKeyName field of the DYNAMIC_TIME_ZONE_INFORMATION struct.
-    DYNAMIC_TIME_ZONE_INFORMATION dynamicTZI;
-    uprv_memset(&dynamicTZI, 0, sizeof(dynamicTZI));
+    DYNAMIC_TIME_ZONE_INFORMATION tzi;
+    uprv_memset(&tzi, 0, sizeof(tzi));
     SYSTEMTIME systemTimeAllZero;
     uprv_memset(&systemTimeAllZero, 0, sizeof(systemTimeAllZero));
 
-    if (GetDynamicTimeZoneInformation(&dynamicTZI) == TIME_ZONE_ID_INVALID) {
+    if (GetDynamicTimeZoneInformation(&tzi) == TIME_ZONE_ID_INVALID) {
         return nullptr;
     }
 
@@ -111,12 +119,12 @@ uprv_detectWindowsTimeZone()
     //   THEN
     //     DST setting is "Disabled".
     //
-    if (dynamicTZI.DynamicDaylightTimeDisabled != 0 &&
-        uprv_memcmp(&dynamicTZI.StandardDate, &dynamicTZI.DaylightDate, sizeof(dynamicTZI.StandardDate)) == 0 &&
-        ((dynamicTZI.TimeZoneKeyName[0] != L'\0' && uprv_memcmp(&dynamicTZI.StandardDate, &systemTimeAllZero, sizeof(systemTimeAllZero)) == 0) ||
-         (dynamicTZI.TimeZoneKeyName[0] == L'\0' && uprv_memcmp(&dynamicTZI.StandardDate, &systemTimeAllZero, sizeof(systemTimeAllZero)) != 0)))
+    if (tzi.DynamicDaylightTimeDisabled != 0 &&
+        uprv_memcmp(&tzi.StandardDate, &tzi.DaylightDate, sizeof(tzi.StandardDate)) == 0 &&
+        ((tzi.TimeZoneKeyName[0] != L'\0' && uprv_memcmp(&tzi.StandardDate, &systemTimeAllZero, sizeof(systemTimeAllZero)) == 0) ||
+         (tzi.TimeZoneKeyName[0] == L'\0' && uprv_memcmp(&tzi.StandardDate, &systemTimeAllZero, sizeof(systemTimeAllZero)) != 0)))
     {
-        LONG utcOffsetMins = dynamicTZI.Bias;
+        LONG utcOffsetMins = tzi.Bias;
         if (utcOffsetMins == 0) {
             return uprv_strdup("Etc/UTC");
         }
@@ -150,6 +158,9 @@ uprv_detectWindowsTimeZone()
         }
     }
 
+    WCHAR *windowsTimeZoneName = tzi.TimeZoneKeyName;
+#endif // WIN_NT5_ENABLED
+
     // If DST is NOT disabled, but the TimeZoneKeyName field of the struct is nullptr, then we may be dealing with a
     // RDP/terminal services session where the 'Time Zone Redirection' feature is enabled. However, either the RDP
     // client sent the server incomplete info (some 3rd party RDP clients only send the StandardName and  DaylightName,
@@ -166,9 +177,7 @@ uprv_detectWindowsTimeZone()
 
     // windowsTimeZoneName will point at timezoneSubKeyName if we had to fallback to using the registry, and we found a match.
     WCHAR timezoneSubKeyName[WINDOWS_MAX_REG_KEY_LENGTH];
-    WCHAR *windowsTimeZoneName = dynamicTZI.TimeZoneKeyName;
-
-    if (dynamicTZI.TimeZoneKeyName[0] == 0) {
+    if (windowsTimeZoneName == nullptr || windowsTimeZoneName[0] == 0) {
 
 // We can't use the registry APIs in the UWP version.
 #if U_PLATFORM_HAS_WINUWP_API == 1
@@ -235,7 +244,7 @@ uprv_detectWindowsTimeZone()
             }
 
             // Note: wcscmp does an ordinal (byte) comparison.
-            if (wcscmp(reinterpret_cast<WCHAR *>(registryStandardName), dynamicTZI.StandardName) == 0) {
+            if (wcscmp(reinterpret_cast<WCHAR *>(registryStandardName), tzi.StandardName) == 0) {
                 // Since we are comparing the *localized* time zone name, it's possible that some languages might use
                 // the same string for more than one time zone. Thus we need to examine the TZI data in the registry to
                 // compare the GMT offset (the bias), and the DST transition dates, to ensure it's the same time zone
@@ -249,9 +258,9 @@ uprv_detectWindowsTimeZone()
                                      reinterpret_cast<LPBYTE>(&registryTziValue), &timezoneTziValueSize);
 
                 if (ret == ERROR_SUCCESS) {
-                    if ((dynamicTZI.Bias == registryTziValue.Bias) &&
-                        (memcmp((const void *)&dynamicTZI.StandardDate, (const void *)&registryTziValue.StandardDate, sizeof(SYSTEMTIME)) == 0) &&
-                        (memcmp((const void *)&dynamicTZI.DaylightDate, (const void *)&registryTziValue.DaylightDate, sizeof(SYSTEMTIME)) == 0))
+                    if ((tzi.Bias == registryTziValue.Bias) &&
+                        (memcmp((const void *)&tzi.StandardDate, (const void *)&registryTziValue.StandardDate, sizeof(SYSTEMTIME)) == 0) &&
+                        (memcmp((const void *)&tzi.DaylightDate, (const void *)&registryTziValue.DaylightDate, sizeof(SYSTEMTIME)) == 0))
                     {
                         // We found a matching time zone.
                         windowsTimeZoneName = timezoneSubKeyName;
@@ -292,8 +301,12 @@ uprv_detectWindowsTimeZone()
     // as the A version of the API will end up calling MultiByteToWideChar anyways internally.
     wchar_t regionCodeW[3] = {};
     char regionCode[3] = {}; // 2 letter ISO 3166 country/region code made entirely of invariant chars.
+#ifdef WIN_NT5_ENABLED
+    int regionCodeLen = GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, regionCodeW, UPRV_LENGTHOF(regionCodeW));
+#else
     int geoId = GetUserGeoID(GEOCLASS_NATION);
     int regionCodeLen = GetGeoInfoW(geoId, GEO_ISO2, regionCodeW, UPRV_LENGTHOF(regionCodeW), 0);
+#endif // WIN_NT5_ENABLED
 
     const char16_t *icuTZ16 = nullptr;
     int32_t tzListLen = 0;

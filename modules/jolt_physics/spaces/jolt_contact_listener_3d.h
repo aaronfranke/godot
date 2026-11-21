@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
@@ -113,9 +114,24 @@ class JoltContactListener3D final
 	std::atomic_int debug_contact_count = 0;
 #endif
 
+#if defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+	inline static uint64_t _thread_locals_generation = 0;
+#endif // defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+
 	static ThreadLocals &_get_thread_locals() {
+#if defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+		// The legacy MinGW runtime can finalize TLS after the mutex runtime has shut down.
+		thread_local ThreadLocals *tl = nullptr;
+		thread_local uint64_t generation = 0;
+		if (tl == nullptr || generation != _thread_locals_generation) {
+			tl = memnew(ThreadLocals);
+			generation = _thread_locals_generation;
+		}
+		return *tl;
+#else
 		thread_local ThreadLocals tl;
 		return tl;
+#endif // defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
 	}
 
 	virtual void OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;
@@ -156,6 +172,10 @@ public:
 
 	void pre_step();
 	void post_step();
+
+#if defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+	static void deinitialize_thread_locals();
+#endif // defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
 
 #ifdef DEBUG_ENABLED
 	const PackedVector3Array &get_debug_contacts() const { return debug_contacts; }

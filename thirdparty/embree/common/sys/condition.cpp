@@ -3,7 +3,29 @@
 
 #include "condition.h"
 
-#if defined(__WIN32__) && !defined(PTHREADS_WIN32)
+#if defined(EMBREE_WIN_NT5)
+
+#include <condition_variable>
+#include <mutex>
+
+namespace embree
+{
+  struct ConditionImplementation
+  {
+    void wait(MutexSys& mutex)
+    {
+      std::unique_lock<MutexSys> lock(mutex, std::adopt_lock);
+      cond.wait(lock);
+      lock.release(); // Leave the mutex locked for the caller.
+    }
+
+    void notify_all() { cond.notify_all(); }
+
+    std::condition_variable_any cond;
+  };
+}
+
+#elif defined(__WIN32__) && !defined(PTHREADS_WIN32)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

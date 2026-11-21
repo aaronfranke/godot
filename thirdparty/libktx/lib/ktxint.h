@@ -320,10 +320,15 @@ static inline FILE* ktxFOpenUTF8(char const* path, char const* mode) {
         wchar_t* wmode = (wchar_t*)malloc(wmLen * sizeof(wchar_t));
         MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, wpLen);
         MultiByteToWideChar(CP_UTF8, 0, mode, -1, wmode, wmLen);
+#ifdef WIN_NT5_ENABLED
+        // The Windows 2000 CRT exports _wfopen but lacks _wfopen_s.
+        fp = _wfopen(wpath, wmode);
+#else
         // Returned errno_t value is also set in the global errno.
         // Apps use that for error detail as libktx only returns
         // KTX_FILE_OPEN_FAILED.
         (void)_wfopen_s(&fp, wpath, wmode);
+#endif // WIN_NT5_ENABLED
         free(wpath);
         free(wmode);
         return fp;

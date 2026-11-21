@@ -585,3 +585,15 @@ void JoltContactListener3D::post_step() {
 	_flush_area_soft_body_events();
 	_flush_area_body_events();
 }
+
+#if defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+// The guard matches the allocation strategy on MinGW and Windows 2000.
+// TODO: Test different compilers and Windows versions to narrow down the specific need.
+void JoltContactListener3D::deinitialize_thread_locals() {
+	// Physics server shutdown has already waited for all Jolt tasks.
+	while (ThreadLocals::instances.first()) {
+		memdelete(ThreadLocals::instances.first()->self());
+	}
+	++_thread_locals_generation;
+}
+#endif // defined(WIN_NT5_ENABLED) && defined(__MINGW32__)

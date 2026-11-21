@@ -17,7 +17,7 @@ d3d3 = env.get("d3d3_software", False)
 d3d7 = env.get("d3d7", False)
 d3d9 = env.get("d3d9", False)
 opengl1 = env.get("opengl1", False)
-is_any_windows = env["platform"] in ("windows", "win_nt6")
+is_any_windows = env["platform"] in ("windows", "win_nt5", "win_nt6")
 
 if d3d3 or d3d7 or d3d9 or opengl1:
     # Compiled in the driver's test glob; only force its registration here.

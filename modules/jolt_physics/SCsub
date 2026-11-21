@@ -11,6 +11,12 @@ if env["platform"] == "web" and env["wasm_simd"]:
     # Enable SSE 4.2 so that WebAssembly SIMD can benefit from it.
     # SSE 4.2 is the highest version supported by WebAssembly SIMD.
     env_jolt.Append(CCFLAGS=["-msse4.2"])
+elif env["platform"] == "win_nt5" and env["arch"] == "x86_32":
+    # Jolt's x86 vector math requires SSE2. The NT5 template enables Jolt only by request.
+    if env.msvc:
+        env_jolt.Append(CCFLAGS=["/arch:SSE2"])
+    else:
+        env_jolt.Append(CCFLAGS=["-msse2", "-mfpmath=sse", "-mstackrealign"])
 
 # Thirdparty source files
 

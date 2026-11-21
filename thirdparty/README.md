@@ -93,7 +93,8 @@ Patches:
 - `0003-remove-tinydds-qoi.patch` ([GH-97582](https://github.com/godotengine/godot/pull/97582))
 - `0004-clang-warning-exclude.patch` ([GH-111346](https://github.com/godotengine/godot/pull/111346))
 - `0005-unused-typedef.patch` ([GH-111445](https://github.com/godotengine/godot/pull/111445))
-- `0006-explicit-includes.patch` ([GH-111767](https://github.com/godotengine/godot/pull/111767))
+- `0006-explicit-includes.patch`: Include the standard exception declarations explicitly.
+- `0007-legacy-windows-fopen.patch`: Use the existing buffered file-open path on older Windows CRTs without `fopen_s`.
 
 
 ## brotli
@@ -234,6 +235,7 @@ Patches:
 - `0004-mingw-no-cpuidex.patch` ([GH-92488](https://github.com/godotengine/godot/pull/92488))
 - `0005-mingw-llvm-arm64.patch` ([GH-93364](https://github.com/godotengine/godot/pull/93364))
 - `0006-explicit-includes.patch` ([GH-111767](https://github.com/godotengine/godot/pull/111767))
+- `0007-win-nt5-compatibility.patch` (NT5 condition variables, affinity, and optional large pages)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -519,6 +521,7 @@ Patches:
 
 - `0001-ustr-literals.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
 - `0002-tuple-include.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
+- `0003-win-nt5-locale.patch` (Use legacy locale and time-zone APIs on Windows NT 5.)
 
 
 ## jolt_physics
@@ -603,6 +606,7 @@ Patches:
 - `0001-external-basisu.patch` ([GH-76572](https://github.com/godotengine/godot/pull/76572))
 - `0002-disable-astc-block-ext.patch` ([GH-76572](https://github.com/godotengine/godot/pull/76572))
 - `0003-basisu-1.60.patch` ([GH-103968](https://github.com/godotengine/godot/pull/103968))
+- `0004-win-nt5-wide-fopen.patch` uses the Windows 2000 CRT's Unicode file-opening API.
 
 
 ## libogg
@@ -803,6 +807,7 @@ Patches:
 - `0001-minixml-fix-buffer-read-overflow.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
 - `0002-minixml-fix-buffer-overrun-after-namespace-separator.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
 - `0003-minixml-fix-1-byte-out-of-bounds-read.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
+- `0004-win-nt5-winsock.patch` (Use compatible Winsock and IP Helper APIs on Windows 2000.)
 
 
 ## minizip

@@ -12,6 +12,11 @@
 #include <shellapi.h>
 #include <windowsx.h>
 
+// Vista and later can send this message even when the build targets Windows 2000.
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif // WM_MOUSEHWHEEL
+
 using namespace DisplayServerEnums;
 
 void DisplayServerWindowsNT::_dispatch_input(const Ref<InputEvent> &p_event) {

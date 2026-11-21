@@ -2137,11 +2137,11 @@ namespace basisu
 		hdr.m_height = gi.get_blocks_y() * 4;
 
 		FILE* pFile = nullptr;
-#ifdef _WIN32
+#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		fopen_s(&pFile, pFilename, "wb");
 #else
 		pFile = fopen(pFilename, "wb");
-#endif
+#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		if (!pFile)
 			return false;
 

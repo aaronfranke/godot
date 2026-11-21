@@ -3900,13 +3900,14 @@ namespace basisu
 
 	inline FILE *fopen_safe(const char *pFilename, const char *pMode)
 	{
-#ifdef _WIN32
+		// MinGW old-Windows builds use a system CRT without fopen_s; MSVC supplies its own CRT.
+#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		FILE *pFile = nullptr;
 		fopen_s(&pFile, pFilename, pMode);
 		return pFile;
 #else
 		return fopen(pFilename, pMode);
-#endif
+#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 	}
 
 	void fill_buffer_with_random_bytes(void *pBuf, size_t size, uint32_t seed = 1);

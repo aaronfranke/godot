@@ -22,7 +22,8 @@ HICON DisplayServerWindowsNT::_make_status_indicator_icon(const Ref<Texture2D> &
 
 bool DisplayServerWindowsNT::_write_status_indicator(IndicatorID p_id, const StatusIndicatorData &p_indicator, DWORD p_command) const {
 	NOTIFYICONDATAW data = {};
-	data.cbSize = sizeof(data);
+	// The NT 5.0 SDK layout ends here and has no guidItem member.
+	data.cbSize = FIELD_OFFSET(NOTIFYICONDATAW, dwInfoFlags) + sizeof(data.dwInfoFlags);
 	data.hWnd = _window;
 	data.uID = p_id;
 	if (p_command == NIM_ADD || p_command == NIM_MODIFY) {
@@ -94,9 +95,18 @@ void DisplayServerWindowsNT::status_indicator_set_callback(IndicatorID p_id, con
 }
 
 Rect2i DisplayServerWindowsNT::_get_native_status_indicator_rect(IndicatorID p_id) const {
+	// NOTIFYICONIDENTIFIER is only declared by SDKs targeting Windows 7 or newer.
+	struct IconIdentifier {
+		DWORD size;
+		HWND window;
+		UINT id;
+		GUID guid;
+	};
+	using GetIconRect = HRESULT(WINAPI *)(const IconIdentifier *, RECT *);
+	static const auto query = reinterpret_cast<GetIconRect>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"shell32.dll"), "Shell_NotifyIconGetRect")));
 	RECT rect = {};
-	const NOTIFYICONIDENTIFIER identifier = { sizeof(NOTIFYICONIDENTIFIER), _window, UINT(p_id), {} };
-	if (Shell_NotifyIconGetRect(&identifier, &rect) != S_OK) {
+	const IconIdentifier identifier = { sizeof(IconIdentifier), _window, UINT(p_id), {} };
+	if (!query || query(&identifier, &rect) != S_OK) {
 		return Rect2i();
 	}
 	return Rect2i(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);

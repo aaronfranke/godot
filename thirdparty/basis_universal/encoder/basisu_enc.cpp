@@ -819,11 +819,11 @@ namespace basisu
 	bool read_file_to_vec(const char* pFilename, uint8_vec& data)
 	{
 		FILE* pFile = nullptr;
-#ifdef _WIN32
+#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		fopen_s(&pFile, pFilename, "rb");
 #else
 		pFile = fopen(pFilename, "rb");
-#endif
+#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		if (!pFile)
 			return false;
 				
@@ -876,11 +876,11 @@ namespace basisu
 			return false;
 
 		FILE* pFile = nullptr;
-#ifdef _WIN32
+#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		fopen_s(&pFile, pFilename, "rb");
 #else
 		pFile = fopen(pFilename, "rb");
-#endif
+#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		if (!pFile)
 			return false;
 
@@ -911,11 +911,11 @@ namespace basisu
 	bool write_data_to_file(const char* pFilename, const void* pData, size_t len)
 	{
 		FILE* pFile = nullptr;
-#ifdef _WIN32
+#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		fopen_s(&pFile, pFilename, "wb");
 #else
 		pFile = fopen(pFilename, "wb");
-#endif
+#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 		if (!pFile)
 			return false;
 

@@ -1,6 +1,6 @@
 # Shared Windows NT desktop integration
 
-NT6 uses this native display implementation. Its platform folder provides the concrete DisplayServer subclass and driver registration.
+NT5 and NT6 use this native display implementation. Their platform folders provide the concrete DisplayServer subclasses and driver registration.
 
 ## Mouse input
 
@@ -12,7 +12,7 @@ The display server supports five mouse buttons, wheel events, capture, confineme
 
 ## Window activation
 
-`Window.unfocusable` and `display/window/size/no_focus` are currently unavailable in this backend. [Win32 window visibility and activation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow)
+`Window.unfocusable` and `display/window/size/no_focus` are currently unavailable. Windows 2000 can show a window without activating it, but its native maximize and restore calls can still activate that window. [Win32 window visibility and activation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow)
 
 ## Controller input
 
@@ -30,15 +30,15 @@ Automatic hotplug recovery remains unavailable. Dedicated headless templates use
 
 ## Cursor shapes
 
-The windowed display server supports system cursor shapes and custom images with a hotspot and partial alpha. Clearing a custom image restores the system shape. [Win32 cursor behavior](https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors)
+The windowed display server supports system cursor shapes and custom images with a hotspot. Clearing a custom image restores the system shape. Windows 2000 uses a one-bit transparency mask, with alpha values of 128–255 visible. On Windows 11, custom cursors retain partial alpha. [Win32 cursor behavior](https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors)
 
 ## Window icons
 
-The main window accepts Godot images and native `.ico` files. To package a native icon in the PCK, add `*.ico` to the export preset's non-resource inclusion filter. The display server picks frames for the system's small and large icon sizes and decodes PNG frames with Godot's PNG loader. This controls the window icon at runtime. Explorer reads a separate icon from the executable's resources. [Win32 window icons](https://learn.microsoft.com/en-us/windows/win32/menurc/about-icons)
+The main window accepts Godot images and native `.ico` files. To package a native icon in the PCK, add `*.ico` to the export preset's non-resource inclusion filter. The display server picks frames for the system's small and large icon sizes and decodes PNG frames with Godot's PNG loader. On Windows 2000, Godot images and PNG frames use one-bit transparency, and bitmap frames use the file's own mask. This controls the window icon at runtime. Explorer reads a separate icon from the executable's resources. [Win32 window icons](https://learn.microsoft.com/en-us/windows/win32/menurc/about-icons)
 
 ## Notification area
 
-Windowed templates support `StatusIndicator` icons, Unicode tooltips, mouse and keyboard activation, and native popup menus. With an empty icon, the indicator uses the standard Windows application icon. The display server re-registers its icons after a taskbar creation message. Windows supplies the Shell's icon bounds and right-to-left popup layout. [Windows notification area](https://learn.microsoft.com/en-us/windows/win32/shell/notification-area)
+Windowed templates support `StatusIndicator` icons, Unicode tooltips, mouse and keyboard activation, and native popup menus. With an empty icon, the indicator uses the standard Windows application icon. The display server re-registers its icons after a taskbar creation message. Windows 2000 returns an empty rectangle for indicator bounds and anchors the menu at the pointer. Windows 7 and later can provide the Shell's icon bounds. Right-to-left popup layout is available starting with Windows XP. [Windows notification area](https://learn.microsoft.com/en-us/windows/win32/shell/notification-area)
 
 ## Clipboard
 
@@ -48,7 +48,7 @@ Clipboard image reads accept PNG, uncompressed DIB and DIBV5 data, and device-de
 
 ## Input method editors
 
-The windowed display server uses Windows IMM for input methods supplied by the OS. Godot draws preedit text at the caret and provides the caret position and text bounds to the native candidate window. Losing focus cancels unfinished composition. Ordinary Unicode input also works on systems without an input context. [Windows Input Method Manager](https://learn.microsoft.com/en-us/windows/win32/intl/input-method-manager)
+The windowed display server uses Windows IMM for input methods supplied by the OS. Godot draws preedit text at the caret and provides the caret position and text bounds to the native candidate window. Losing focus cancels unfinished composition. Windows 2000 needs an enabled IME and its language components for composition. Ordinary Unicode input also works on systems without an input context. [Windows Input Method Manager](https://learn.microsoft.com/en-us/windows/win32/intl/input-method-manager)
 
 ## Keyboard layouts
 

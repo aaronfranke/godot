@@ -128,6 +128,9 @@ def configure(env, minimum):
     env.msvc = "mingw" not in env["TOOLS"]
     if env.msvc:
         env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
+        if minimum < 0x0600:
+            # Mbed TLS's MSVC path otherwise requires Vista's inet_pton.
+            env.Append(CPPDEFINES=["MBEDTLS_TEST_SW_INET_PTON"])
         env.Append(CCFLAGS=["/MT" if env["use_static_cpp"] else "/MD", "/utf-8", "/bigobj", "/fp:strict"])
         subsystem = "WINDOWS" if env["win_legacy_windowed"] else "CONSOLE"
         env.Append(LINKFLAGS=[f"/SUBSYSTEM:{subsystem}", "/STACK:8388608", "/INCREMENTAL:NO"])
@@ -147,7 +150,8 @@ def configure(env, minimum):
         if triple != f"{machine}-w64-mingw32":
             fail(f"Expected a compiler targeting {machine}-w64-mingw32, found {triple}.")
 
-        # Use the POSIX MinGW runtime's standard C++ threads.
+        # Use the POSIX MinGW runtime's standard C++ threads. Godot's bundled
+        # mingw-std-threads wrappers require a Windows XP API baseline.
         env.use_windows_spawn_fix()
         env["ARCOM_ORIG"] = env["ARCOM"]
         env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"

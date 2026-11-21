@@ -1,0 +1,75 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_enc.cpp b/thirdparty/basis_universal/encoder/basisu_enc.cpp
+index e9c8a01388..00bc3c0ab6 100644
+--- a/thirdparty/basis_universal/encoder/basisu_enc.cpp
++++ b/thirdparty/basis_universal/encoder/basisu_enc.cpp
+@@ -819,9 +819,9 @@ namespace basisu
+ 	bool read_file_to_vec(const char* pFilename, uint8_vec& data)
+ 	{
+ 		FILE* pFile = nullptr;
+-#ifdef _WIN32
++#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		fopen_s(&pFile, pFilename, "rb");
+ #else
+ 		pFile = fopen(pFilename, "rb");
+-#endif
++#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		if (!pFile)
+@@ -876,9 +876,9 @@ namespace basisu
+ 			return false;
+ 
+ 		FILE* pFile = nullptr;
+-#ifdef _WIN32
++#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		fopen_s(&pFile, pFilename, "rb");
+ #else
+ 		pFile = fopen(pFilename, "rb");
+-#endif
++#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		if (!pFile)
+@@ -911,9 +911,9 @@ namespace basisu
+ 	bool write_data_to_file(const char* pFilename, const void* pData, size_t len)
+ 	{
+ 		FILE* pFile = nullptr;
+-#ifdef _WIN32
++#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		fopen_s(&pFile, pFilename, "wb");
+ #else
+ 		pFile = fopen(pFilename, "wb");
+-#endif
++#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		if (!pFile)
+diff --git a/thirdparty/basis_universal/encoder/basisu_enc.h b/thirdparty/basis_universal/encoder/basisu_enc.h
+index 5256d34ad3..9612cedad3 100644
+--- a/thirdparty/basis_universal/encoder/basisu_enc.h
++++ b/thirdparty/basis_universal/encoder/basisu_enc.h
+@@ -3900,11 +3900,12 @@ namespace basisu
+ 
+ 	inline FILE *fopen_safe(const char *pFilename, const char *pMode)
+ 	{
+-#ifdef _WIN32
++		// MinGW old-Windows builds use a system CRT without fopen_s; MSVC supplies its own CRT.
++#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		FILE *pFile = nullptr;
+ 		fopen_s(&pFile, pFilename, pMode);
+ 		return pFile;
+ #else
+ 		return fopen(pFilename, pMode);
+-#endif
++#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 	}
+diff --git a/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp b/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
+index 028ac3f314..6dc5d9de21 100644
+--- a/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
++++ b/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
+@@ -2137,9 +2137,9 @@ namespace basisu
+ 		hdr.m_height = gi.get_blocks_y() * 4;
+ 
+ 		FILE* pFile = nullptr;
+-#ifdef _WIN32
++#if defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		fopen_s(&pFile, pFilename, "wb");
+ #else
+ 		pFile = fopen(pFilename, "wb");
+-#endif
++#endif // defined(_WIN32) && (defined(_MSC_VER) || !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
+ 		if (!pFile)
