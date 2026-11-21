@@ -104,7 +104,7 @@ protected:
 	static _OS *singleton;
 
 public:
-	enum VideoDriver {
+	enum VideoDriver : int {
 		VIDEO_DRIVER_GLES3,
 		VIDEO_DRIVER_GLES2,
 	};
