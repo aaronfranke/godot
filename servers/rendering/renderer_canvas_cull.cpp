@@ -1664,7 +1664,15 @@ void RendererCanvasCull::canvas_item_add_lcd_texture_rect_region(RID p_item, con
 	}
 }
 
+void RendererCanvasCull::canvas_item_add_font_glyph(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate) {
+	_canvas_item_add_texture_rect_region(p_item, p_rect, p_texture, p_src_rect, p_modulate, false, false, true);
+}
+
 void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
+	_canvas_item_add_texture_rect_region(p_item, p_rect, p_texture, p_src_rect, p_modulate, p_transpose, p_clip_uv, false);
+}
+
+void RendererCanvasCull::_canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv, bool p_font_glyph) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
@@ -1677,6 +1685,9 @@ void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const R
 
 	rect->source = p_src_rect;
 	rect->flags = RendererCanvasRender::CANVAS_RECT_REGION;
+	if (p_font_glyph) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FONT_GLYPH;
+	}
 
 	if (p_rect.size.x < 0) {
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_H;
