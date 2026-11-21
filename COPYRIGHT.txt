@@ -668,6 +668,11 @@ Copyright: 2008-2011, Kristian Høgsberg
  2010-2011, Intel Corporation
 License: X11
 
+Files: thirdparty/winpthreads/*
+Comment: Winpthreads condition variables
+Copyright: 2011-2016, mingw-w64 project
+License: Expat
+
 Files: thirdparty/wslay/*
 Comment: Wslay
 Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa

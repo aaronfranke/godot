@@ -19,13 +19,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#if (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
+#if ((defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || defined(WIN_9X_ENABLED)) && _WIN32_WINNT < 0x0501
 #include <wspiapi.h>
 #ifdef _MSC_VER
 /* The Windows SDK hides the IPv6 protocol number at the Windows 2000 baseline. */
 static const int IPPROTO_IPV6 = 41;
 #endif // _MSC_VER
-#endif // (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
+#endif // ((defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || defined(WIN_9X_ENABLED)) && _WIN32_WINNT < 0x0501
 #include <io.h>
 #include <iphlpapi.h>
 #include "win32_snprintf.h"
@@ -587,9 +587,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		p->sin6_family = AF_INET6;
 		if(localport > 0 && localport < 65536)
 			p->sin6_port = htons((unsigned short)localport);
-#if !(defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || _WIN32_WINNT >= 0x0501
+#if (!(defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && !defined(WIN_9X_ENABLED)) || _WIN32_WINNT >= 0x0501
 		p->sin6_addr = in6addr_any; /* in6addr_any is not available with MinGW32 3.4.2 */
-#endif // !(defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || _WIN32_WINNT >= 0x0501
+#endif // (!(defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && !defined(WIN_9X_ENABLED)) || _WIN32_WINNT >= 0x0501
 	} else {
 		struct sockaddr_in * p = (struct sockaddr_in *)&sockudp_r;
 		p->sin_family = AF_INET;
@@ -604,29 +604,49 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
  * in order to give this ip to setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF) */
 	if(!ipv6) {
 		DWORD ifbestidx;
-#if (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
-		/* Windows 2000 has an IPv4 address table, but no GetAdaptersAddresses. */
-		if ((!multicastif || !multicastif[0]) &&
-		    GetBestInterface(inet_addr(UPNP_MCAST_ADDR), &ifbestidx) == NO_ERROR) {
+#if ((defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || defined(WIN_9X_ENABLED)) && _WIN32_WINNT < 0x0501
+		/* Windows 98 and 2000 have an IPv4 address table, but no GetAdaptersAddresses. */
+		typedef DWORD (WINAPI * GetBestInterfaceFunction)(IPAddr, PDWORD);
+		typedef DWORD (WINAPI * GetAddressTableFunction)(PMIB_IPADDRTABLE, PULONG, BOOL);
+#ifdef WIN_9X_ENABLED
+		HMODULE ip_helper = (!multicastif || !multicastif[0]) ? LoadLibraryA("iphlpapi.dll") : NULL;
+		GetBestInterfaceFunction get_best_interface = ip_helper ? (GetBestInterfaceFunction)(void *)GetProcAddress(ip_helper, "GetBestInterface") : NULL;
+		GetAddressTableFunction get_address_table = ip_helper ? (GetAddressTableFunction)(void *)GetProcAddress(ip_helper, "GetIpAddrTable") : NULL;
+#else
+		GetBestInterfaceFunction get_best_interface = GetBestInterface;
+		GetAddressTableFunction get_address_table = GetIpAddrTable;
+#endif // WIN_9X_ENABLED
+		/* 95 has no IP Helper DLL. Let Winsock choose the default interface there. */
+		if ((!multicastif || !multicastif[0]) && get_best_interface && get_address_table &&
+		    get_best_interface(inet_addr(UPNP_MCAST_ADDR), &ifbestidx) == NO_ERROR) {
 			ULONG table_size = 0;
-			if (GetIpAddrTable(NULL, &table_size, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
+			if (get_address_table(NULL, &table_size, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
 				PMIB_IPADDRTABLE table = malloc(table_size);
-				if (table && GetIpAddrTable(table, &table_size, FALSE) == NO_ERROR) {
+				if (table && get_address_table(table, &table_size, FALSE) == NO_ERROR) {
 					DWORD i;
 					for (i = 0; i < table->dwNumEntries; i++) {
 						if (table->table[i].dwIndex == ifbestidx && table->table[i].dwAddr != INADDR_ANY) {
 							struct in_addr mc_if;
 							mc_if.s_addr = table->table[i].dwAddr;
+#ifdef WIN_9X_ENABLED
+							/* 9x requires bind before IPv4 multicast socket options. */
+							((struct sockaddr_in *)&sockudp_r)->sin_addr = mc_if;
+							break;
+#else
 							if (setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) == 0) {
 								((struct sockaddr_in *)&sockudp_r)->sin_addr = mc_if;
 								break;
 							}
+#endif // WIN_9X_ENABLED
 						}
 					}
 				}
 				free(table);
 			}
 		}
+#ifdef WIN_9X_ENABLED
+		if (ip_helper) FreeLibrary(ip_helper);
+#endif // WIN_9X_ENABLED
 #else
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 		// While we don't need IPv6 support, the IPv4 only function is not available in UWP apps.
@@ -719,7 +739,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 				pAddresses = NULL;
 			}
 		}
-#endif // (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
+#endif // ((defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || defined(WIN_9X_ENABLED)) && _WIN32_WINNT < 0x0501
 	}
 #endif	/* _WIN32 */
 
@@ -747,6 +767,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			PRINT_SOCKET_ERROR("setsockopt(IPV6_MULTICAST_HOPS,...)");
 		}
 	} else {
+#ifndef WIN_9X_ENABLED
 #ifdef _WIN32
 		if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_TTL, (const char *)&_ttl, sizeof(_ttl)) < 0)
 #else  /* _WIN32 */
@@ -756,6 +777,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			/* not a fatal error */
 			PRINT_SOCKET_ERROR("setsockopt(IP_MULTICAST_TTL,...)");
 		}
+#endif /* !WIN_9X_ENABLED */
 	}
 
 	if(multicastif && multicastif[0] != '\0')
@@ -799,10 +821,12 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			if(mc_if.s_addr != INADDR_NONE)
 			{
 				((struct sockaddr_in *)&sockudp_r)->sin_addr.s_addr = mc_if.s_addr;
+#ifndef WIN_9X_ENABLED
 				if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) < 0)
 				{
 					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
 				}
+#endif /* !WIN_9X_ENABLED */
 			} else {
 				/* was not an ip address, try with an interface name */
 #ifndef _WIN32
@@ -861,6 +885,19 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		return NULL;
 	}
 
+#ifdef WIN_9X_ENABLED
+	if(!ipv6) {
+		const struct sockaddr_in *bound = (const struct sockaddr_in *)&sockudp_r;
+		/* Apply these after bind on 9x; the same order also works on NT hosts. */
+		if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_TTL, (const char *)&_ttl, sizeof(_ttl)) < 0) {
+			PRINT_SOCKET_ERROR("setsockopt(IP_MULTICAST_TTL,...)");
+		}
+		if(bound->sin_addr.s_addr != INADDR_ANY &&
+		   setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&bound->sin_addr, sizeof(bound->sin_addr)) < 0) {
+			PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
+		}
+	}
+#endif /* WIN_9X_ENABLED */
 	if(error)
 		*error = MINISSDPC_SUCCESS;
 	/* Calculating maximum response time in seconds */

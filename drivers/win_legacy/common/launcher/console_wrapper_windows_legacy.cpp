@@ -1,6 +1,8 @@
-// Shared Unicode console companion for the legacy NT platforms.
+// Shared by the legacy platforms: use ANSI on 9x and Unicode on NT.
+#ifndef WIN_9X_ENABLED
 #define UNICODE
 #define _UNICODE
+#endif // WIN_9X_ENABLED
 
 #include <windows.h>
 
@@ -34,6 +36,7 @@ bool WindowsLegacyConsoleWrapper::_open_pipe(HANDLE &r_parent, HANDLE &r_child, 
 	if (!CreatePipe(&reader, &writer, nullptr, 0)) {
 		return false;
 	}
+	// 9x ignores CreatePipe's security attributes and lacks SetHandleInformation.
 	// Duplicate just the child's end so it cannot inherit the parent's pipe end.
 	HANDLE child_end = p_child_reads ? reader : writer;
 	const BOOL duplicated = DuplicateHandle(GetCurrentProcess(), child_end, GetCurrentProcess(), &r_child, 0, TRUE, DUPLICATE_SAME_ACCESS);
@@ -130,7 +133,7 @@ DWORD WindowsLegacyConsoleWrapper::run() {
 	}
 
 	// Replace only argv[0]. Preserve the raw argument tail, including empty arguments
-	// and escaped quotes.
+	// and escaped quotes; CharNext also respects multibyte ANSI characters on 9x.
 	const TCHAR *arguments = GetCommandLine();
 	bool quoted = false;
 	while (*arguments) {
@@ -192,7 +195,7 @@ DWORD WindowsLegacyConsoleWrapper::run() {
 		return EXIT_FAILURE;
 	}
 	if (console_input) {
-		DWORD thread_id = 0;
+		DWORD thread_id = 0; // Windows 9x requires a non-null thread ID pointer.
 		HANDLE input_thread = CreateThread(nullptr, 0, _forward_input, nullptr, 0, &thread_id);
 		if (!input_thread) {
 			const DWORD error = GetLastError();

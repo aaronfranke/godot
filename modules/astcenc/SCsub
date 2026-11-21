@@ -43,7 +43,7 @@ env_thirdparty = env_astcenc.Clone()
 env_thirdparty.force_optimization_on_debug()
 env_thirdparty.disable_warnings()
 
-is_legacy_windows = env["platform"] in ("win_nt4", "win_nt5", "win_nt6")
+is_legacy_windows = env["platform"] in ("win_9x", "win_nt4", "win_nt5", "win_nt6")
 if is_legacy_windows and env["arch"] == "x86_32" and not env.msvc:
     # astcenc requires float expressions to round to their declared precision on x87.
     env_thirdparty.Append(CCFLAGS=["-fexcess-precision=standard"])

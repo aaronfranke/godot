@@ -87,6 +87,11 @@ typedef struct _REG_TZI_FORMAT {
 U_CAPI const char* U_EXPORT2
 uprv_detectWindowsTimeZone()
 {
+#ifdef WIN_9X_ENABLED
+    // Godot disables ICU date/time formatting (UCONFIG_NO_FORMATTING). Avoid NT
+    // registry and Vista timezone imports on 9x; Godot queries its OS backend.
+    return nullptr;
+#else
 #if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
     // NT 5 supplies the legacy fields used by the registry lookup below.
     TIME_ZONE_INFORMATION tzi = {};
@@ -338,6 +343,7 @@ uprv_detectWindowsTimeZone()
     // will return nullptr if the above look-up fails.
     CharString icuTZStr;
     return icuTZStr.appendInvariantChars(icuTZ16, tzLen, status).cloneData(status);
+#endif // WIN_9X_ENABLED
 }
 
 U_NAMESPACE_END

@@ -10,7 +10,7 @@ supported = env.get("supported", [])
 
 # OS drivers
 SConscript("unix/SCsub")
-is_legacy_windows = env["platform"] in ("win_nt4", "win_nt5", "win_nt6")
+is_legacy_windows = env["platform"] in ("win_9x", "win_nt4", "win_nt5", "win_nt6")
 if not is_legacy_windows:
     SConscript("windows/SCsub")
 SConscript("win_legacy/SCsub")

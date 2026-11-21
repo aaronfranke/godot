@@ -1,5 +1,9 @@
 #include "joypad_winmm.h"
 
+#ifdef WIN_9X_ENABLED
+#include "platform/win_9x/encoding_windows_9x.h"
+#endif // WIN_9X_ENABLED
+
 #include "core/input/input.h"
 #include "core/os/os.h"
 
@@ -90,7 +94,11 @@ void JoypadWinMM::process() {
 			if (!scan || i >= available_slots) {
 				continue;
 			}
+#ifdef WIN_9X_ENABLED
+			const MMRESULT result = joyGetDevCapsA(i, &slot.caps, sizeof(slot.caps));
+#else
 			const MMRESULT result = joyGetDevCapsW(i, &slot.caps, sizeof(slot.caps));
+#endif // WIN_9X_ENABLED
 			if (result != JOYERR_NOERROR) {
 				continue;
 			}
@@ -114,7 +122,11 @@ void JoypadWinMM::process() {
 				continue;
 			}
 			slot.caps.szPname[MAXPNAMELEN - 1] = 0;
+#ifdef WIN_9X_ENABLED
+			const String name = Windows9xEncoding::decode(slot.caps.szPname);
+#else
 			String name = String::utf16(reinterpret_cast<const char16_t *>(slot.caps.szPname));
+#endif // WIN_9X_ENABLED
 			input->joy_connection_changed(slot.device_id, true, name.is_empty() ? String("WinMM joystick") : name);
 		}
 		_submit(slot, &state);

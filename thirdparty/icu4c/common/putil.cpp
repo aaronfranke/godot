@@ -1825,8 +1825,8 @@ The leftmost codepage (.xxx) wins.
         return gCorrectedPOSIXLocale;
     }
 
-#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
-    // NT 5 provides a numeric user locale. Map it through ICU's built-in table.
+#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED) || defined(WIN_9X_ENABLED)
+    // Legacy Windows provides a numeric user locale. Map it through ICU's built-in table.
     correctedPOSIXLocale = static_cast<char *>(uprv_malloc(POSIX_LOCALE_CAPACITY));
     if (correctedPOSIXLocale != nullptr) {
         uprv_convertToPosix(GetUserDefaultLCID(), correctedPOSIXLocale, POSIX_LOCALE_CAPACITY, &status);

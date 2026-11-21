@@ -8,7 +8,11 @@
 #include <mmsystem.h>
 
 class JoypadWinMM {
+#ifdef WIN_9X_ENABLED
+	typedef JOYCAPSA WinMMCapabilities;
+#else
 	typedef JOYCAPSW WinMMCapabilities;
+#endif // WIN_9X_ENABLED
 
 	enum { SLOT_COUNT = 16 };
 	static constexpr uint64_t SCAN_INTERVAL_USEC = 500000;

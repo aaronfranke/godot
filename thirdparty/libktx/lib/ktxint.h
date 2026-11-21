@@ -296,7 +296,12 @@ KTX_error_code printKTX2Info2(ktxStream* src, KTX_header2* header);
 /*
  * fopen a file identified by a UTF-8 path.
  */
-#if defined(_WIN32)
+#if defined(WIN_9X_ENABLED)
+#include "platform/win_9x/file_stdio_windows_9x.h"
+static inline FILE* ktxFOpenUTF8(char const* path, char const* mode) {
+    return windows9x_fopen_utf8(path, mode);
+}
+#elif defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif

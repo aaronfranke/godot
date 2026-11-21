@@ -30,7 +30,7 @@ HICON WindowsLegacyIcon::create(const Ref<Image> &p_image, const Point2i *p_hots
 		return nullptr;
 	}
 
-	// Windows NT4 and 2000 use the AND mask without alpha blending. Preserve the
+	// Windows 9x, NT4 and 2000 use the AND mask without alpha blending. Preserve the
 	// visible RGB values and threshold transparency on those systems.
 	const String version = OS::get_singleton()->get_version();
 	const bool blend_alpha = !version.is_empty() && !version.begins_with("4.") && !version.begins_with("5.0.");
