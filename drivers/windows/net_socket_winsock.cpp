@@ -279,6 +279,9 @@ void NetSocketWinSock::close() {
 	_sock = INVALID_SOCKET;
 	_ip_type = IP::TYPE_NONE;
 	_is_stream = false;
+#ifdef WIN_9X_ENABLED
+	_connect_pending = false;
+#endif // WIN_9X_ENABLED
 }
 
 Error NetSocketWinSock::bind(Address p_addr) {
@@ -317,6 +320,26 @@ Error NetSocketWinSock::connect_to_host(Address p_addr) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_addr.ip(), false), ERR_INVALID_PARAMETER);
 
+#ifdef WIN_9X_ENABLED
+	if (_connect_pending) {
+		// 98's provider returns WSAEINVAL when connect is repeated before completion.
+		// Poll the original attempt instead; do not reinterpret arbitrary invalid parameters.
+		const Error ready = poll(POLL_TYPE_OUT, 0);
+		if (ready == ERR_BUSY) {
+			return ERR_BUSY;
+		}
+		int socket_error = 0;
+		int error_length = int(sizeof(socket_error));
+		if (ready != OK || getsockopt(_sock, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&socket_error), &error_length) != 0 || socket_error != 0) {
+			print_verbose("Connection to remote host failed.");
+			close();
+			return FAILED;
+		}
+		_connect_pending = false;
+		return OK;
+	}
+#endif // WIN_9X_ENABLED
+
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_addr.ip(), p_addr.port(), _ip_type);
 
@@ -330,6 +353,9 @@ Error NetSocketWinSock::connect_to_host(Address p_addr) {
 			// Still waiting to connect, try again in a while.
 			case ERR_NET_WOULD_BLOCK:
 			case ERR_NET_IN_PROGRESS:
+#ifdef WIN_9X_ENABLED
+				_connect_pending = _is_stream;
+#endif // WIN_9X_ENABLED
 				return ERR_BUSY;
 			default:
 				print_verbose("Connection to remote host failed.");

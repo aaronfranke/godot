@@ -3,6 +3,10 @@
 // Godot includes.
 #include "core/templates/hash_set.h"
 
+#ifdef WIN_9X_ENABLED
+#include "platform/win_9x/encoding_windows_9x.h"
+#endif // WIN_9X_ENABLED
+
 Vector<AudioDriverWaveOut::WaveDevice> AudioDriverWaveOut::_enumerate_devices(bool p_input) {
 	Vector<WaveDevice> devices;
 	devices.push_back({ "Default", WAVE_MAPPER });
@@ -12,17 +16,33 @@ Vector<AudioDriverWaveOut::WaveDevice> AudioDriverWaveOut::_enumerate_devices(bo
 	for (UINT id = 0; id < count; ++id) {
 		String name;
 		if (p_input) {
+#ifdef WIN_9X_ENABLED
+			WAVEINCAPSA caps = {};
+			if (waveInGetDevCapsA(id, &caps, sizeof(caps)) != MMSYSERR_NOERROR) {
+				continue;
+			}
+			name = Windows9xEncoding::decode(caps.szPname);
+#else
 			WAVEINCAPSW caps = {};
 			if (waveInGetDevCapsW(id, &caps, sizeof(caps)) != MMSYSERR_NOERROR) {
 				continue;
 			}
 			name = String(caps.szPname);
+#endif // WIN_9X_ENABLED
 		} else {
+#ifdef WIN_9X_ENABLED
+			WAVEOUTCAPSA caps = {};
+			if (waveOutGetDevCapsA(id, &caps, sizeof(caps)) != MMSYSERR_NOERROR) {
+				continue;
+			}
+			name = Windows9xEncoding::decode(caps.szPname);
+#else
 			WAVEOUTCAPSW caps = {};
 			if (waveOutGetDevCapsW(id, &caps, sizeof(caps)) != MMSYSERR_NOERROR) {
 				continue;
 			}
 			name = String(caps.szPname);
+#endif // WIN_9X_ENABLED
 		}
 		if (name.is_empty()) {
 			name = vformat("WinMM device %d", id + 1);

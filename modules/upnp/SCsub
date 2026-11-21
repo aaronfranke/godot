@@ -31,7 +31,7 @@ if env["builtin_miniupnpc"] and env["platform"] != "web":
 
     env_upnp.Prepend(CPPPATH=[thirdparty_dir + "include"])
     env_upnp.Append(CPPDEFINES=["MINIUPNP_STATICLIB"])
-    is_any_windows = env["platform"] in ("windows", "win_nt4", "win_nt5", "win_nt6")
+    is_any_windows = env["platform"] in ("windows", "win_9x", "win_nt4", "win_nt5", "win_nt6")
     if not is_any_windows:
         env_upnp.Append(CPPDEFINES=["MINIUPNPC_SET_SOCKET_TIMEOUT"])
 

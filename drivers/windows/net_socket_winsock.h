@@ -44,6 +44,9 @@ private:
 	SOCKET _sock = INVALID_SOCKET;
 	IP::Type _ip_type = IP::TYPE_NONE;
 	bool _is_stream = false;
+#ifdef WIN_9X_ENABLED
+	bool _connect_pending = false;
+#endif // WIN_9X_ENABLED
 
 	enum NetError {
 		ERR_NET_WOULD_BLOCK,

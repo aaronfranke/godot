@@ -388,7 +388,7 @@
  * @internal ICU 64
  */
 #ifndef UCONFIG_USE_WINDOWS_LCID_MAPPING_API
-#   if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
+#   if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED) || defined(WIN_9X_ENABLED)
 #       define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 0
 #   else
 #       define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 1

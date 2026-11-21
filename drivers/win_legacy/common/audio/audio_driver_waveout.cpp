@@ -74,6 +74,7 @@ Error AudioDriverWaveOut::init() {
 	ERR_FAIL_COND_V(_event, ERR_ALREADY_IN_USE);
 	_stop.clear();
 	// A single consumer checks buffer ownership before waiting on this event.
+	// The event is unnamed, so the ANSI entry point also serves Windows 9x.
 	_event = CreateEventA(nullptr, FALSE, FALSE, nullptr);
 	if (!_event) {
 		return ERR_CANT_CREATE;

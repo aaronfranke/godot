@@ -8,6 +8,21 @@ if env["arch"] != "x86_32":
     Exit(255)
 
 sources = []
+
 env.add_source_files(sources, "*.cpp")
+env.add_source_files(sources, "os/*.cpp")
+if env["win_legacy_windowed"]:
+    env.add_source_files(sources, "display/*.cpp")
+
+if not env.msvc:
+    # Supply only Winpthreads' condition-variable unit, with a 9x-compatible try lock.
+    # It resolves ahead of the static runtime's original unit; all other pthread code is unchanged.
+    env_pthreads = env.Clone()
+    env_pthreads.Append(CPPDEFINES=["WINPTHREAD_STATIC", "IN_WINPTHREAD"])
+    env_pthreads.disable_warnings()
+    env_pthreads.add_source_files(sources, "#thirdparty/winpthreads/cond.c")
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+
+if env["win_legacy_windowed"]:
+    SConscript("#drivers/win_legacy/common/launcher/SCsub", exports=["env", "prog"])

@@ -522,6 +522,7 @@ Patches:
 - `0002-tuple-include.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
 - `0003-win-nt5-locale.patch` (Use legacy locale and time-zone APIs on Windows NT 5.)
 - `0004-nt4-windows-directory.patch` (Avoid the Windows 2000 directory API when targeting NT4.)
+- `0005-win9x-compatibility.patch` (Use legacy locale mapping and avoid unused NT time-zone imports on Windows 9x.)
 
 
 ## jolt_physics
@@ -607,6 +608,7 @@ Patches:
 - `0002-disable-astc-block-ext.patch` ([GH-76572](https://github.com/godotengine/godot/pull/76572))
 - `0003-basisu-1.60.patch` ([GH-103968](https://github.com/godotengine/godot/pull/103968))
 - `0004-win-nt5-wide-fopen.patch` uses the Windows 2000 CRT's Unicode file-opening API.
+- `0005-win9x-file-io.patch` uses the platform's lossless UTF-8-to-ANSI stdio bridge on Windows 9x.
 
 
 ## libogg
@@ -808,6 +810,9 @@ Patches:
 - `0002-minixml-fix-buffer-overrun-after-namespace-separator.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
 - `0003-minixml-fix-1-byte-out-of-bounds-read.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
 - `0004-win-nt5-winsock.patch` (Use compatible Winsock and IP Helper APIs on Windows 2000.)
+- `0005-win9x-winsock.patch` extends the compatible IPv4 paths to Windows 9x.
+- `0006-win9x-bind-before-multicast-options.patch` applies IPv4 multicast options after binding on Windows 9x.
+- `0007-win95-optional-ip-helper.patch` resolves optional IP Helper functions at runtime on Windows 9x, allowing Windows 95 to use Winsock's default interface.
 
 
 ## minizip
@@ -1195,6 +1200,7 @@ Patches:
 - `0001-external-zlib.patch` ([GH-55115](https://github.com/godotengine/godot/pull/55115))
 - `0002-fix-multipart-header-stale-size.patch` ([GH-124638](https://github.com/godotengine/godot/pull/124638))
 - `0003-nt4-buffered-file-io.patch` uses buffered access when `_WIN32_WINNT` explicitly targets an API baseline older than Windows 2000.
+- `0004-win9x-file-io.patch` uses buffered file access and the platform's lossless UTF-8-to-ANSI stdio bridge on Windows 9x.
 
 
 ## ufbx
@@ -1355,6 +1361,29 @@ Files extracted from upstream source:
 The following files are extracted from thirdparty sources:
 
 - `mesa/wayland-drm.xml`: https://gitlab.freedesktop.org/mesa/mesa/-/blob/mesa-25.3.0/src/egl/wayland/wayland-drm/wayland-drm.xml
+
+
+## winpthreads
+
+- Upstream: https://github.com/mingw-w64/mingw-w64
+- Version: 14.0.0, `mingw-w64-libraries/winpthreads/src/`
+- License: MIT
+
+Files extracted from upstream source: `cond.c`, `cond.h`, and `misc.h`.
+`LICENSE` contains the source files' license notice.
+
+Only the condition-variable unit is compiled, for MinGW Windows 9x builds. It
+replaces the corresponding unit in the statically linked compiler runtime. The
+remaining Winpthreads implementation and public headers come from the toolchain.
+This is verified with the pinned WinLibs GCC 16.2.0 / MinGW-w64 14.0.0 MSVCRT/POSIX
+toolchain; qualify other runtime versions before deployment.
+
+Patches:
+
+- `0001-win9x-condition-lock.patch`: use a pthread mutex for the condition-variable
+  counter lock because Windows 9x does not implement `TryEnterCriticalSection`.
+  The other locks retain their native critical sections. Remove the unused
+  private `thread.h` include.
 
 
 ## wslay
