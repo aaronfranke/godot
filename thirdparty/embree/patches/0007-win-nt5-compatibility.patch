@@ -1,0 +1,63 @@
+diff --git a/thirdparty/embree/common/sys/alloc.cpp b/thirdparty/embree/common/sys/alloc.cpp
+index 2288df76ef..ff94f14a61 100644
+--- a/thirdparty/embree/common/sys/alloc.cpp
++++ b/thirdparty/embree/common/sys/alloc.cpp
+@@ -171,3 +171,11 @@ namespace embree
+ 
+-    if (GetLargePageMinimum() != PAGE_SIZE_2M) {
++#if defined(EMBREE_WIN_NT5)
++    using GetLargePageMinimumFunc = SIZE_T (WINAPI *)();
++    const auto getLargePageMinimum = reinterpret_cast<GetLargePageMinimumFunc>(
++      GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetLargePageMinimum"));
++    const size_t largePageSize = getLargePageMinimum ? getLargePageMinimum() : 0;
++#else
++    const size_t largePageSize = GetLargePageMinimum();
++#endif // defined(EMBREE_WIN_NT5)
++    if (largePageSize != PAGE_SIZE_2M) {
+       huge_pages_enabled = false;
+diff --git a/thirdparty/embree/common/sys/condition.cpp b/thirdparty/embree/common/sys/condition.cpp
+index 606a1d0b04..809888228d 100644
+--- a/thirdparty/embree/common/sys/condition.cpp
++++ b/thirdparty/embree/common/sys/condition.cpp
+@@ -5,3 +5,25 @@
+ 
+-#if defined(__WIN32__) && !defined(PTHREADS_WIN32)
++#if defined(EMBREE_WIN_NT5)
++
++#include <condition_variable>
++#include <mutex>
++
++namespace embree
++{
++  struct ConditionImplementation
++  {
++    void wait(MutexSys& mutex)
++    {
++      std::unique_lock<MutexSys> lock(mutex, std::adopt_lock);
++      cond.wait(lock);
++      lock.release(); // Leave the mutex locked for the caller.
++    }
++
++    void notify_all() { cond.notify_all(); }
++
++    std::condition_variable_any cond;
++  };
++}
++
++#elif defined(__WIN32__) && !defined(PTHREADS_WIN32)
+ 
+diff --git a/thirdparty/embree/common/sys/thread.cpp b/thirdparty/embree/common/sys/thread.cpp
+index 8b072067e6..faa40933e0 100644
+--- a/thirdparty/embree/common/sys/thread.cpp
++++ b/thirdparty/embree/common/sys/thread.cpp
+@@ -35,2 +35,3 @@ namespace embree
+   {
++#if !defined(EMBREE_WIN_NT5)
+     typedef WORD (WINAPI *GetActiveProcessorGroupCountFunc)();
+@@ -75,3 +76,6 @@ namespace embree
+     else 
++#endif // !defined(EMBREE_WIN_NT5)
+     {
++      if (affinity < 0 || size_t(affinity) >= sizeof(DWORD_PTR) * 8)
++        return;
+       if (!SetThreadAffinityMask(thread, DWORD_PTR(uint64_t(1) << affinity)))

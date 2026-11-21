@@ -1,3 +1,8 @@
+#ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
+// Windows 2000 needs the fallback to gethostbyname.
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif // _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "ip_windows_nt.h"
 
 #include <winsock2.h>
@@ -22,27 +27,59 @@ IPAddress IPWindowsNT::_ip_from_sockaddr(const sockaddr *p_address, size_t p_len
 }
 
 void IPWindowsNT::_resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type) const {
+	using ResolveName = INT(WSAAPI *)(PCSTR, PCSTR, const ADDRINFOA *, PADDRINFOA *);
+	using FreeAddresses = void(WSAAPI *)(PADDRINFOA);
+	static const HMODULE winsock = GetModuleHandleW(L"ws2_32.dll");
+	static const auto resolve_name = reinterpret_cast<ResolveName>(reinterpret_cast<void *>(GetProcAddress(winsock, "getaddrinfo")));
+	static const auto free_addresses = reinterpret_cast<FreeAddresses>(reinterpret_cast<void *>(GetProcAddress(winsock, "freeaddrinfo")));
+
 	const CharString hostname = p_hostname.utf8();
-	ADDRINFOA hints = {};
-	hints.ai_socktype = SOCK_STREAM;
-	if (p_type == TYPE_IPV4) {
-		hints.ai_family = AF_INET;
-	} else if (p_type == TYPE_IPV6) {
-		hints.ai_family = AF_INET6;
-	}
-	PADDRINFOA results = nullptr;
-	if (getaddrinfo(hostname.get_data(), nullptr, &hints, &results) == 0 && results) {
-		for (const ADDRINFOA *entry = results; entry; entry = entry->ai_next) {
-			const IPAddress ip = _ip_from_sockaddr(entry->ai_addr, entry->ai_addrlen);
-			if (ip.is_valid() && !r_addresses.find(ip)) {
-				r_addresses.push_back(ip);
-			}
+	if (resolve_name && free_addresses) {
+		ADDRINFOA hints = {};
+		hints.ai_socktype = SOCK_STREAM;
+		if (p_type == TYPE_IPV4) {
+			hints.ai_family = AF_INET;
+		} else if (p_type == TYPE_IPV6) {
+			hints.ai_family = AF_INET6;
 		}
-		freeaddrinfo(results);
+		PADDRINFOA results = nullptr;
+		if (resolve_name(hostname.get_data(), nullptr, &hints, &results) == 0 && results) {
+			for (const ADDRINFOA *entry = results; entry; entry = entry->ai_next) {
+				const IPAddress ip = _ip_from_sockaddr(entry->ai_addr, entry->ai_addrlen);
+				if (ip.is_valid() && !r_addresses.find(ip)) {
+					r_addresses.push_back(ip);
+				}
+			}
+			free_addresses(results);
+		}
+		return;
+	}
+
+	if (p_type == TYPE_IPV6) {
+		return;
+	}
+	const hostent *host = gethostbyname(hostname.get_data());
+	if (!host || !host->h_addr_list || host->h_addrtype != AF_INET || host->h_length != 4) {
+		return;
+	}
+	// Winsock owns the thread-local result. Copy it before another lookup.
+	for (char *const *entry = host->h_addr_list; *entry; ++entry) {
+		IPAddress ip;
+		ip.set_ipv4(reinterpret_cast<const uint8_t *>(*entry));
+		if (!r_addresses.find(ip)) {
+			r_addresses.push_back(ip);
+		}
 	}
 }
 
 bool IPWindowsNT::_get_adapter_addresses(HashMap<String, Interface_Info> *r_interfaces) const {
+	using GetAddresses = ULONG(WINAPI *)(ULONG, ULONG, PVOID, PIP_ADAPTER_ADDRESSES, PULONG);
+	static const auto get_addresses = reinterpret_cast<GetAddresses>(reinterpret_cast<void *>(
+			GetProcAddress(GetModuleHandleW(L"iphlpapi.dll"), "GetAdaptersAddresses")));
+	if (!get_addresses) {
+		return false;
+	}
+
 	ULONG bytes = 15 * 1024;
 	Vector<uint8_t> data;
 	ULONG result;
@@ -50,7 +87,7 @@ bool IPWindowsNT::_get_adapter_addresses(HashMap<String, Interface_Info> *r_inte
 		if (data.resize(bytes) != OK) {
 			return false;
 		}
-		result = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
+		result = get_addresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
 				nullptr, reinterpret_cast<PIP_ADAPTER_ADDRESSES>(data.ptrw()), &bytes);
 	} while (result == ERROR_BUFFER_OVERFLOW && bytes > data.size());
 	if (result != NO_ERROR) {
@@ -79,7 +116,50 @@ bool IPWindowsNT::_get_adapter_addresses(HashMap<String, Interface_Info> *r_inte
 }
 
 void IPWindowsNT::get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const {
-	_get_adapter_addresses(r_interfaces);
+	if (_get_adapter_addresses(r_interfaces)) {
+		return;
+	}
+
+	// Windows 2000 exposes the IPv4 address table, including loopback.
+	ULONG bytes = sizeof(MIB_IPADDRTABLE);
+	Vector<uint8_t> data;
+	DWORD result;
+	do {
+		if (data.resize(bytes) != OK) {
+			return;
+		}
+		result = GetIpAddrTable(reinterpret_cast<PMIB_IPADDRTABLE>(data.ptrw()), &bytes, FALSE);
+	} while (result == ERROR_INSUFFICIENT_BUFFER && bytes > data.size());
+	if (result != NO_ERROR) {
+		return;
+	}
+
+	const auto *table = reinterpret_cast<const MIB_IPADDRTABLE *>(data.ptr());
+	for (DWORD i = 0; i < table->dwNumEntries; ++i) {
+		const MIB_IPADDRROW &address = table->table[i];
+		if (address.dwAddr == INADDR_ANY) {
+			continue;
+		}
+		IPAddress ip;
+		ip.set_ipv4(reinterpret_cast<const uint8_t *>(&address.dwAddr));
+		Interface_Info info;
+		info.index = String::num_uint64(address.dwIndex);
+		MIB_IFROW interface_row = {};
+		interface_row.dwIndex = address.dwIndex;
+		if (GetIfEntry(&interface_row) == NO_ERROR) {
+			info.name = String::utf16(reinterpret_cast<const char16_t *>(interface_row.wszName), MAX_INTERFACE_NAME_LEN);
+		}
+		if (info.name.is_empty()) {
+			info.name = info.index;
+		}
+		if (Interface_Info *existing = r_interfaces->getptr(info.name)) {
+			existing->ip_addresses.push_back(ip);
+		} else {
+			info.name_friendly = info.name;
+			info.ip_addresses.push_back(ip);
+			r_interfaces->insert(info.name, info);
+		}
+	}
 }
 
 void IPWindowsNT::make_default() {

@@ -1,6 +1,7 @@
 import os
 import sys
 
+from drivers.win_legacy.nt import build as nt_build
 from methods import print_error
 from platform_methods import validate_arch
 
@@ -19,7 +20,7 @@ def get_name():
 
 
 def can_build():
-    return False
+    return os.name == "nt"
 
 
 def get_opts():
@@ -38,15 +39,32 @@ def get_opts():
         ),
         ("mingw_prefix", "Path to the MinGW-w64 MSVCRT toolchain root", os.getenv("MINGW_PREFIX", "")),
         BoolVariable("use_static_cpp", "Link the compiler runtime statically", True),
+        BoolVariable("d3d3_software", "Build the Fixed Function Direct3D 3 software backend (x86_32 only)", False),
+        BoolVariable("d3d7", "Build the Fixed Function Direct3D 7 backend (x86_32 only)", '${arch == "x86_32"}'),
+        BoolVariable("d3d9", "Build the Fixed Function Direct3D 9 backend", True),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 backend", False),
     ]
 
 
 def get_flags():
-    return {"arch": "x86_32"}
+    return nt_build.get_flags("x86_32", opengl3=False)
+
+
+def get_tools(env):
+    return nt_build.get_tools(env)
 
 
 def configure(env):
     validate_arch(env["arch"], get_name(), ["x86_32", "x86_64"])
+    if env.editor_build or env["rendering_device"]:
+        _fail(
+            f"{env['platform']} currently supports export templates with Fixed Function, Compatibility, or headless rendering."
+        )
+    if env["d3d7"] and env["arch"] != "x86_32":
+        _fail("Direct3D 7 requires arch=x86_32. Use d3d7=no for x86_64.")
+    if env.get("d3d3_software", False) and env["arch"] != "x86_32":
+        _fail("Direct3D 3 Software requires arch=x86_32. Use d3d3_software=no for x86_64.")
+
     # 0x0500 = Windows 2000, 0x0501 = Windows XP 32-bit, 0x0502 = Windows XP x64 Edition / Server 2003.
     # 0x0600 = Windows Vista / Server 2008.
     if env["target_win_version"] == "auto":
@@ -65,3 +83,5 @@ def configure(env):
         elif version_int >= 0x0601:
             _fail("Target Windows NT version too high for `win_nt5`. Consider using `platform=win_nt6` instead.")
         env["target_win_version_int"] = version_int
+
+    nt_build.configure(env, env["target_win_version_int"])

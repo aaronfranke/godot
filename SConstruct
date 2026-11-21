@@ -795,7 +795,7 @@ elif env.msvc:
         )
         Exit(255)
 
-is_legacy_windows = env["platform"] == "win_nt6"
+is_legacy_windows = env["platform"] in ("win_nt5", "win_nt6")
 if not is_legacy_windows:
     # Set x86 CPU instruction sets to use by the compiler's autovectorization.
     if env["arch"] == "x86_64":

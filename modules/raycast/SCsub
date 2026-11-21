@@ -6,6 +6,10 @@ Import("env_modules")
 
 env_raycast = env_modules.Clone()
 
+if env["platform"] == "win_nt5" and env["arch"] == "x86_32":
+    # The legacy platform leaves the engine ISA unchanged. Embree requires SSE2.
+    env_raycast.Append(CCFLAGS=["/arch:SSE2"] if env.msvc else ["-msse2", "-mstackrealign"])
+
 # Thirdparty source files
 
 thirdparty_obj = []
@@ -66,7 +70,7 @@ if env["builtin_embree"]:
     env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
     env_raycast.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
 
-    if env["platform"] == "windows":
+    if env["platform"] in ("windows", "win_nt5"):
         if env.msvc:
             env.Append(LINKFLAGS=["psapi.lib"])
         else:
@@ -76,6 +80,8 @@ if env["builtin_embree"]:
         env_raycast.Append(CCFLAGS=["/wd4324"])
 
     env_thirdparty = env_raycast.Clone()
+    if env["platform"] == "win_nt5":
+        env_thirdparty.Append(CPPDEFINES=["EMBREE_WIN_NT5", ("PSAPI_VERSION", 1)])
     env_thirdparty.force_optimization_on_debug()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
@@ -88,7 +94,7 @@ if env["builtin_embree"]:
         # Embree needs those; it will automatically use SSE2NEON in ARM.
         env_thirdparty.Append(CPPDEFINES=["__SSE__", "__SSE2__"])
 
-    if env["arch"] == "x86_64" and env.msvc:
+    if env["arch"] == "x86_64" and env.msvc and env["platform"] != "win_nt5":
         env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__"])
 
     if env["platform"] == "web":

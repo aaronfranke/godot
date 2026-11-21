@@ -33,6 +33,7 @@ namespace embree
   /*! set the affinity of a given thread */
   void setAffinity(HANDLE thread, ssize_t affinity)
   {
+#if !defined(EMBREE_WIN_NT5)
     typedef WORD (WINAPI *GetActiveProcessorGroupCountFunc)();
     typedef DWORD (WINAPI *GetActiveProcessorCountFunc)(WORD);
     typedef BOOL (WINAPI *SetThreadGroupAffinityFunc)(HANDLE, const GROUP_AFFINITY *, PGROUP_AFFINITY);
@@ -73,7 +74,10 @@ namespace embree
         WARNING("SetThreadIdealProcessorEx failed"); // on purpose only a warning
     } 
     else 
+#endif // !defined(EMBREE_WIN_NT5)
     {
+      if (affinity < 0 || size_t(affinity) >= sizeof(DWORD_PTR) * 8)
+        return;
       if (!SetThreadAffinityMask(thread, DWORD_PTR(uint64_t(1) << affinity)))
         WARNING("SetThreadAffinityMask failed"); // on purpose only a warning
       if (SetThreadIdealProcessor(thread, (DWORD)affinity) == (DWORD)-1)

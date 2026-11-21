@@ -10,5 +10,5 @@ if env.editor_build:
 
 SConscript("common/SCsub")
 
-if env["platform"] == "win_nt6":
+if env["platform"] in ("win_nt5", "win_nt6"):
     SConscript("nt/SCsub")

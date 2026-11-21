@@ -34,6 +34,10 @@
 #include "shapes/jolt_custom_instance_overrides_shape.h"
 #include "shapes/jolt_custom_ray_shape.h"
 
+#if defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+#include "spaces/jolt_contact_listener_3d.h"
+#endif // defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+
 #include "core/os/memory.h"
 
 #ifdef JPH_ENABLE_ASSERTS
@@ -115,6 +119,12 @@ void jolt_initialize() {
 }
 
 void jolt_deinitialize() {
+#if defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+	// NT5 MinGW keeps these objects on the heap so they can be freed before runtime teardown.
+	// Other builds rely on automatic destruction of the thread-local objects.
+	JoltContactListener3D::deinitialize_thread_locals();
+#endif // defined(WIN_NT5_ENABLED) && defined(__MINGW32__)
+
 	if (JoltGroupFilter::instance != nullptr) {
 		delete JoltGroupFilter::instance;
 		JoltGroupFilter::instance = nullptr;

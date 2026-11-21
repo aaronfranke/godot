@@ -41,6 +41,11 @@
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
 #endif
 
+#if defined(_MSC_VER) && _WIN32_WINNT < 0x0501
+// The Windows SDK hides this protocol constant when targeting Windows 2000.
+static const int IPPROTO_IPV6 = 41;
+#endif // defined(_MSC_VER) && _WIN32_WINNT < 0x0501
+
 size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type) {
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 	if (p_ip_type == IP::TYPE_IPV6 || p_ip_type == IP::TYPE_ANY) { // IPv6 socket.
@@ -53,8 +58,6 @@ size_t NetSocketWinSock::_set_addr_storage(struct sockaddr_storage *p_addr, cons
 		addr6->sin6_port = htons(p_port);
 		if (p_ip.is_valid()) {
 			memcpy(&addr6->sin6_addr.s6_addr, p_ip.get_ipv6(), 16);
-		} else {
-			addr6->sin6_addr = in6addr_any;
 		}
 		return sizeof(sockaddr_in6);
 	} else { // IPv4 socket.

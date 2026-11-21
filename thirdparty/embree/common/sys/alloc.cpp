@@ -169,7 +169,15 @@ namespace embree
       return true;
     }
 
-    if (GetLargePageMinimum() != PAGE_SIZE_2M) {
+#if defined(EMBREE_WIN_NT5)
+    using GetLargePageMinimumFunc = SIZE_T (WINAPI *)();
+    const auto getLargePageMinimum = reinterpret_cast<GetLargePageMinimumFunc>(
+      GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetLargePageMinimum"));
+    const size_t largePageSize = getLargePageMinimum ? getLargePageMinimum() : 0;
+#else
+    const size_t largePageSize = GetLargePageMinimum();
+#endif // defined(EMBREE_WIN_NT5)
+    if (largePageSize != PAGE_SIZE_2M) {
       huge_pages_enabled = false;
       return false;
     }

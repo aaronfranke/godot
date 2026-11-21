@@ -388,7 +388,11 @@
  * @internal ICU 64
  */
 #ifndef UCONFIG_USE_WINDOWS_LCID_MAPPING_API
-#   define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 1
+#   ifdef WIN_NT5_ENABLED
+#       define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 0
+#   else
+#       define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 1
+#   endif // WIN_NT5_ENABLED
 #endif
 
 /* i18n library switches ---------------------------------------------------- */

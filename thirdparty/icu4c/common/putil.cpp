@@ -1821,6 +1821,20 @@ The leftmost codepage (.xxx) wins.
         return gCorrectedPOSIXLocale;
     }
 
+#ifdef WIN_NT5_ENABLED
+    // NT 5 provides a numeric user locale. Map it through ICU's built-in table.
+    correctedPOSIXLocale = static_cast<char *>(uprv_malloc(POSIX_LOCALE_CAPACITY));
+    if (correctedPOSIXLocale != nullptr) {
+        uprv_convertToPosix(GetUserDefaultLCID(), correctedPOSIXLocale, POSIX_LOCALE_CAPACITY, &status);
+        if (status == U_ZERO_ERROR) {
+            gCorrectedPOSIXLocale = correctedPOSIXLocale;
+            gCorrectedPOSIXLocaleHeapAllocated = true;
+            ucln_common_registerCleanup(UCLN_COMMON_PUTIL, putil_cleanup);
+        } else {
+            uprv_free(correctedPOSIXLocale);
+        }
+    }
+#else
     // No cached value, need to determine the current value
     static WCHAR windowsLocale[LOCALE_NAME_MAX_LENGTH] = {};
     int length = GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, windowsLocale, LOCALE_NAME_MAX_LENGTH);
@@ -1875,6 +1889,8 @@ The leftmost codepage (.xxx) wins.
             }
         }
     }
+
+#endif // WIN_NT5_ENABLED
 
     // If unable to find a locale we can agree upon, use en-US by default
     if (gCorrectedPOSIXLocale == nullptr) {

@@ -98,12 +98,14 @@ String OS_WindowsNT::get_locale() const {
 Vector<String> OS_WindowsNT::get_preferred_locales() const {
 	constexpr DWORD MUI_LANGUAGE_NAME_FLAG = 0x8;
 	Vector<String> locales;
+	using PreferredLanguages = BOOL(WINAPI *)(DWORD, PULONG, PWSTR, PULONG);
+	const auto preferred = reinterpret_cast<PreferredLanguages>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetUserPreferredUILanguages")));
 	ULONG count = 0;
 	ULONG length = 0;
-	if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME_FLAG, &count, nullptr, &length) && length > 0) {
+	if (preferred && preferred(MUI_LANGUAGE_NAME_FLAG, &count, nullptr, &length) && length > 0) {
 		Char16String names;
 		if (names.resize_uninitialized(length) == OK &&
-				GetUserPreferredUILanguages(MUI_LANGUAGE_NAME_FLAG, &count, reinterpret_cast<PWSTR>(names.ptrw()), &length)) {
+				preferred(MUI_LANGUAGE_NAME_FLAG, &count, reinterpret_cast<PWSTR>(names.ptrw()), &length)) {
 			for (const wchar_t *name = reinterpret_cast<const wchar_t *>(names.ptr()); *name; name += wcslen(name) + 1) {
 				locales.push_back(String::utf16(reinterpret_cast<const char16_t *>(name)).replace_char('-', '_'));
 			}

@@ -30,6 +30,9 @@
 
 #include "native_menu_windows.h"
 
+#ifdef WIN_NT5_ENABLED
+#include "core/os/os.h"
+#endif // WIN_NT5_ENABLED
 #include "scene/resources/image_texture.h"
 #include "servers/display/display_server.h"
 
@@ -175,7 +178,16 @@ void NativeMenuWindows::popup(const RID &p_rid, const Vector2i &p_position) {
 	HWND hwnd = (HWND)DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, DisplayServerEnums::MAIN_WINDOW_ID);
 	UINT flags = TPM_HORIZONTAL | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_VERPOSANIMATION;
 	if (md->is_rtl) {
+#if defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+		// TPM_LAYOUTRTL was added in XP and is hidden by the Windows 2000 SDK target.
+		const String version = OS::get_singleton()->get_version();
+		if (!version.is_empty() && !version.begins_with("5.0.")) {
+			constexpr UINT MENU_LAYOUT_RTL = 0x8000;
+			flags |= MENU_LAYOUT_RTL;
+		}
+#else
 		flags |= TPM_LAYOUTRTL;
+#endif // defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
 	}
 	const Callable close_callback = md->close_cb;
 	SetForegroundWindow(hwnd);
