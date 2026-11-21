@@ -6,7 +6,9 @@
 #include "core/os/os.h"
 
 #include "platform/windows/key_mapping_windows.h"
+#if _WIN32_WINNT >= 0x0500
 #include "platform/windows/native_menu_windows.h"
+#endif // _WIN32_WINNT >= 0x0500
 
 #include <limits.h>
 #include <shellapi.h>
@@ -326,9 +328,11 @@ LRESULT DisplayServerWindowsNT::_handle_message(UINT p_message, WPARAM p_wparam,
 			_dispatch_status_indicator(IndicatorID(p_wparam), p_lparam);
 			return 0;
 		case WM_MENUCOMMAND:
+#if _WIN32_WINNT >= 0x0500
 			if (_native_menu) {
 				static_cast<NativeMenuWindows *>(_native_menu)->_menu_activate(reinterpret_cast<HMENU>(p_lparam), int(p_wparam));
 			}
+#endif // _WIN32_WINNT >= 0x0500
 			return 0;
 		case WM_GETMINMAXINFO: {
 			if (_fullscreen) {

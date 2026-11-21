@@ -19,13 +19,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#if defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+#if (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
 #include <wspiapi.h>
 #ifdef _MSC_VER
 /* The Windows SDK hides the IPv6 protocol number at the Windows 2000 baseline. */
 static const int IPPROTO_IPV6 = 41;
 #endif // _MSC_VER
-#endif // defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+#endif // (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
 #include <io.h>
 #include <iphlpapi.h>
 #include "win32_snprintf.h"
@@ -587,9 +587,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		p->sin6_family = AF_INET6;
 		if(localport > 0 && localport < 65536)
 			p->sin6_port = htons((unsigned short)localport);
-#if !defined(WIN_NT5_ENABLED) || _WIN32_WINNT >= 0x0501
+#if !(defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || _WIN32_WINNT >= 0x0501
 		p->sin6_addr = in6addr_any; /* in6addr_any is not available with MinGW32 3.4.2 */
-#endif // !defined(WIN_NT5_ENABLED) || _WIN32_WINNT >= 0x0501
+#endif // !(defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) || _WIN32_WINNT >= 0x0501
 	} else {
 		struct sockaddr_in * p = (struct sockaddr_in *)&sockudp_r;
 		p->sin_family = AF_INET;
@@ -604,7 +604,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
  * in order to give this ip to setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF) */
 	if(!ipv6) {
 		DWORD ifbestidx;
-#if defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+#if (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
 		/* Windows 2000 has an IPv4 address table, but no GetAdaptersAddresses. */
 		if ((!multicastif || !multicastif[0]) &&
 		    GetBestInterface(inet_addr(UPNP_MCAST_ADDR), &ifbestidx) == NO_ERROR) {
@@ -719,7 +719,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 				pAddresses = NULL;
 			}
 		}
-#endif // defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+#endif // (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
 	}
 #endif	/* _WIN32 */
 

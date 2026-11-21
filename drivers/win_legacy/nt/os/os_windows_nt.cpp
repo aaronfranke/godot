@@ -113,7 +113,12 @@ String OS_WindowsNT::get_version() const {
 	auto get_version = reinterpret_cast<GetVersionFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion")));
 	OSVERSIONINFOW version = {};
 	version.dwOSVersionInfoSize = sizeof(version);
+#if _WIN32_WINNT < 0x0500
+	// NT4 does not export RtlGetVersion; it predates Windows version manifest gates.
+	const bool found = get_version ? get_version(&version) == 0 : GetVersionExW(&version) != FALSE;
+#else
 	const bool found = get_version && get_version(&version) == 0;
+#endif // _WIN32_WINNT < 0x0500
 	if (!found) {
 		return String();
 	}
@@ -243,7 +248,12 @@ uint64_t OS_WindowsNT::get_ticks_usec() const {
 Error OS_WindowsNT::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	ERR_FAIL_COND_V(p_bytes < 0, ERR_INVALID_PARAMETER);
 	HCRYPTPROV provider;
+#if _WIN32_WINNT < 0x0500
+	// NT4's CSP rejects CRYPT_SILENT. Verification needs no persistent key container.
+	const DWORD flags = CRYPT_VERIFYCONTEXT;
+#else
 	const DWORD flags = CRYPT_VERIFYCONTEXT | CRYPT_SILENT;
+#endif // _WIN32_WINNT < 0x0500
 	if (!CryptAcquireContextW(&provider, nullptr, nullptr, PROV_RSA_FULL, flags)) {
 		return ERR_UNAVAILABLE;
 	}

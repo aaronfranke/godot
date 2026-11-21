@@ -14,9 +14,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#if defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+#if (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
 #include <wspiapi.h>
-#endif // defined(WIN_NT5_ENABLED) && _WIN32_WINNT < 0x0501
+#endif // (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0501
 #include <io.h>
 #define MAXHOSTNAMELEN 64
 #include "win32_snprintf.h"

@@ -26,7 +26,7 @@ elif env["builtin_wslay"]:
     env_ws.Prepend(CPPPATH=[thirdparty_dir])
     env_ws.Append(CPPDEFINES=["HAVE_CONFIG_H"])
 
-    is_any_windows = env["platform"] in ("windows", "win_nt5", "win_nt6")
+    is_any_windows = env["platform"] in ("windows", "win_nt4", "win_nt5", "win_nt6")
     if is_any_windows:
         env_ws.Append(CPPDEFINES=["HAVE_WINSOCK2_H"])
     else:

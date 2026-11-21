@@ -9,7 +9,9 @@ env.add_source_files(env.drivers_sources, "#drivers/windows/file_access_windows_
 
 if env["win_legacy_windowed"]:
     env.add_source_files(env.drivers_sources, "display/*.cpp")
-    env.add_source_files(env.drivers_sources, "#platform/windows/native_menu_windows.cpp")
+    # NativeMenuWindows requires Windows 2000's SetMenuInfo/GetMenuInfo.
+    if env["target_win_version_int"] >= 0x0500:
+        env.add_source_files(env.drivers_sources, "#platform/windows/native_menu_windows.cpp")
 
 if env["opengl3"]:
     env.add_source_files(env.drivers_sources, "display/opengl/*.cpp")

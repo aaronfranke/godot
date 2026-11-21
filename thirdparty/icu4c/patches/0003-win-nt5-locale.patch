@@ -6,7 +6,7 @@ index a1fb0c9958..2c8f4cc3db 100644
          return gCorrectedPOSIXLocale;
      }
  
-+#ifdef WIN_NT5_ENABLED
++#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 +    // NT 5 provides a numeric user locale. Map it through ICU's built-in table.
 +    correctedPOSIXLocale = static_cast<char *>(uprv_malloc(POSIX_LOCALE_CAPACITY));
 +    if (correctedPOSIXLocale != nullptr) {
@@ -27,7 +27,7 @@ index a1fb0c9958..2c8f4cc3db 100644
          }
      }
  
-+#endif // WIN_NT5_ENABLED
++#endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 +
      // If unable to find a locale we can agree upon, use en-US by default
      if (gCorrectedPOSIXLocale == nullptr) {
@@ -41,11 +41,11 @@ index c0488d502b..ff2cc0ef34 100644
   */
  #ifndef UCONFIG_USE_WINDOWS_LCID_MAPPING_API
 -#   define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 1
-+#   ifdef WIN_NT5_ENABLED
++#   if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 +#       define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 0
 +#   else
 +#       define UCONFIG_USE_WINDOWS_LCID_MAPPING_API 1
-+#   endif // WIN_NT5_ENABLED
++#   endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
  #endif
  
  /* i18n library switches ---------------------------------------------------- */
@@ -57,7 +57,7 @@ index ef9cd68019..9dd2972c91 100644
  U_CAPI const char* U_EXPORT2
  uprv_detectWindowsTimeZone()
  {
-+#ifdef WIN_NT5_ENABLED
++#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 +    // NT 5 supplies the legacy fields used by the registry lookup below.
 +    TIME_ZONE_INFORMATION tzi = {};
 +    if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_INVALID) {
@@ -101,7 +101,7 @@ index ef9cd68019..9dd2972c91 100644
      }
  
 +    WCHAR *windowsTimeZoneName = tzi.TimeZoneKeyName;
-+#endif // WIN_NT5_ENABLED
++#endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 +
      // If DST is NOT disabled, but the TimeZoneKeyName field of the struct is nullptr, then we may be dealing with a
      // RDP/terminal services session where the 'Time Zone Redirection' feature is enabled. However, either the RDP
@@ -143,12 +143,12 @@ index ef9cd68019..9dd2972c91 100644
      // as the A version of the API will end up calling MultiByteToWideChar anyways internally.
      wchar_t regionCodeW[3] = {};
      char regionCode[3] = {}; // 2 letter ISO 3166 country/region code made entirely of invariant chars.
-+#ifdef WIN_NT5_ENABLED
++#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 +    int regionCodeLen = GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, regionCodeW, UPRV_LENGTHOF(regionCodeW));
 +#else
      int geoId = GetUserGeoID(GEOCLASS_NATION);
      int regionCodeLen = GetGeoInfoW(geoId, GEO_ISO2, regionCodeW, UPRV_LENGTHOF(regionCodeW), 0);
-+#endif // WIN_NT5_ENABLED
++#endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
  
      const char16_t *icuTZ16 = nullptr;
      int32_t tzListLen = 0;

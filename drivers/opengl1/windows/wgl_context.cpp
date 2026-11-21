@@ -2,6 +2,60 @@
 
 #include <stdint.h>
 
+#ifdef WIN_NT4_ENABLED
+const wchar_t FixedFunctionWGLContext::UNICODE_PROC_PROPERTY[] = L"GodotWGLUnicodeProc";
+const wchar_t FixedFunctionWGLContext::GL_PROC_PROPERTY[] = L"GodotWGLRuntimeProc";
+
+LRESULT CALLBACK FixedFunctionWGLContext::_unicode_window_proc(HWND p_window, UINT p_message, WPARAM p_wparam, LPARAM p_lparam) {
+	WNDPROC procedure = reinterpret_cast<WNDPROC>(GetPropW(p_window, GL_PROC_PROPERTY));
+	switch (p_message) {
+		case WM_CHAR:
+		case WM_DEADCHAR:
+		case WM_SYSCHAR:
+		case WM_SYSDEADCHAR:
+		case WM_IME_CHAR:
+		case WM_SETTEXT:
+		case WM_GETTEXT:
+		case WM_GETTEXTLENGTH:
+			// The graphics wrapper does not need text; avoid its ANSI conversion.
+			procedure = reinterpret_cast<WNDPROC>(GetPropW(p_window, UNICODE_PROC_PROPERTY));
+			break;
+		case WM_NCDESTROY:
+			RemovePropW(p_window, UNICODE_PROC_PROPERTY);
+			RemovePropW(p_window, GL_PROC_PROPERTY);
+			break;
+	}
+	return CallWindowProcW(procedure, p_window, p_message, p_wparam, p_lparam);
+}
+
+Error FixedFunctionWGLContext::_preserve_unicode(HWND p_window, WNDPROC p_unicode_proc) {
+	if (!p_unicode_proc || IsWindowUnicode(p_window)) {
+		return OK;
+	}
+	// NT4's GDI SetPixelFormat installs an ANSI window procedure even on a Unicode
+	// window. Keep its graphics handling, but receive text through a Unicode entry point.
+	const WNDPROC gl_proc = reinterpret_cast<WNDPROC>(GetWindowLongPtrW(p_window, GWLP_WNDPROC));
+	if (!SetPropW(p_window, UNICODE_PROC_PROPERTY, reinterpret_cast<HANDLE>(p_unicode_proc))) {
+		return ERR_CANT_CREATE;
+	}
+	if (!SetPropW(p_window, GL_PROC_PROPERTY, reinterpret_cast<HANDLE>(gl_proc))) {
+		RemovePropW(p_window, UNICODE_PROC_PROPERTY);
+		return ERR_CANT_CREATE;
+	}
+	SetLastError(ERROR_SUCCESS);
+	const LONG_PTR previous = SetWindowLongPtrW(p_window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(_unicode_window_proc));
+	if (!previous && GetLastError() != ERROR_SUCCESS) {
+		RemovePropW(p_window, UNICODE_PROC_PROPERTY);
+		RemovePropW(p_window, GL_PROC_PROPERTY);
+		return ERR_CANT_CREATE;
+	}
+	// Pixel format and wrapper belong to the native window, across context recreation.
+	// Properties hold procedures only, so no destroyed context can be referenced later.
+	return OK;
+}
+
+#endif // WIN_NT4_ENABLED
+
 FixedFunctionWGLContext::FixedFunctionWGLContext(bool p_force_software) :
 		_window(nullptr),
 		_dc(nullptr),
@@ -55,6 +109,9 @@ Error FixedFunctionWGLContext::initialize(void *p_window) {
 		return ERR_INVALID_PARAMETER;
 	}
 	_window = static_cast<HWND>(p_window);
+#ifdef WIN_NT4_ENABLED
+	const WNDPROC unicode_proc = IsWindowUnicode(_window) ? reinterpret_cast<WNDPROC>(GetWindowLongPtrW(_window, GWLP_WNDPROC)) : nullptr;
+#endif // WIN_NT4_ENABLED
 	_dc = GetDC(_window);
 	if (!_dc) {
 		_window = nullptr;
@@ -79,6 +136,13 @@ Error FixedFunctionWGLContext::initialize(void *p_window) {
 		finalize();
 		return ERR_CANT_CREATE;
 	}
+#ifdef WIN_NT4_ENABLED
+	const Error unicode_error = _preserve_unicode(_window, unicode_proc);
+	if (unicode_error != OK) {
+		finalize();
+		return unicode_error;
+	}
+#endif // WIN_NT4_ENABLED
 	return OK;
 }
 

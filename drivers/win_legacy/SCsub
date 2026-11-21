@@ -5,5 +5,5 @@ Import("env")
 
 SConscript("common/SCsub")
 
-if env["platform"] in ("win_nt5", "win_nt6"):
+if env["platform"] in ("win_nt4", "win_nt5", "win_nt6"):
     SConscript("nt/SCsub")

@@ -1411,7 +1411,11 @@ static BOOL U_CALLCONV getIcuDataDirectoryUnderWindowsDirectory(char* directoryB
     wchar_t windowsPath[MAX_PATH];
     char windowsPathUtf8[MAX_PATH];
 
+#if (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0500
+    UINT length = GetWindowsDirectoryW(windowsPath, UPRV_LENGTHOF(windowsPath));
+#else
     UINT length = GetSystemWindowsDirectoryW(windowsPath, UPRV_LENGTHOF(windowsPath));
+#endif // (defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)) && _WIN32_WINNT < 0x0500
     if ((length > 0) && (length < (UPRV_LENGTHOF(windowsPath) - 1))) {
         // Convert UTF-16 to a UTF-8 string.
         UErrorCode status = U_ZERO_ERROR;
@@ -1821,7 +1825,7 @@ The leftmost codepage (.xxx) wins.
         return gCorrectedPOSIXLocale;
     }
 
-#ifdef WIN_NT5_ENABLED
+#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
     // NT 5 provides a numeric user locale. Map it through ICU's built-in table.
     correctedPOSIXLocale = static_cast<char *>(uprv_malloc(POSIX_LOCALE_CAPACITY));
     if (correctedPOSIXLocale != nullptr) {
@@ -1890,7 +1894,7 @@ The leftmost codepage (.xxx) wins.
         }
     }
 
-#endif // WIN_NT5_ENABLED
+#endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 
     // If unable to find a locale we can agree upon, use en-US by default
     if (gCorrectedPOSIXLocale == nullptr) {

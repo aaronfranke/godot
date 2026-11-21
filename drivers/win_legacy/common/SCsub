@@ -3,7 +3,7 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-if env["platform"] in ("win_nt5", "win_nt6"):
+if env["platform"] in ("win_nt4", "win_nt5", "win_nt6"):
     env.add_source_files(env.drivers_sources, "#drivers/windows/net_socket_winsock.cpp")
 
     if env["win_legacy_windowed"]:
