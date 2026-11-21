@@ -39,6 +39,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -3039,7 +3040,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				if (lcd_aa) {
 					ffsd->textures[fgl.texture_idx].texture->draw_lcd_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate);
 				} else {
-					ffsd->textures[fgl.texture_idx].texture->draw_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, false, false);
+					RenderingServer::get_singleton()->canvas_item_add_font_glyph(p_canvas, Rect2(cpos, csize), ffsd->textures[fgl.texture_idx].texture->get_rid(), fgl.uv_rect, modulate);
 				}
 			}
 		}
@@ -3178,7 +3179,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 				if (lcd_aa) {
 					ffsd->textures[fgl.texture_idx].texture->draw_lcd_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate);
 				} else {
-					ffsd->textures[fgl.texture_idx].texture->draw_rect_region(p_canvas, Rect2(cpos, csize), fgl.uv_rect, modulate, false, false);
+					RenderingServer::get_singleton()->canvas_item_add_font_glyph(p_canvas, Rect2(cpos, csize), ffsd->textures[fgl.texture_idx].texture->get_rid(), fgl.uv_rect, modulate);
 				}
 			}
 		}
