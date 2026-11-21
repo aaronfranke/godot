@@ -7,3 +7,8 @@ if env.editor_build:
     # Register the export classes for editor builds on
     # every platform, including non-Windows platforms.
     env.add_source_files(env.drivers_sources, "export/*.cpp")
+
+SConscript("common/SCsub")
+
+if env["platform"] == "win_nt6":
+    SConscript("nt/SCsub")

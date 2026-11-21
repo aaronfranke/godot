@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+if env["platform"] == "win_nt6":
+    env.add_source_files(env.drivers_sources, "#drivers/windows/net_socket_winsock.cpp")
+
+    if env["win_legacy_windowed"]:
+        env.add_source_files(env.drivers_sources, "audio/*.cpp")
+        env.add_source_files(env.drivers_sources, "input/*.cpp")
+        env.add_source_files(env.drivers_sources, "display/*.cpp")
+        env.add_source_files(env.drivers_sources, "#platform/windows/key_mapping_windows.cpp")

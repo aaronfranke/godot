@@ -10,7 +10,8 @@ supported = env.get("supported", [])
 
 # OS drivers
 SConscript("unix/SCsub")
-SConscript("windows/SCsub")
+if env["platform"] != "win_nt6":
+    SConscript("windows/SCsub")
 # This must be always compiled so that the exporters are compiled.
 SConscript("win_legacy/SCsub")
 

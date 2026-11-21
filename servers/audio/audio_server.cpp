@@ -1710,6 +1710,7 @@ Error AudioServer::set_input_device_active(bool p_is_active) {
 
 		input_buffer_ofs = 0;
 		const Error err = AudioDriver::get_singleton()->input_start();
+		// Leave capture inactive on failure so the next activation retries the driver.
 		input_device_active = err == OK;
 		return err;
 	} else {

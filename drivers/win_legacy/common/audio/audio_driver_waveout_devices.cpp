@@ -1,0 +1,84 @@
+#include "drivers/win_legacy/common/audio/audio_driver_waveout.h"
+
+// Godot includes.
+#include "core/templates/hash_set.h"
+
+Vector<AudioDriverWaveOut::WaveDevice> AudioDriverWaveOut::_enumerate_devices(bool p_input) {
+	Vector<WaveDevice> devices;
+	devices.push_back({ "Default", WAVE_MAPPER });
+	HashSet<String> used_names;
+	used_names.insert("Default");
+	const UINT count = p_input ? waveInGetNumDevs() : waveOutGetNumDevs();
+	for (UINT id = 0; id < count; ++id) {
+		String name;
+		if (p_input) {
+			WAVEINCAPSW caps = {};
+			if (waveInGetDevCapsW(id, &caps, sizeof(caps)) != MMSYSERR_NOERROR) {
+				continue;
+			}
+			name = String(caps.szPname);
+		} else {
+			WAVEOUTCAPSW caps = {};
+			if (waveOutGetDevCapsW(id, &caps, sizeof(caps)) != MMSYSERR_NOERROR) {
+				continue;
+			}
+			name = String(caps.szPname);
+		}
+		if (name.is_empty()) {
+			name = vformat("WinMM device %d", id + 1);
+		}
+		const String base_name = name;
+		for (int duplicate = 2; used_names.has(name); ++duplicate) {
+			name = vformat("%s (%d)", base_name, duplicate);
+		}
+		used_names.insert(name);
+		devices.push_back({ name, id });
+	}
+	return devices;
+}
+
+PackedStringArray AudioDriverWaveOut::_get_device_list(bool p_input) {
+	PackedStringArray names;
+	for (const WaveDevice &device : _enumerate_devices(p_input)) {
+		names.push_back(device.name);
+	}
+	return names;
+}
+
+AudioDriverWaveOut::WaveDevice AudioDriverWaveOut::_find_device(const String &p_name, bool p_input) {
+	if (p_name != "Default" && !p_name.is_empty()) {
+		for (const WaveDevice &device : _enumerate_devices(p_input)) {
+			if (device.name == p_name) {
+				return device;
+			}
+		}
+	}
+	return { "Default", WAVE_MAPPER };
+}
+
+PackedStringArray AudioDriverWaveOut::get_output_device_list() {
+	return _get_device_list(false);
+}
+
+String AudioDriverWaveOut::get_output_device() {
+	MutexLock lock(_mutex);
+	return _output_device;
+}
+
+void AudioDriverWaveOut::set_output_device(const String &p_name) {
+	MutexLock lock(_mutex);
+	if (_event && !_stop.is_set()) {
+		_requested_output_device = p_name;
+		_output_device_pending = true;
+		SetEvent(_event);
+	}
+}
+
+PackedStringArray AudioDriverWaveOut::get_input_device_list() {
+	return _get_device_list(true);
+}
+
+String AudioDriverWaveOut::get_input_device() {
+	MutexLock lock(_mutex);
+	return _input_device;
+}

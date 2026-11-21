@@ -453,7 +453,7 @@ void CryptoMbedTLS::load_default_certificates(const String &p_path) {
 		default_certs->load(p_path);
 	} else {
 		// Try to use system certs otherwise.
-		String system_certs = OS::get_singleton()->get_system_ca_certificates();
+		String system_certs = OS::get_singleton()->get_system_ca_certificates_for_tls();
 		if (!system_certs.is_empty()) {
 			CharString cs = system_certs.utf8();
 			default_certs->load_from_memory((const uint8_t *)cs.get_data(), cs.size());

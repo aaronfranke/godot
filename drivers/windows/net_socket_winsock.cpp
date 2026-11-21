@@ -104,15 +104,16 @@ void NetSocketWinSock::make_default() {
 	ERR_FAIL_COND(_create != nullptr);
 
 	WSADATA data;
-	WSAStartup(MAKEWORD(2, 2), &data);
+	const int error = WSAStartup(MAKEWORD(2, 2), &data);
+	ERR_FAIL_COND_MSG(error != 0, vformat("Could not initialize Winsock (error %d).", error));
 	_create = _create_func;
 }
 
 void NetSocketWinSock::cleanup() {
-	ERR_FAIL_COND(_create == nullptr);
-
-	WSACleanup();
-	_create = nullptr;
+	if (_create) {
+		_create = nullptr;
+		WSACleanup();
+	}
 }
 
 NetSocketWinSock::NetSocketWinSock() {
@@ -222,26 +223,27 @@ Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_typ
 	ERR_FAIL_COND_V(is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(ip_type > IP::TYPE_ANY || ip_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
-	int family = ip_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
+	const int family = ip_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
 	int protocol = p_sock_type == TYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
 	int type = p_sock_type == TYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
 	_sock = socket(family, type, protocol);
 
+	if (_sock != INVALID_SOCKET && ip_type == IP::TYPE_ANY) {
+		const DWORD ipv6_only = 0;
+		if (setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char *>(&ipv6_only), sizeof(ipv6_only)) == SOCKET_ERROR) {
+			// Older Winsock providers can supply IPv6 without IPv4-mapped addresses.
+			close();
+		}
+	}
 	if (_sock == INVALID_SOCKET && ip_type == IP::TYPE_ANY) {
 		// Careful here, changing the referenced parameter so the caller knows that we are using an IPv4 socket
 		// in place of a dual stack one, and further calls to _set_sock_addr will work as expected.
 		ip_type = IP::TYPE_IPV4;
-		family = AF_INET;
-		_sock = socket(family, type, protocol);
+		_sock = socket(AF_INET, type, protocol);
 	}
 
 	ERR_FAIL_COND_V(_sock == INVALID_SOCKET, FAILED);
 	_ip_type = ip_type;
-
-	if (family == AF_INET6) {
-		// Select IPv4 over IPv6 mapping.
-		set_ipv6_only_enabled(ip_type != IP::TYPE_ANY);
-	}
 
 	if (protocol == IPPROTO_UDP) {
 		// Make sure to disable broadcasting for UDP sockets.
