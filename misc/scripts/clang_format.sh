@@ -37,6 +37,16 @@ while IFS= read -rd '' f; do
                 continue 2
             elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix"* ]]; then
                 continue 2
+            elif [[ "$f" == "drivers/win_legacy/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/win_9x/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/win_nt4/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/win_nt5/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/win_nt6/"* ]]; then
+                continue 2
             fi
             python misc/scripts/copyright_headers.py "$f"
             continue 2

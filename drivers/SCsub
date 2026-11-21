@@ -7,6 +7,7 @@ env.drivers_sources = []
 # OS drivers
 SConscript("unix/SCsub")
 SConscript("windows/SCsub")
+SConscript("win_legacy/SCsub")
 
 # Sounds drivers
 SConscript("alsa/SCsub")

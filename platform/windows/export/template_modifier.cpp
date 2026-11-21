@@ -861,6 +861,12 @@ Vector<TemplateModifier::SectionEntry> TemplateModifier::_get_section_entries(Fi
 	return section_entries;
 }
 
+Vector<uint8_t> TemplateModifier::create_version_resource(const Ref<EditorExportPreset> &p_preset) {
+	// NT5 writes the shared version resource format through Win32.
+	TemplateModifier modifier;
+	return modifier._create_version_info(modifier._get_strings(p_preset)).save();
+}
+
 Error TemplateModifier::modify(const Ref<EditorExportPreset> &p_preset, const String &p_template_path, const String &p_icon_path) {
 	TemplateModifier template_modifier;
 	return template_modifier._modify_template(p_preset, p_template_path, p_icon_path);

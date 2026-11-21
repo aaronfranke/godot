@@ -109,6 +109,10 @@ if env["tools"]:
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
 
+    # Keep shared exporters in the same archive as their callers, so single-pass
+    # linkers can resolve them without a backward dependency on the drivers archive.
+    env.add_source_files(env.editor_sources, Glob("#drivers/win_legacy/export/*.cpp"))
+
     SConscript("collada/SCsub")
     SConscript("doc/SCsub")
     SConscript("fileserver/SCsub")

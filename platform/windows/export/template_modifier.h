@@ -231,5 +231,6 @@ class TemplateModifier {
 	Error _modify_template(const Ref<EditorExportPreset> &p_preset, const String &p_template_path, const String &p_icon_path) const;
 
 public:
+	static Vector<uint8_t> create_version_resource(const Ref<EditorExportPreset> &p_preset);
 	static Error modify(const Ref<EditorExportPreset> &p_preset, const String &p_template_path, const String &p_icon_path);
 };

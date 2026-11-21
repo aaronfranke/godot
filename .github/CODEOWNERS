@@ -39,6 +39,9 @@ doc_classes/*                       @godotengine/documentation
 /drivers/gles2/                     @godotengine/rendering
 /drivers/gles3/                     @godotengine/rendering
 /drivers/gles_common/               @godotengine/rendering
+/drivers/win_legacy/                @aaronfranke
+/drivers/win_legacy/**/*.py         @aaronfranke @godotengine/buildsystem
+/drivers/win_legacy/**/SCsub        @aaronfranke @godotengine/buildsystem
 
 ## OS
 /drivers/unix/                      @godotengine/_platforms
@@ -146,6 +149,18 @@ doc_classes/*                       @godotengine/documentation
 /platform/x11/                      @godotengine/linux-bsd
 /platform/osx/                      @godotengine/macos
 /platform/uwp/                      @godotengine/uwp
+/platform/win_9x/                   @aaronfranke
+/platform/win_9x/**/*.py            @aaronfranke @godotengine/buildsystem
+/platform/win_9x/**/SCsub           @aaronfranke @godotengine/buildsystem
+/platform/win_nt4/                  @aaronfranke
+/platform/win_nt4/**/*.py           @aaronfranke @godotengine/buildsystem
+/platform/win_nt4/**/SCsub          @aaronfranke @godotengine/buildsystem
+/platform/win_nt5/                  @aaronfranke
+/platform/win_nt5/**/*.py           @aaronfranke @godotengine/buildsystem
+/platform/win_nt5/**/SCsub          @aaronfranke @godotengine/buildsystem
+/platform/win_nt6/                  @aaronfranke
+/platform/win_nt6/**/*.py           @aaronfranke @godotengine/buildsystem
+/platform/win_nt6/**/SCsub          @aaronfranke @godotengine/buildsystem
 /platform/windows/                  @godotengine/windows
 
 # Scene
