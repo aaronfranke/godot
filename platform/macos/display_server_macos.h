@@ -57,6 +57,10 @@ class InputEvent;
 class InputEventWithModifiers;
 class NativeMenuMacOS;
 
+#ifdef OPENGL1_ENABLED
+class FixedFunctionMacOS;
+#endif // OPENGL1_ENABLED
+
 #ifdef TOOLS_ENABLED
 class EmbeddedProcessMacOS;
 #endif
@@ -152,6 +156,10 @@ public:
 
 private:
 	id screen_observer = nil;
+
+#ifdef OPENGL1_ENABLED
+	FixedFunctionMacOS *fixed_function = nullptr;
+#endif // OPENGL1_ENABLED
 
 #if defined(GLES3_ENABLED)
 	GLManagerLegacy_MacOS *gl_manager_legacy = nullptr;

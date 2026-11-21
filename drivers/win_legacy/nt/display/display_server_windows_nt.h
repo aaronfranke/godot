@@ -8,6 +8,7 @@
 
 #include <imm.h>
 
+class FixedFunctionWindows;
 class GLContextWindowsNT;
 class NativeMenu;
 
@@ -53,6 +54,7 @@ class DisplayServerWindowsNT : public DisplayServer {
 	HIMC _ime_context = nullptr;
 	HKL _keyboard_label_layout = nullptr;
 	Key _keyboard_letter_labels['Z' - 'A' + 1] = {};
+	FixedFunctionWindows *_renderer = nullptr;
 	GLContextWindowsNT *_gl_context = nullptr;
 	NativeMenu *_native_menu = nullptr;
 	FileDialogRequest *_file_dialog_request = nullptr;
@@ -71,6 +73,7 @@ class DisplayServerWindowsNT : public DisplayServer {
 	bool _shown = false;
 	bool _fullscreen = false;
 	bool _fullscreen_bounds_dirty = false;
+	bool _display_change_pending = false;
 	bool _mouse_inside = false;
 	bool _mouse_focused = false;
 	bool _mouse_focus_pending = false;

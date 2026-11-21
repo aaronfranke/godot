@@ -83,7 +83,24 @@ else:
 res_obj = env.RES(res_target, res_file)
 env.Depends(res_obj, "#core/version_generated.gen.h")
 
-env.add_source_files(sources, common_win)
+env_windows = env.Clone()
+
+d3d3_software = env.get("d3d3_software", False)
+d3d7 = env.get("d3d7", False)
+d3d9 = env.get("d3d9", False)
+opengl1 = env.get("opengl1", False)
+if d3d3_software or d3d7 or d3d9 or opengl1:
+    env_windows.Append(CPPDEFINES=["FIXED_FUNCTION_ENABLED"])
+    if d3d3_software:
+        env_windows.Append(CPPDEFINES=["D3D3_SOFTWARE_ENABLED"])
+    if opengl1:
+        env_windows.Append(CPPDEFINES=["OPENGL1_ENABLED"])
+    if d3d7:
+        env_windows.Append(CPPDEFINES=["D3D7_ENABLED"])
+    if d3d9:
+        env_windows.Append(CPPDEFINES=["D3D9_ENABLED"])
+    env_windows.add_source_files(sources, "fixed_function/*.cpp")
+env_windows.add_source_files(sources, common_win)
 
 sources += res_obj
 

@@ -35,6 +35,12 @@ def get_opts():
         ),
         ("mingw_prefix", "Path to the MinGW-w64 MSVCRT toolchain root", os.getenv("MINGW_PREFIX", "")),
         BoolVariable("use_static_cpp", "Link the compiler runtime statically", True),
+        BoolVariable(
+            "d3d3_software", "Build the Fixed Function Direct3D 3 software device backend (x86_32 only)", False
+        ),
+        BoolVariable("d3d7", "Build the Fixed Function Direct3D 7 device backend (x86_32 only)", False),
+        BoolVariable("d3d9", "Build the Fixed Function Direct3D 9 device backend", True),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 device backend", True),
     ]
 
 
@@ -49,7 +55,11 @@ def get_tools(env):
 def configure(env):
     validate_arch(env["arch"], get_name(), ["x86_32", "x86_64"])
     if env["rendering_device"]:
-        _fail(f"{env['platform']} currently supports Compatibility or headless rendering.")
+        _fail(f"{env['platform']} currently supports Fixed Function, Compatibility, or headless rendering.")
+    if env["d3d7"] and env["arch"] != "x86_32":
+        _fail("Direct3D 7 requires arch=x86_32. Use d3d7=no for x86_64.")
+    if env.get("d3d3_software", False) and env["arch"] != "x86_32":
+        _fail("Direct3D 3 Software requires arch=x86_32. Use d3d3_software=no for x86_64.")
 
     # 0x0601 = Windows 7, 0x0602 = Windows 8, 0x0603 = Windows 8.1.
     # 0x0A00 = Both Windows 10 and Windows 11 (Microsoft failed at counting).

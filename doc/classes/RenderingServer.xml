@@ -1648,6 +1648,7 @@
 				When [member ProjectSettings.rendering/renderer/rendering_method] is [code]forward_plus[/code] or [code]mobile[/code], the rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver].
 				When [member ProjectSettings.rendering/renderer/rendering_method] is [code]gl_compatibility[/code], the rendering driver is determined by [member ProjectSettings.rendering/gl_compatibility/driver].
 				The rendering driver is also determined by the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+				[b]Note:[/b] Godot 4.x uses lowercase rendering driver names. This is different from Godot 3.x, which used capitalized names.
 			</description>
 		</method>
 		<method name="get_current_rendering_method" qualifiers="const">

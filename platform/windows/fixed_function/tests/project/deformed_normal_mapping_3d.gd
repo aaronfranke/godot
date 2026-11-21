@@ -1,0 +1,151 @@
+extends Node3D
+
+var _frames = 0
+var _failed = false
+var _skeleton
+var _instances = []
+var _material
+var _normal_setting
+
+
+func _check(condition, message):
+	if not condition:
+		_failed = true
+		printerr("DEFORMED NORMAL SCENE FAIL: ", message)
+
+
+func _mesh():
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	var vertices = PackedVector3Array([
+		Vector3(-0.8, -0.8, 0), Vector3(-0.8, 0.8, 0), Vector3(0.8, 0.8, 0),
+		Vector3(-0.8, -0.8, 0), Vector3(0.8, 0.8, 0), Vector3(0.8, -0.8, 0)
+	])
+	var normals = PackedVector3Array()
+	var tangents = PackedFloat32Array()
+	var target_tangents = PackedFloat32Array()
+	var uv = PackedVector2Array()
+	var uv2 = PackedVector2Array()
+	var colors = PackedColorArray()
+	var bones = PackedInt32Array()
+	var weights = PackedFloat32Array()
+	for vertex in vertices:
+		normals.append(Vector3.BACK)
+		uv.append((Vector2(vertex.x, vertex.y) + Vector2.ONE) * 0.5)
+		uv2.append(Vector2(0.5, 0.5))
+		colors.append(Color(0.8, 1, 0.7, 1))
+		tangents.append_array(PackedFloat32Array([1, 0, 0, 1]))
+		target_tangents.append_array(PackedFloat32Array([0, 1, 0, -1]))
+		bones.append_array(PackedInt32Array([0, 1, 0, 0]))
+		weights.append_array(PackedFloat32Array([0.25, 0.75, 0, 0]))
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TANGENT] = tangents
+	arrays[Mesh.ARRAY_TEX_UV] = uv
+	arrays[Mesh.ARRAY_TEX_UV2] = uv2
+	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_BONES] = bones
+	arrays[Mesh.ARRAY_WEIGHTS] = weights
+	var target = []
+	target.resize(Mesh.ARRAY_MAX)
+	target[Mesh.ARRAY_VERTEX] = vertices
+	target[Mesh.ARRAY_NORMAL] = normals
+	target[Mesh.ARRAY_TANGENT] = target_tangents
+	var mesh = ArrayMesh.new()
+	mesh.add_blend_shape("Turn")
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [target], {}, 0)
+	return mesh
+
+
+func _ready():
+	OS.low_processor_usage_mode = false
+	_normal_setting = ProjectSettings.get_setting("rendering/quality/fixed_function/normal_mapping")
+	ProjectSettings.set_setting("rendering/quality/fixed_function/normal_mapping", true)
+	var image = Image.create_empty(2, 2, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.8, 0.65, 0))
+	var normal = ImageTexture.create_from_image(image)
+	image.fill(Color(1, 0.5, 1))
+	var occlusion = ImageTexture.create_from_image(image)
+	_material = StandardMaterial3D.new()
+	_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	_material.albedo_color = Color(0.8, 0.7, 0.5)
+	_material.vertex_color_use_as_albedo = true
+	_material.cull_mode = StandardMaterial3D.CULL_DISABLED
+	_material.normal_enabled = true
+	_material.normal_texture = normal
+	_material.ao_on_uv2 = true
+	_material.ao_enabled = true
+	_material.ao_texture = occlusion
+	_material.ao_texture_channel = StandardMaterial3D.TEXTURE_CHANNEL_GREEN
+	_material.ao_light_affect = 0.5
+	_skeleton = Skeleton3D.new()
+	_skeleton.name = "Skeleton"
+	_skeleton.add_bone("Root")
+	_skeleton.add_bone("Animated")
+	add_child(_skeleton)
+	var skin = Skin.new()
+	skin.add_bind(0, Transform3D())
+	skin.add_bind(1, Transform3D())
+	var mesh = _mesh()
+	for index in range(2):
+		var instance = MeshInstance3D.new()
+		instance.mesh = mesh
+		instance.material_override = _material
+		instance.position = Vector3(index * 2.0 - 1.0, 0, 0)
+		if index == 0:
+			instance.skin = skin
+			instance.skeleton = NodePath("../Skeleton")
+		add_child(instance)
+		_instances.append(instance)
+	var camera = Camera3D.new()
+	camera.position.z = 5
+	camera.current = true
+	add_child(camera)
+	var light = DirectionalLight3D.new()
+	light.rotation_degrees = Vector3(-20, -30, 0)
+	light.light_energy = 0.8
+	add_child(light)
+	var world = WorldEnvironment.new()
+	world.environment = Environment.new()
+	world.environment.background_mode = Environment.BG_COLOR
+	world.environment.background_color = Color(0.08, 0.1, 0.15)
+	world.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	world.environment.ambient_light_color = Color(1, 1, 1)
+	world.environment.ambient_light_energy = 0.1
+	add_child(world)
+	var layer = CanvasLayer.new()
+	add_child(layer)
+	var label = Label.new()
+	label.text = "Animated normal maps + AO (D3D9) | Geometry-normal fallback (D3D7/OpenGL1)"
+	label.position = Vector2(8, 8)
+	layer.add_child(label)
+
+
+func _process(_delta):
+	_frames += 1
+	var phase = _frames * 0.07
+	_skeleton.set_bone_pose_rotation(1, Quaternion(Vector3.UP, sin(phase) * 0.4))
+	for instance in _instances:
+		instance.set("blend_shapes/Turn", (sin(phase) + 1) * 0.5)
+	if _frames == 10:
+		_check(get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_OBJECTS_IN_FRAME) == 2, "skin and morph instances are visible")
+		_check(get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME) == 2, "normal maps and AO use the base draws")
+		_material.normal_enabled = false
+	if _frames == 18:
+		_check(get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME) == 2, "standalone animated AO stays in the base draws")
+		_material.normal_enabled = true
+		ProjectSettings.set_setting("rendering/quality/fixed_function/normal_mapping", false)
+	if _frames == 26:
+		_check(get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME) == 2, "disabled normal mapping keeps standalone AO in the base draws")
+		ProjectSettings.set_setting("rendering/quality/fixed_function/normal_mapping", true)
+		_instances[0].scale = Vector3(-1, 0.9, 1.1)
+		DisplayServer.window_set_size(Vector2i(480, 320))
+	if _frames == 42:
+		_check(get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_OBJECTS_IN_FRAME) == 2, "instances survive material/quality edits, mirror and resize")
+		_check(get_viewport().get_render_info(Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME) == 2, "combined effects still use one draw per instance")
+		_check(_material.normal_enabled and _material.normal_texture != null, "CPU material data remains intact")
+		if not _failed:
+			print("DEFORMED NORMAL SCENE PASS driver=", RenderingServer.get_current_rendering_driver_name())
+		if not OS.get_cmdline_args().has("--smoke-hold"):
+			ProjectSettings.set_setting("rendering/quality/fixed_function/normal_mapping", _normal_setting)
+			get_tree().quit(1 if _failed else 0)

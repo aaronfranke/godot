@@ -33,6 +33,9 @@ files = [
 if env["angle"]:
     files += ["gl_manager_macos_angle.mm"]
 
+if env["opengl1"]:
+    files += ["fixed_function_macos.mm"]
+
 if env.editor_build:
     files += [
         "display_server_macos_embedded.mm",

@@ -16,7 +16,9 @@ Use `target=template_debug` for a debug template or `target=editor` for an edito
 
 ## Rendering
 
-Compatibility (OpenGL 3.3) is enabled by default and supports separate-thread rendering. Select `gl_compatibility` as the rendering method. The graphics driver must provide OpenGL 3.3. For a dedicated headless build, use `opengl3=no`.
+Compatibility (OpenGL 3.3) and [Fixed Function](../../drivers/fixed_function/README.md) are enabled by default. Select `gl_compatibility` or `fixed_function` as the rendering method. Compatibility can fall back to an available Fixed Function backend on the main rendering thread. Separate-thread rendering is available only with Compatibility.
+
+D3D9 and OpenGL1 are enabled by default; D3D7 and D3D3 Software are optional x86_32 backends. For a dedicated headless build, use `opengl3=no d3d7=no d3d9=no opengl1=no d3d3_software=no`.
 
 See the [shared display limitations](../../drivers/win_legacy/nt/display/README.md) for window and input restrictions.
 

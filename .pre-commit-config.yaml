@@ -185,12 +185,18 @@ repos:
           (?x)^(
             core/math/bvh_.*\.inc|
             drivers/win_legacy/.*|
+            drivers/d3d3_software/.*|
+            drivers/d3d7/.*|
+            drivers/d3d9/.*|
+            drivers/fixed_function/.*|
+            drivers/opengl1/.*|
             platform/(?!android|ios|linuxbsd|macos|visionos|web|windows)\w+/.*|
             platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
             platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
             platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java|
             platform/win_9x/.*|
             platform/win_nt4/.*|
+            platform/windows/fixed_function/.*|
             platform/win_nt5/.*|
             platform/win_nt6/.*
           )$
