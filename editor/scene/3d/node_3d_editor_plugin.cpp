@@ -1086,8 +1086,22 @@ void Node3DEditor::_init_indicators() {
 		origin_enabled = true;
 		grid_enabled = true;
 
+		const bool fixed_function = OS::get_singleton()->get_current_rendering_method() == "fixed_function";
 		Ref<Shader> origin_shader = memnew(Shader);
-		origin_shader->set_code(R"(
+		if (fixed_function) {
+			// Fixed Function expands and clips ordinary line primitives on the CPU.
+			origin_shader->set_code(R"(
+shader_type spatial;
+render_mode blend_mix, unshaded, fog_disabled, depth_draw_never;
+uniform float fixed_function_line_width = 3.0;
+
+void fragment() {
+	ALBEDO = COLOR.rgb;
+	ALPHA = COLOR.a;
+}
+)");
+		} else {
+			origin_shader->set_code(R"(
 // 3D editor origin line shader.
 
 shader_type spatial;
@@ -1133,20 +1147,25 @@ void fragment() {
 	ALPHA *= COLOR.a * line;
 }
 )");
+		}
 
 		origin_mat.instantiate();
 		origin_mat->set_shader(origin_shader);
 
 		Vector<Vector3> origin_points;
-		origin_points.resize(6);
+		if (fixed_function) {
+			origin_points = { Vector3(), Vector3(0, 0, 1) };
+		} else {
+			origin_points.resize(6);
 
-		origin_points.set(0, Vector3(0.0, -0.5, 0.0));
-		origin_points.set(1, Vector3(0.0, -0.5, 1.0));
-		origin_points.set(2, Vector3(0.0, 0.5, 1.0));
+			origin_points.set(0, Vector3(0.0, -0.5, 0.0));
+			origin_points.set(1, Vector3(0.0, -0.5, 1.0));
+			origin_points.set(2, Vector3(0.0, 0.5, 1.0));
 
-		origin_points.set(3, Vector3(0.0, -0.5, 0.0));
-		origin_points.set(4, Vector3(0.0, 0.5, 1.0));
-		origin_points.set(5, Vector3(0.0, 0.5, 0.0));
+			origin_points.set(3, Vector3(0.0, -0.5, 0.0));
+			origin_points.set(4, Vector3(0.0, 0.5, 1.0));
+			origin_points.set(5, Vector3(0.0, 0.5, 0.0));
+		}
 
 		Array d;
 		d.resize(RSE::ARRAY_MAX);
@@ -1154,7 +1173,7 @@ void fragment() {
 
 		origin_mesh = RenderingServer::get_singleton()->mesh_create();
 
-		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, RSE::PRIMITIVE_TRIANGLES, d);
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(origin_mesh, fixed_function ? RSE::PRIMITIVE_LINES : RSE::PRIMITIVE_TRIANGLES, d);
 		RenderingServer::get_singleton()->mesh_surface_set_material(origin_mesh, 0, origin_mat->get_rid());
 
 		origin_multimesh = RenderingServer::get_singleton()->multimesh_create();
@@ -1192,7 +1211,13 @@ void fragment() {
 
 			for (int j = 0; j < 4; j++) {
 				Transform3D t = Transform3D();
-				if (distances[j] > 0.0) {
+				if (fixed_function) {
+					Vector3 up;
+					up[(i + 1) % 3] = 1;
+					t.basis = Basis::looking_at(-axis, up);
+					t.basis.set_column(Vector3::AXIS_Z, axis * (distances[j + 1] - distances[j]));
+					t.origin = axis * distances[j];
+				} else if (distances[j] > 0.0) {
 					t = t.scaled(axis * distances[j + 1]);
 					t = t.translated(axis * distances[j]);
 				} else {

@@ -85,6 +85,7 @@ private:
 	Label *renderer_info = nullptr;
 	HBoxContainer *default_files_container = nullptr;
 	Ref<ButtonGroup> renderer_button_group;
+	OptionButton *_fixed_function_driver = nullptr;
 	bool rendering_device_supported = false;
 	bool rendering_device_checked = false;
 	Label *rd_not_supported = nullptr;

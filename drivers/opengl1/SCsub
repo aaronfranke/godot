@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+is_any_windows = env["platform"] in ("windows", "win_nt6")
+if is_any_windows:
+    env.add_source_files(env.drivers_sources, "windows/*.cpp")

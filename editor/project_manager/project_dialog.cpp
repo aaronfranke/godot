@@ -496,6 +496,9 @@ void ProjectDialog::_renderer_selected() {
 	}
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
+	if (_fixed_function_driver) {
+		_fixed_function_driver->set_disabled(renderer_type != "fixed_function");
+	}
 
 	bool rd_error = false;
 
@@ -522,6 +525,11 @@ void ProjectDialog::_renderer_selected() {
 				String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
 				String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
 				String::utf8("\n•  ") + TTR("Fastest rendering of simple scenes."));
+	} else if (renderer_type == "fixed_function") {
+		renderer_info->set_text(
+				String::utf8("•  ") + TTR("Reduced material, lighting and visual effects.") +
+				String::utf8("\n•  ") + TTR("Intended for older graphics hardware.") +
+				String::utf8("\n•  ") + TTR("Available features depend on the selected driver."));
 	} else {
 		WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
 	}
@@ -590,6 +598,9 @@ void ProjectDialog::ok_pressed() {
 			project_features.push_back("GL Compatibility");
 			// Also change the default renderer for the mobile override.
 			initial_settings["rendering/renderer/rendering_method.mobile"] = "gl_compatibility";
+		} else if (renderer_type == "fixed_function" && _fixed_function_driver) {
+			project_features.push_back("Fixed Function");
+			initial_settings["rendering/fixed_function/driver"] = _fixed_function_driver->get_selected_metadata();
 		} else {
 			WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
 		}
@@ -929,9 +940,16 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 				if (!rendering_device_supported) {
 					List<BaseButton *> buttons;
 					renderer_button_group->get_buttons(&buttons);
-					for (BaseButton *button : buttons) {
-						if (button->get_meta(SNAME("rendering_method")) == "gl_compatibility") {
-							button->set_pressed(true);
+					for (const char *method : { "gl_compatibility", "fixed_function" }) {
+						bool selected = false;
+						for (BaseButton *button : buttons) {
+							if (!button->is_disabled() && button->get_meta(SNAME("rendering_method")) == method) {
+								button->set_pressed(true);
+								selected = true;
+								break;
+							}
+						}
+						if (selected) {
 							break;
 						}
 					}
@@ -1163,16 +1181,57 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
-	LinkButton *ri_link = memnew(LinkButton);
-	ri_link->set_text(TTRC("More information"));
-	ri_link->set_uri(GODOT_VERSION_DOCS_URL "/tutorials/rendering/renderers.html");
-	ri_link->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	rvb->add_child(ri_link);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {
 		rs_button->set_pressed(true);
 	}
 #endif
+
+#ifdef FIXED_FUNCTION_ENABLED
+	Vector<String> fixed_function_drivers;
+	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+		for (const String &driver : DisplayServer::get_create_function_rendering_drivers(i)) {
+			if (!fixed_function_drivers.has(driver)) {
+				fixed_function_drivers.push_back(driver);
+			}
+		}
+	}
+	_fixed_function_driver = memnew(OptionButton);
+	for (const char *driver : { "d3d9", "opengl1", "d3d7", "d3d3_software" }) {
+		if (fixed_function_drivers.has(driver)) {
+			String name = driver;
+			if (name == "opengl1") {
+				name = "OpenGL1";
+			} else if (name == "d3d3_software") {
+				name = "D3D3 Software";
+			} else {
+				name = name.to_upper();
+			}
+			const int item = _fixed_function_driver->get_item_count();
+			_fixed_function_driver->add_item(name);
+			_fixed_function_driver->set_item_metadata(item, driver);
+			if (OS::get_singleton()->get_current_rendering_driver_name() == driver) {
+				_fixed_function_driver->select(item);
+			}
+		}
+	}
+	if (_fixed_function_driver->get_item_count() > 0) {
+		rs_button = memnew(CheckBox);
+		rs_button->set_button_group(renderer_button_group);
+		rs_button->set_text(TTRC("Fixed Function"));
+		rs_button->set_accessibility_name(TTRC("Renderer:"));
+		rs_button->set_meta(SNAME("rendering_method"), "fixed_function");
+		rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
+		rvb->add_child(rs_button);
+		rvb->add_child(_fixed_function_driver);
+		if (default_renderer_type == "fixed_function") {
+			rs_button->set_pressed(true);
+		}
+	} else {
+		memdelete(_fixed_function_driver);
+		_fixed_function_driver = nullptr;
+	}
+#endif // FIXED_FUNCTION_ENABLED
 
 	// Saved choices can name a method omitted from this editor build.
 	if (!renderer_button_group->get_pressed_button() || renderer_button_group->get_pressed_button()->is_disabled()) {
@@ -1185,6 +1244,11 @@ ProjectDialog::ProjectDialog() {
 			}
 		}
 	}
+	LinkButton *ri_link = memnew(LinkButton);
+	ri_link->set_text(TTRC("More information"));
+	ri_link->set_uri(GODOT_VERSION_DOCS_URL "/tutorials/rendering/renderers.html");
+	ri_link->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	rvb->add_child(ri_link);
 	rshc->add_child(memnew(VSeparator));
 
 	// Right hand side, used for text explaining each choice.

@@ -380,6 +380,7 @@ LRESULT DisplayServerWindowsNT::_handle_message(UINT p_message, WPARAM p_wparam,
 			_send_window_event(WINDOW_EVENT_FOCUS_OUT);
 			return 0;
 		case WM_DISPLAYCHANGE:
+			_display_change_pending = true;
 			_fullscreen_bounds_dirty = _fullscreen;
 			break;
 		case WM_SIZE:

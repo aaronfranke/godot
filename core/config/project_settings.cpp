@@ -116,6 +116,9 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 #ifdef GLES3_ENABLED
 	features.append("GL Compatibility");
 #endif
+#ifdef FIXED_FUNCTION_ENABLED
+	features.append("Fixed Function");
+#endif // FIXED_FUNCTION_ENABLED
 	return features;
 }
 

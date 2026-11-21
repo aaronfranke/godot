@@ -5,6 +5,12 @@
 #include "core/os/os.h"
 #include "drivers/win_legacy/common/display/windows_legacy_window.h"
 
+#ifdef FIXED_FUNCTION_ENABLED
+#include "scene/main/window.h"
+#include "servers/rendering/rendering_server.h"
+
+#include "platform/windows/fixed_function/fixed_function_windows.h"
+#endif // FIXED_FUNCTION_ENABLED
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/win_legacy/nt/display/opengl/gl_context_windows_nt.h"
@@ -22,6 +28,18 @@ Vector<String> DisplayServerWindowsNT::_get_rendering_drivers() {
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
 #endif // GLES3_ENABLED
+#ifdef D3D7_ENABLED
+	drivers.push_back("d3d7");
+#endif // D3D7_ENABLED
+#ifdef D3D9_ENABLED
+	drivers.push_back("d3d9");
+#endif // D3D9_ENABLED
+#ifdef OPENGL1_ENABLED
+	drivers.push_back("opengl1");
+#endif // OPENGL1_ENABLED
+#ifdef D3D3_SOFTWARE_ENABLED
+	drivers.push_back("d3d3_software");
+#endif // D3D3_SOFTWARE_ENABLED
 	return drivers;
 }
 
@@ -35,6 +53,24 @@ DisplayServer *DisplayServerWindowsNT::_create_display_server(const String &p_dr
 	r_error = server->_initialize(p_driver, p_mode, p_vsync, p_flags, p_position, p_size, p_screen);
 	if (r_error != OK) {
 		memdelete(server);
+#if defined(GLES3_ENABLED) && defined(FIXED_FUNCTION_ENABLED)
+		// Retry with a fresh window: Windows permits setting its pixel format only
+		// once. An old ICD may expose only GL 1.x even when Compatibility is built.
+		if (p_driver == "opengl3" && !OS::get_singleton()->is_separate_thread_rendering_enabled()) {
+			for (int i = 0; i < FixedFunctionWindows::get_driver_count(); ++i) {
+				const String driver = FixedFunctionWindows::get_driver_name(i);
+				server = p_create_instance();
+				r_error = server->_initialize(driver, p_mode, p_vsync, p_flags, p_position, p_size, p_screen);
+				if (r_error == OK) {
+					OS::get_singleton()->set_current_rendering_method("fixed_function", OS::RENDERING_SOURCE_FALLBACK);
+					OS::get_singleton()->set_current_rendering_driver_name(driver, OS::RENDERING_SOURCE_FALLBACK);
+					WARN_PRINT(vformat("OpenGL 3.3 is unavailable. Using Fixed Function '%s' for this run.", driver));
+					return server;
+				}
+				memdelete(server);
+			}
+		}
+#endif // defined(GLES3_ENABLED) && defined(FIXED_FUNCTION_ENABLED)
 		return nullptr;
 	}
 	return server;
@@ -63,6 +99,16 @@ Error DisplayServerWindowsNT::_initialize(const String &p_driver, WindowMode p_m
 #ifdef GLES3_ENABLED
 	valid_driver = p_driver == "opengl3";
 #endif // GLES3_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	int backend = -1;
+	for (int i = 0; i < FixedFunctionWindows::get_driver_count(); ++i) {
+		if (p_driver == FixedFunctionWindows::get_driver_name(i)) {
+			backend = i;
+			break;
+		}
+	}
+	valid_driver = valid_driver || backend >= 0;
+#endif // FIXED_FUNCTION_ENABLED
 	if (!valid_driver) {
 		return ERR_UNAVAILABLE;
 	}
@@ -114,8 +160,20 @@ Error DisplayServerWindowsNT::_initialize(const String &p_driver, WindowMode p_m
 			return error;
 		}
 		RasterizerGLES3::make_current(true);
-	}
+	} else
 #endif // GLES3_ENABLED
+	{
+#ifdef FIXED_FUNCTION_ENABLED
+		// A Compatibility fallback reaches preflight before RenderingServer has
+		// registered the setting used by the compositor's base constructor.
+		GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
+		_renderer = memnew(FixedFunctionWindows);
+		const Error error = _renderer->install(backend, _window, _last_client_rect.size, _vsync != VSYNC_DISABLED);
+		if (error != OK) {
+			return error;
+		}
+#endif // FIXED_FUNCTION_ENABLED
+	}
 	_native_menu = memnew(NativeMenuWindows);
 	_taskbar_created_message = RegisterWindowMessageW(L"TaskbarCreated");
 	window_set_size(_last_client_rect.size, MAIN_WINDOW_ID);
@@ -150,6 +208,12 @@ DisplayServerWindowsNT::~DisplayServerWindowsNT() {
 		_gl_context = nullptr;
 	}
 #endif // GLES3_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_renderer) {
+		memdelete(_renderer);
+		_renderer = nullptr;
+	}
+#endif // FIXED_FUNCTION_ENABLED
 	if (_window) {
 		DestroyWindow(_window);
 		_window = nullptr;
@@ -250,6 +314,15 @@ void DisplayServerWindowsNT::swap_buffers() {
 void DisplayServerWindowsNT::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
 	if (p_window == MAIN_WINDOW_ID) {
 		_instance_id = p_instance;
+#ifdef FIXED_FUNCTION_ENABLED
+		if (_renderer && _renderer->should_render_directly_to_window()) {
+			Window *window = Object::cast_to<Window>(ObjectDB::get_instance(p_instance));
+			if (window) {
+				// Use the full window buffer when offscreen rendering is unavailable or would downscale the main UI.
+				RenderingServer::get_singleton()->viewport_set_render_direct_to_screen(window->get_viewport_rid(), true);
+			}
+		}
+#endif // FIXED_FUNCTION_ENABLED
 	}
 }
 
@@ -388,7 +461,15 @@ Size2i DisplayServerWindowsNT::_get_frame_size(const Size2i &p_client_size) cons
 }
 
 Size2i DisplayServerWindowsNT::_get_size_limit() const {
+#ifdef FIXED_FUNCTION_ENABLED
+	const Size2i limit = _renderer ? _renderer->get_max_window_size() : Size2i();
+	if (limit == Size2i() || _max_size == Size2i()) {
+		return _max_size == Size2i() ? limit : _max_size;
+	}
+	return Size2i(MIN(limit.x, _max_size.x), MIN(limit.y, _max_size.y));
+#else
 	return _max_size;
+#endif // FIXED_FUNCTION_ENABLED
 }
 
 void DisplayServerWindowsNT::window_set_max_size(Size2i p_size, WindowID p_window) {
@@ -550,6 +631,11 @@ void DisplayServerWindowsNT::window_set_vsync_mode(VSyncMode p_mode, WindowID p_
 		return;
 	}
 #endif // GLES3_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	if (p_window == MAIN_WINDOW_ID && _renderer && _renderer->set_use_vsync(p_mode != VSYNC_DISABLED) == OK) {
+		_vsync = p_mode == VSYNC_DISABLED ? VSYNC_DISABLED : VSYNC_ENABLED;
+	}
+#endif // FIXED_FUNCTION_ENABLED
 }
 
 VSyncMode DisplayServerWindowsNT::window_get_vsync_mode(WindowID) const {
@@ -628,6 +714,14 @@ void DisplayServerWindowsNT::_update_client_rect(bool p_force_callback) {
 	if (!can_any_window_draw()) {
 		return;
 	}
+	if (_display_change_pending) {
+		_display_change_pending = false;
+#ifdef FIXED_FUNCTION_ENABLED
+		if (_renderer) {
+			_renderer->notify_display_changed();
+		}
+#endif // FIXED_FUNCTION_ENABLED
+	}
 	if (_fullscreen_bounds_dirty) {
 		_fullscreen_bounds_dirty = false;
 		if (_fullscreen && !_set_fullscreen_bounds(_get_window_monitor(_window, MONITOR_DEFAULTTONEAREST))) {
@@ -642,6 +736,17 @@ void DisplayServerWindowsNT::_update_client_rect(bool p_force_callback) {
 	if (!client.has_area() || (client == _last_client_rect && !p_force_callback)) {
 		return;
 	}
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_renderer && _last_client_rect.size != client.size) {
+		const Error error = _renderer->resize(client.size);
+		if (error != OK) {
+			if (error != ERR_BUSY && error != ERR_SKIP) {
+				ERR_PRINT_ONCE("Could not resize the Windows NT Fixed Function surface.");
+			}
+			return;
+		}
+	}
+#endif // FIXED_FUNCTION_ENABLED
 	_last_client_rect = client;
 	if (_rect_changed.is_valid()) {
 		_rect_changed.call(client);

@@ -7988,7 +7988,7 @@ void EditorNode::_renderer_selected(int p_index) {
 		video_restart_dialog->disconnect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart));
 	}
 
-	const String mobile_rendering_method = rendering_method == "forward_plus" ? "mobile" : rendering_method;
+	const String mobile_rendering_method = rendering_method == "forward_plus" ? "mobile" : (rendering_method == "fixed_function" ? "gl_compatibility" : rendering_method);
 	const String web_rendering_method = "gl_compatibility";
 	video_restart_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_set_renderer_name_save_and_restart).bind(rendering_method));
 	video_restart_dialog->set_text(
@@ -8009,6 +8009,9 @@ String EditorNode::_to_rendering_method_display_name(const String &p_rendering_m
 	if (p_rendering_method == "gl_compatibility") {
 		return TTR("Compatibility");
 	}
+	if (p_rendering_method == "fixed_function") {
+		return TTR("Fixed Function");
+	}
 	return p_rendering_method;
 }
 
@@ -8020,6 +8023,8 @@ void EditorNode::_set_renderer_name_save_and_restart(const String &p_rendering_m
 		// Also change the mobile override if changing to a compatible renderer.
 		// This prevents visual discrepancies between desktop and mobile platforms.
 		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", p_rendering_method);
+	} else if (p_rendering_method == "fixed_function") {
+		ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", "gl_compatibility");
 	} else if (p_rendering_method == "forward_plus") {
 		// Use the equivalent mobile renderer. This prevents the renderer from staying
 		// on its old choice if moving from `gl_compatibility` to `forward_plus`.

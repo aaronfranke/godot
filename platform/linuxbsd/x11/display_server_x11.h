@@ -67,6 +67,10 @@ class InputEvent;
 class InputEventWithModifiers;
 class NativeMenu;
 
+#ifdef OPENGL1_ENABLED
+class FixedFunctionX11;
+#endif // OPENGL1_ENABLED
+
 #ifdef RD_ENABLED
 class RenderingDevice;
 class RenderingContextDriver;
@@ -122,6 +126,9 @@ class DisplayServerX11 : public DisplayServer {
 	GLManager_X11 *gl_manager = nullptr;
 	GLManagerEGL_X11 *gl_manager_egl = nullptr;
 #endif
+#ifdef OPENGL1_ENABLED
+	FixedFunctionX11 *fixed_function = nullptr;
+#endif // OPENGL1_ENABLED
 #if defined(RD_ENABLED)
 	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;

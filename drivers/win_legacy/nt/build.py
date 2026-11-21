@@ -89,7 +89,8 @@ def configure(env, minimum):
             ("_WIN32_WINNT", hex(minimum)),
         ]
     )
-    env["win_legacy_windowed"] = env["opengl3"]
+    fixed_function = env["d3d7"] or env["d3d9"] or env.get("opengl1", False) or env.get("d3d3_software", False)
+    env["win_legacy_windowed"] = fixed_function or env["opengl3"]
     env["target_win_version_int"] = minimum
     system_libs = [
         "advapi32",
@@ -108,9 +109,22 @@ def configure(env, minimum):
     if env["win_legacy_windowed"]:
         env.Append(CPPDEFINES=["WIN_LEGACY_WINDOWED_ENABLED", "WINMIDI_ENABLED"])
         system_libs += ["comdlg32", "imm32", "winmm"]
+    if fixed_function:
+        env.Append(CPPDEFINES=["FIXED_FUNCTION_ENABLED"])
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
+    if env["d3d7"]:
+        env.Append(CPPDEFINES=["D3D7_ENABLED"])
+    if env["d3d9"]:
+        env.Append(CPPDEFINES=["D3D9_ENABLED"])
+    if env.get("opengl1", False):
+        env.Append(CPPDEFINES=["OPENGL1_ENABLED"])
+    if env.get("opengl1", False) or env["opengl3"]:
         system_libs.append("opengl32")
+    if env.get("d3d3_software", False):
+        env.Append(CPPDEFINES=["D3D3_SOFTWARE_ENABLED"])
+    if env["d3d7"] or env.get("d3d3_software", False):
+        system_libs.append("dxguid")
     env.msvc = "mingw" not in env["TOOLS"]
     if env.msvc:
         env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
