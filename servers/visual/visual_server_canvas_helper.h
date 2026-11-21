@@ -97,7 +97,8 @@ private:
 
 public:
 	// Simple API
-	void add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), bool p_clip_uv = false);
+	void add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), bool p_clip_uv = false, bool p_font_glyph = false);
+	static void draw_font_glyph(MultiRect *p_batch, RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_source, const Color &p_modulate);
 
 	// Efficient API
 	void begin(const VisualServerCanvasHelper::State &p_state);
