@@ -32,7 +32,28 @@ String OS_WindowsNT::expand_path(const String &p_path) const {
 }
 
 bool OS_WindowsNT::_get_shell_folder_path(int p_folder, wchar_t *r_path) {
+#if _WIN32_WINNT < 0x0500
+	using GetFolderPath = HRESULT(WINAPI *)(HWND, int, HANDLE, DWORD, LPWSTR);
+	static const auto get_folder_path = reinterpret_cast<GetFolderPath>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"shell32.dll"), "SHGetFolderPathW")));
+	if (!get_folder_path) {
+		// The original NT4 Shell exposes special folders through item ID lists.
+		IMalloc *allocator = nullptr;
+		if (SHGetMalloc(&allocator) != S_OK) {
+			return false;
+		}
+		LPITEMIDLIST item = nullptr;
+		const HRESULT result = SHGetSpecialFolderLocation(nullptr, p_folder & ~CSIDL_FLAG_DONT_VERIFY, &item);
+		const bool found = SUCCEEDED(result) && item && SHGetPathFromIDListW(item, r_path);
+		if (item) {
+			allocator->Free(item);
+		}
+		allocator->Release();
+		return found;
+	}
+	return get_folder_path(nullptr, p_folder, nullptr, SHGFP_TYPE_CURRENT, r_path) == S_OK;
+#else
 	return SHGetFolderPathW(nullptr, p_folder, nullptr, SHGFP_TYPE_CURRENT, r_path) == S_OK;
+#endif // _WIN32_WINNT < 0x0500
 }
 
 String OS_WindowsNT::get_system_dir(SystemDir p_dir, bool) const {
@@ -154,7 +175,13 @@ Error OS_WindowsNT::shell_show_in_file_manager(String p_path, bool p_open_folder
 	}
 
 	wchar_t windows_dir[MAX_PATH];
+#if _WIN32_WINNT < 0x0500
+	using GetWindowsPath = UINT(WINAPI *)(LPWSTR, UINT);
+	static const auto get_windows_path = reinterpret_cast<GetWindowsPath>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetSystemWindowsDirectoryW")));
+	const UINT length = get_windows_path ? get_windows_path(windows_dir, MAX_PATH) : GetWindowsDirectoryW(windows_dir, MAX_PATH);
+#else
 	const UINT length = GetSystemWindowsDirectoryW(windows_dir, MAX_PATH);
+#endif // _WIN32_WINNT < 0x0500
 	if (length == 0 || length >= MAX_PATH) {
 		return ERR_CANT_OPEN;
 	}

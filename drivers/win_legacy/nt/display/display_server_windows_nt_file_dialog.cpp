@@ -120,6 +120,13 @@ void DisplayServerWindowsNT::FileDialogRequest::open_file_dialog() {
 	memcpy(file, filename.get_data(), filename.length() * sizeof(WCHAR));
 	OPENFILENAMEW options = {};
 	options.lStructSize = sizeof(options);
+#if _WIN32_WINNT < 0x0500
+	// MinGW headers can expose the larger layout even for an NT4 target.
+	// NT4's COMDLG32 rejects it with CDERR_STRUCTSIZE; newer hosts keep the full layout.
+	if (OS::get_singleton()->get_version().begins_with("4.")) {
+		options.lStructSize = OPENFILENAME_SIZE_VERSION_400W;
+	}
+#endif // _WIN32_WINNT < 0x0500
 	options.hwndOwner = owner;
 	options.lpstrTitle = title.is_empty() ? nullptr : reinterpret_cast<LPCWSTR>(title.get_data());
 	options.lpstrInitialDir = directory.is_empty() ? nullptr : reinterpret_cast<LPCWSTR>(directory.get_data());

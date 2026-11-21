@@ -521,6 +521,7 @@ Patches:
 - `0001-ustr-literals.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
 - `0002-tuple-include.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
 - `0003-win-nt5-locale.patch` (Use legacy locale and time-zone APIs on Windows NT 5.)
+- `0004-nt4-windows-directory.patch` (Avoid the Windows 2000 directory API when targeting NT4.)
 
 
 ## jolt_physics
@@ -1193,6 +1194,7 @@ Patches:
 
 - `0001-external-zlib.patch` ([GH-55115](https://github.com/godotengine/godot/pull/55115))
 - `0002-fix-multipart-header-stale-size.patch` ([GH-124638](https://github.com/godotengine/godot/pull/124638))
+- `0003-nt4-buffered-file-io.patch` uses buffered access when `_WIN32_WINNT` explicitly targets an API baseline older than Windows 2000.
 
 
 ## ufbx

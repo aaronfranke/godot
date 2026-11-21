@@ -16,7 +16,11 @@
 #include "drivers/win_legacy/nt/display/opengl/gl_context_windows_nt.h"
 #endif // GLES3_ENABLED
 #include "platform/windows/key_mapping_windows.h"
+#if _WIN32_WINNT >= 0x0500
 #include "platform/windows/native_menu_windows.h"
+#else
+#include "servers/display/native_menu.h"
+#endif // _WIN32_WINNT >= 0x0500
 
 #include <limits.h>
 #include <shellapi.h>
@@ -174,7 +178,12 @@ Error DisplayServerWindowsNT::_initialize(const String &p_driver, WindowMode p_m
 		}
 #endif // FIXED_FUNCTION_ENABLED
 	}
+#if _WIN32_WINNT >= 0x0500
 	_native_menu = memnew(NativeMenuWindows);
+#else
+	// NT4 lacks the menu notification API used by NativeMenuWindows.
+	_native_menu = memnew(NativeMenu);
+#endif // _WIN32_WINNT >= 0x0500
 	_taskbar_created_message = RegisterWindowMessageW(L"TaskbarCreated");
 	window_set_size(_last_client_rect.size, MAIN_WINDOW_ID);
 	KeyMappingWindows::initialize();
@@ -236,7 +245,13 @@ bool DisplayServerWindowsNT::has_feature(Feature p_feature) const {
 		return _ime_context != nullptr;
 	}
 	if (p_feature == FEATURE_NATIVE_DIALOG_FILE) {
+#if _WIN32_WINNT < 0x0500
+		// Shell 4.0 lacks file-and-folder browsing. Let FileDialog use Godot's UI
+		// for every mode; DllGetVersion was introduced with the required Shell 4.71.
+		return GetProcAddress(GetModuleHandleW(L"shell32.dll"), "DllGetVersion") != nullptr;
+#else
 		return true;
+#endif // _WIN32_WINNT < 0x0500
 	}
 	return p_feature == FEATURE_MOUSE || p_feature == FEATURE_CURSOR_SHAPE || p_feature == FEATURE_CUSTOM_CURSOR_SHAPE || p_feature == FEATURE_CLIPBOARD ||
 			p_feature == FEATURE_NATIVE_DIALOG || p_feature == FEATURE_NATIVE_DIALOG_INPUT ||
@@ -681,7 +696,18 @@ bool DisplayServerWindowsNT::window_get_flag(WindowFlags p_flag, WindowID p_wind
 void DisplayServerWindowsNT::window_request_attention(WindowID p_window) {
 	if (p_window == MAIN_WINDOW_ID) {
 		FLASHWINFO flash = { sizeof(FLASHWINFO), _window, FLASHW_TRAY, 3, 0 };
+#if _WIN32_WINNT < 0x0500
+		typedef BOOL(WINAPI * FlashWindowFunction)(PFLASHWINFO);
+		static const auto flash_window = reinterpret_cast<FlashWindowFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "FlashWindowEx")));
+		if (flash_window) {
+			flash_window(&flash);
+		} else {
+			// NT4 provides a single title-bar flash, without the newer taskbar timer.
+			FlashWindow(_window, TRUE);
+		}
+#else
 		FlashWindowEx(&flash);
+#endif // _WIN32_WINNT < 0x0500
 	}
 }
 

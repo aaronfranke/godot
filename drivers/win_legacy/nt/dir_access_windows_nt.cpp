@@ -267,6 +267,8 @@ uint64_t DirAccessWindowsNT::get_space_left() {
 	ULARGE_INTEGER total;
 	ULARGE_INTEGER free;
 	const Char16String path = PathWindowsNT::to_native(_current_dir);
+	// GetDiskFreeSpaceExW was added in NT 4 SP3.
+	// NT4 dereferences the total/free outputs even when only available space is needed.
 	const bool found = GetDiskFreeSpaceExW((LPCWSTR)path.get_data(), &available, &total, &free);
 	return found ? available.QuadPart : 0;
 }

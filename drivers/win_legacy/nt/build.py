@@ -91,6 +91,8 @@ def configure(env, minimum):
     )
     fixed_function = env["d3d7"] or env["d3d9"] or env.get("opengl1", False) or env.get("d3d3_software", False)
     env["win_legacy_windowed"] = fixed_function or env["opengl3"]
+    if minimum < 0x0500 and (env["opengl3"] or env["d3d7"] or env["d3d9"]):
+        fail("win_nt4 supports OpenGL1, D3D3 Software or headless: use opengl3=no d3d7=no d3d9=no.")
     env["target_win_version_int"] = minimum
     system_libs = [
         "advapi32",
@@ -126,6 +128,8 @@ def configure(env, minimum):
     if env["d3d7"] or env.get("d3d3_software", False):
         system_libs.append("dxguid")
     env.msvc = "mingw" not in env["TOOLS"]
+    if minimum < 0x0500 and env.msvc:
+        fail("win_nt4 currently requires an x86_32 MSVCRT/POSIX MinGW toolchain. Use use_mingw=yes.")
     if env.msvc:
         env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
         if minimum < 0x0600:
@@ -158,6 +162,9 @@ def configure(env, minimum):
         env["TEMPFILESUFFIX"] = ".rsp"
         env["TEMPFILEARGESCFUNC"] = lambda arg: quote_spaces(arg.replace("\\", "/"))
         env.Append(CCFLAGS=["-Wa,-mbig-obj", "-ffp-contract=off"])
+        if minimum < 0x0500:
+            # Do not require XMM state support from the NT4 kernel or an extra SSE driver.
+            env.Append(CCFLAGS=["-march=i686", "-mno-sse", "-mno-sse2", "-mfpmath=387"])
         env.Append(LINKFLAGS=["-mwindows" if env["win_legacy_windowed"] else "-mconsole", "-Wl,--stack,8388608"])
         env.Append(LIBS=system_libs)
         major = minimum >> 8

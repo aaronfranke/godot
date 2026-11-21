@@ -87,7 +87,7 @@ typedef struct _REG_TZI_FORMAT {
 U_CAPI const char* U_EXPORT2
 uprv_detectWindowsTimeZone()
 {
-#ifdef WIN_NT5_ENABLED
+#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
     // NT 5 supplies the legacy fields used by the registry lookup below.
     TIME_ZONE_INFORMATION tzi = {};
     if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_INVALID) {
@@ -159,7 +159,7 @@ uprv_detectWindowsTimeZone()
     }
 
     WCHAR *windowsTimeZoneName = tzi.TimeZoneKeyName;
-#endif // WIN_NT5_ENABLED
+#endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 
     // If DST is NOT disabled, but the TimeZoneKeyName field of the struct is nullptr, then we may be dealing with a
     // RDP/terminal services session where the 'Time Zone Redirection' feature is enabled. However, either the RDP
@@ -301,12 +301,12 @@ uprv_detectWindowsTimeZone()
     // as the A version of the API will end up calling MultiByteToWideChar anyways internally.
     wchar_t regionCodeW[3] = {};
     char regionCode[3] = {}; // 2 letter ISO 3166 country/region code made entirely of invariant chars.
-#ifdef WIN_NT5_ENABLED
+#if defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
     int regionCodeLen = GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, regionCodeW, UPRV_LENGTHOF(regionCodeW));
 #else
     int geoId = GetUserGeoID(GEOCLASS_NATION);
     int regionCodeLen = GetGeoInfoW(geoId, GEO_ISO2, regionCodeW, UPRV_LENGTHOF(regionCodeW), 0);
-#endif // WIN_NT5_ENABLED
+#endif // defined(WIN_NT4_ENABLED) || defined(WIN_NT5_ENABLED)
 
     const char16_t *icuTZ16 = nullptr;
     int32_t tzListLen = 0;

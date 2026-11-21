@@ -47,7 +47,29 @@ Char16String PathWindowsNT::to_native(const String &p_path, bool p_force_extende
 Char16String PathWindowsNT::get_volume_root(const String &p_path) {
 	const Char16String native = to_native(p_path);
 	wchar_t root[MAX_PATH];
+#if _WIN32_WINNT < 0x0500
+	using GetVolumePath = BOOL(WINAPI *)(LPCWSTR, LPWSTR, DWORD);
+	static const auto get_volume_path = reinterpret_cast<GetVolumePath>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetVolumePathNameW")));
+	if (!get_volume_path) {
+		// NT4 has drive and UNC-share roots, without NT5's mounted-folder volumes.
+		// Use the native API when this NT4-targeted binary runs on a newer host.
+		const String path = get_absolute(p_path);
+		if (path.length() >= 3 && path[1] == ':' && path[2] == '/') {
+			return path.left(3).replace_char('/', '\\').utf16();
+		}
+		if (path.begins_with("//")) {
+			const int server_end = path.find_char('/', 2);
+			if (server_end > 2 && server_end + 1 < path.length()) {
+				const int share_end = path.find_char('/', server_end + 1);
+				return ((share_end < 0 ? path : path.left(share_end)) + "/").replace_char('/', '\\').utf16();
+			}
+		}
+		return {};
+	}
+	const bool found = get_volume_path(reinterpret_cast<LPCWSTR>(native.get_data()), root, MAX_PATH);
+#else
 	const bool found = GetVolumePathNameW(reinterpret_cast<LPCWSTR>(native.get_data()), root, MAX_PATH);
+#endif // _WIN32_WINNT < 0x0500
 	if (!found) {
 		return {};
 	}

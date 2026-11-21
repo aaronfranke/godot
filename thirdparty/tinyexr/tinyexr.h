@@ -719,9 +719,10 @@ extern const char* EXRGetSpectralUnits(const EXRHeader *exr_header);
 #endif
 #include <windows.h>  // for UTF-8 and memory-mapping
 
-#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
+// NT4 lacks GetFileSizeEx; use buffered access for explicitly older API targets.
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500) && (!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
 #define TINYEXR_USE_WIN32_MMAP (1)
-#endif
+#endif // (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500) && (!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
 
 #elif defined(__linux__) || defined(__unix__)
 #include <fcntl.h>     // for open()

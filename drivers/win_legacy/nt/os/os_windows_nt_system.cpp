@@ -115,7 +115,13 @@ Vector<String> OS_WindowsNT::get_preferred_locales() const {
 		return locales;
 	}
 
+#if _WIN32_WINNT < 0x0500
+	using GetUILanguage = LANGID(WINAPI *)();
+	static const auto get_ui_language = reinterpret_cast<GetUILanguage>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetUserDefaultUILanguage")));
+	const LANGID language_id = get_ui_language ? get_ui_language() : GetUserDefaultLangID();
+#else
 	const LANGID language_id = GetUserDefaultUILanguage();
+#endif // _WIN32_WINNT < 0x0500
 	const LCID locale_id = MAKELCID(language_id, SORT_DEFAULT);
 	wchar_t language[9];
 	if (GetLocaleInfoW(locale_id, LOCALE_SISO639LANGNAME, language, ARRAYSIZE(language)) <= 1) {
@@ -193,7 +199,21 @@ Dictionary OS_WindowsNT::get_memory_info() const {
 	Dictionary info = OS::get_memory_info();
 	MEMORYSTATUSEX memory = {};
 	memory.dwLength = sizeof(memory);
+#if _WIN32_WINNT < 0x0500
+	using GetMemoryStatus = BOOL(WINAPI *)(LPMEMORYSTATUSEX);
+	static const auto get_memory_status = reinterpret_cast<GetMemoryStatus>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GlobalMemoryStatusEx")));
+	const bool found = get_memory_status ? get_memory_status(&memory) != FALSE : true;
+	if (!get_memory_status) {
+		MEMORYSTATUS legacy = {};
+		legacy.dwLength = sizeof(legacy);
+		GlobalMemoryStatus(&legacy);
+		memory.ullTotalPhys = legacy.dwTotalPhys;
+		memory.ullAvailPhys = legacy.dwAvailPhys;
+		memory.ullAvailPageFile = legacy.dwAvailPageFile;
+	}
+#else
 	const bool found = GlobalMemoryStatusEx(&memory);
+#endif // _WIN32_WINNT < 0x0500
 	if (found) {
 		info["physical"] = int64_t(memory.ullTotalPhys);
 		info["free"] = int64_t(memory.ullAvailPhys);
