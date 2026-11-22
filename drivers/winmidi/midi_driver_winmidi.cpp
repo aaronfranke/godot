@@ -74,7 +74,12 @@ Error MIDIDriverWinMidi::open() {
 	ERR_FAIL_COND_V_MSG(!RegisterClassW(&window_class) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS,
 			ERR_CANT_CREATE, "Could not register the WinMM MIDI message window class.");
 	// WinMM posts short MIDI messages to the same thread that dispatches Godot input.
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
+	// NT4 has no message-only windows; an invisible top-level window receives the same callbacks.
+	const HWND parent = nullptr;
+#else
 	const HWND parent = HWND_MESSAGE;
+#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
 	_message_window = CreateWindowExW(0, window_class.lpszClassName, nullptr, 0, 0, 0, 0, 0,
 			parent, nullptr, window_class.hInstance, this);
 	ERR_FAIL_NULL_V_MSG(_message_window, ERR_CANT_CREATE, "Could not create the WinMM MIDI message window.");

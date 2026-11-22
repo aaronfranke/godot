@@ -25,11 +25,16 @@ def configure(env, minimum):
     env["target_win_version_int"] = minimum
     env.msvc = not env["use_mingw"]
     if env.msvc:
+        if minimum < 0x0500:
+            fail("NT4 requires an x86_32 MSVCRT/POSIX MinGW toolchain.")
         legacy_build.configure_msvc(env)
         if minimum < 0x0600:
             env.Append(CPPDEFINES=["MBEDTLS_TEST_SW_INET_PTON"])
     else:
         legacy_build.configure_mingw(env, minimum)
+        if minimum < 0x0500:
+            # NT4 cannot preserve XMM state without a nonstandard SSE driver.
+            env.Append(CCFLAGS=["-march=i686", "-mno-sse", "-mno-sse2", "-mfpmath=387"])
 
     env.Prepend(CPPPATH=["#platform/" + env["platform"]])
     env.Append(

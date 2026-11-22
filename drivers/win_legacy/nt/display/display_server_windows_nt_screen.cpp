@@ -10,16 +10,52 @@ BOOL CALLBACK DisplayServerWindowsNT::_enum_monitor(HMONITOR p_monitor, HDC, LPR
 
 Vector<HMONITOR> DisplayServerWindowsNT::_get_monitors() {
 	Vector<HMONITOR> monitors;
+#if _WIN32_WINNT < 0x0500
+	typedef BOOL(WINAPI * EnumDisplayMonitorsFunction)(HDC, LPCRECT, MONITORENUMPROC, LPARAM);
+	static const auto enumerate = reinterpret_cast<EnumDisplayMonitorsFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "EnumDisplayMonitors")));
+	if (!enumerate) {
+		// NT4 has one desktop monitor. Keep a non-null identifier for its geometry.
+		monitors.push_back(reinterpret_cast<HMONITOR>(1));
+		return monitors;
+	}
+	enumerate(nullptr, nullptr, _enum_monitor, reinterpret_cast<LPARAM>(&monitors));
+#else
 	EnumDisplayMonitors(nullptr, nullptr, _enum_monitor, reinterpret_cast<LPARAM>(&monitors));
+#endif // _WIN32_WINNT < 0x0500
 	return monitors;
 }
 
 HMONITOR DisplayServerWindowsNT::_get_window_monitor(HWND p_window, DWORD p_flags) {
+#if _WIN32_WINNT < 0x0500
+	typedef HMONITOR(WINAPI * MonitorFromWindowFunction)(HWND, DWORD);
+	static const auto from_window = reinterpret_cast<MonitorFromWindowFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "MonitorFromWindow")));
+	return from_window ? from_window(p_window, p_flags) : reinterpret_cast<HMONITOR>(1);
+#else
 	return MonitorFromWindow(p_window, p_flags);
+#endif // _WIN32_WINNT < 0x0500
 }
 
 bool DisplayServerWindowsNT::_get_monitor_info(HMONITOR p_monitor, MONITORINFO *r_info) {
+#if _WIN32_WINNT < 0x0500
+	typedef BOOL(WINAPI * GetMonitorInfoFunction)(HMONITOR, LPMONITORINFO);
+	static const auto get_info = reinterpret_cast<GetMonitorInfoFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "GetMonitorInfoW")));
+	if (!get_info) {
+		if (p_monitor != reinterpret_cast<HMONITOR>(1)) {
+			return false;
+		}
+		r_info->rcMonitor = { 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) };
+		r_info->rcWork = r_info->rcMonitor;
+		SystemParametersInfoW(SPI_GETWORKAREA, 0, &r_info->rcWork, 0);
+		r_info->dwFlags = MONITORINFOF_PRIMARY;
+		if (r_info->cbSize == sizeof(MONITORINFOEXW)) {
+			reinterpret_cast<MONITORINFOEXW *>(r_info)->szDevice[0] = 0;
+		}
+		return true;
+	}
+	return p_monitor && get_info(p_monitor, r_info);
+#else
 	return p_monitor && GetMonitorInfoW(p_monitor, r_info);
+#endif // _WIN32_WINNT < 0x0500
 }
 
 HMONITOR DisplayServerWindowsNT::_get_monitor(int p_screen) const {
@@ -285,7 +321,17 @@ bool DisplayServerWindowsNT::set_keep_screen_on(bool p_enabled) {
 	if (p_enabled) {
 		state |= ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED;
 	}
+#if _WIN32_WINNT < 0x0500
+	typedef EXECUTION_STATE(WINAPI * SetExecutionStateFunction)(EXECUTION_STATE);
+	static const auto set_state = reinterpret_cast<SetExecutionStateFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetThreadExecutionState")));
+	if (!set_state) {
+		WARN_PRINT_ONCE("Keeping the screen on is unavailable on Windows NT4.");
+		return false;
+	}
+	const bool changed = set_state(state) != 0;
+#else
 	const bool changed = SetThreadExecutionState(state) != 0;
+#endif // _WIN32_WINNT < 0x0500
 	if (!changed) {
 		ERR_PRINT_ONCE("Could not change the Windows NT screen idle request.");
 		return false;

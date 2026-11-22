@@ -6,8 +6,8 @@ env.drivers_sources = []
 
 # OS drivers
 SConscript("unix/SCsub")
-legacy_windows = env["platform"] in ("win_nt5", "win_nt6")
-if not legacy_windows:
+is_legacy_windows = env["platform"] in ("win_nt4", "win_nt5", "win_nt6")
+if not is_legacy_windows:
     SConscript("windows/SCsub")
 SConscript("win_legacy/SCsub")
 
@@ -26,12 +26,12 @@ SConscript("coremidi/SCsub")
 SConscript("winmidi/SCsub")
 
 # Graphics drivers
-if env["platform"] != "server" and (not legacy_windows or env.get("opengl3", False)):
+if env["platform"] != "server" and (not is_legacy_windows or env.get("opengl3", False)):
     SConscript("gles3/SCsub")
     SConscript("gles2/SCsub")
     SConscript("gles_common/SCsub")
     SConscript("gl_context/SCsub")
-    if legacy_windows:
+    if is_legacy_windows:
         SConscript("dummy/SCsub")
 else:
     SConscript("dummy/SCsub")

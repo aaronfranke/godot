@@ -362,6 +362,7 @@ Patches:
 - `0002-minixml-fix-buffer-overrun-after-namespace-separator.patch` (upstream 64ef08a, CVE-2026-110656)
 - `0003-minixml-fix-1-byte-out-of-bounds-read.patch` (upstream 42965d7)
 - `0004-win-nt5-winsock.patch` (Winsock and IPv4 multicast selection on Windows 2000)
+- `0008-legacy-bind-before-multicast-options.patch` (apply IPv4 multicast options after binding on NT4 and Windows 9x)
 
 
 ## minizip
@@ -594,6 +595,7 @@ instead of `miniz.h` as an external dependency.
 Patches:
 
 - `fix-multipart-header-stale-size.patch` (CVE-2026-110597)
+- `legacy-windows-buffered-io.patch` (avoid GetFileSizeEx on Windows API targets older than Windows 2000)
 
 
 ## vhacd

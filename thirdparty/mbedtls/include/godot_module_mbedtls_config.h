@@ -60,6 +60,12 @@
 #define MBEDTLS_NO_PLATFORM_ENTROPY
 #define MBEDTLS_ENTROPY_HARDWARE_ALT
 
+#ifdef WIN_NT4_ENABLED
+// CPUID alone does not establish XMM state support on NT4.
+// Keep software AES available without an additional kernel driver.
+#undef MBEDTLS_AESNI_C
+#endif // WIN_NT4_ENABLED
+
 #if !(defined(__linux__) && defined(__aarch64__))
 // ARMv8 hardware AES operations. Detection only possible on linux.
 // May technically be supported on some ARM32 arches but doesn't seem

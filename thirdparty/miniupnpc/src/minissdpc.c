@@ -613,10 +613,16 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 						if (table->table[i].dwIndex == ifbestidx && table->table[i].dwAddr != INADDR_ANY) {
 							struct in_addr mc_if;
 							mc_if.s_addr = table->table[i].dwAddr;
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
+								/* NT4 and 9x require bind before multicast options. */
+								((struct sockaddr_in *)&sockudp_r)->sin_addr = mc_if;
+								break;
+#else
 							if (setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) == 0) {
 								((struct sockaddr_in *)&sockudp_r)->sin_addr = mc_if;
 								break;
 							}
+#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
 						}
 					}
 				}
@@ -743,6 +749,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			PRINT_SOCKET_ERROR("setsockopt(IPV6_MULTICAST_HOPS,...)");
 		}
 	} else {
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500
 #ifdef _WIN32
 		if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_TTL, (const char *)&_ttl, sizeof(_ttl)) < 0)
 #else  /* _WIN32 */
@@ -752,6 +759,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			/* not a fatal error */
 			PRINT_SOCKET_ERROR("setsockopt(IP_MULTICAST_TTL,...)");
 		}
+#endif // !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500
 	}
 
 	if(multicastif && multicastif[0] != '\0')
@@ -795,10 +803,12 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			if(mc_if.s_addr != INADDR_NONE)
 			{
 				((struct sockaddr_in *)&sockudp_r)->sin_addr.s_addr = mc_if.s_addr;
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500
 				if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) < 0)
 				{
 					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
 				}
+#endif // !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500
 			} else {
 				/* was not an ip address, try with an interface name */
 #ifndef _WIN32
@@ -857,6 +867,19 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		return NULL;
 	}
 
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
+	if(!ipv6) {
+		const struct sockaddr_in *bound = (const struct sockaddr_in *)&sockudp_r;
+		/* Apply these after bind on NT4/9x; this also works on newer hosts. */
+		if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_TTL, (const char *)&_ttl, sizeof(_ttl)) < 0) {
+			PRINT_SOCKET_ERROR("setsockopt(IP_MULTICAST_TTL,...)");
+		}
+		if(bound->sin_addr.s_addr != INADDR_ANY &&
+		   setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&bound->sin_addr, sizeof(bound->sin_addr)) < 0) {
+			PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
+		}
+	}
+#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
 	if(error)
 		*error = MINISSDPC_SUCCESS;
 	/* Calculating maximum response time in seconds */

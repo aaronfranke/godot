@@ -477,7 +477,13 @@ String OS_WindowsNT::get_locale() const {
 		}
 	}
 
+#if _WIN32_WINNT < 0x0500
+	using GetUILanguage = LANGID(WINAPI *)();
+	static const auto get_ui_language = reinterpret_cast<GetUILanguage>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetUserDefaultUILanguage")));
+	const LANGID language_id = get_ui_language ? get_ui_language() : GetUserDefaultLangID();
+#else
 	const LANGID language_id = GetUserDefaultUILanguage();
+#endif // _WIN32_WINNT < 0x0500
 	const LCID locale_id = MAKELCID(language_id, SORT_DEFAULT);
 	wchar_t language[9];
 	if (GetLocaleInfoW(locale_id, LOCALE_SISO639LANGNAME, language, ARRAYSIZE(language)) <= 1) {
@@ -588,7 +594,12 @@ uint64_t OS_WindowsNT::get_ticks_usec() const {
 Error OS_WindowsNT::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	ERR_FAIL_COND_V(p_bytes < 0, ERR_INVALID_PARAMETER);
 	HCRYPTPROV provider;
+#if _WIN32_WINNT < 0x0500
+	// NT4's CSP rejects CRYPT_SILENT; verification needs no persistent key container.
+	const DWORD flags = CRYPT_VERIFYCONTEXT;
+#else
 	const DWORD flags = CRYPT_VERIFYCONTEXT | CRYPT_SILENT;
+#endif // _WIN32_WINNT < 0x0500
 	if (!CryptAcquireContextW(&provider, nullptr, nullptr, PROV_RSA_FULL, flags)) {
 		return ERR_UNAVAILABLE;
 	}

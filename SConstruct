@@ -59,7 +59,7 @@ methods.save_active_platforms(active_platforms, active_platform_ids)
 custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
-is_legacy_windows = platform_arg in ("win_nt5", "win_nt6")
+is_legacy_windows = platform_arg in ("win_nt4", "win_nt5", "win_nt6")
 
 if platform_arg == "android":
     custom_tools = ["clang", "clang++", "as", "ar", "link"]

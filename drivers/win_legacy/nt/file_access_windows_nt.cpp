@@ -142,7 +142,22 @@ void FileAccessWindowsNT::close() {
 }
 
 bool FileAccessWindowsNT::_set_file_pointer(HANDLE p_file, LARGE_INTEGER p_distance, LARGE_INTEGER *r_position, DWORD p_origin) {
+#if _WIN32_WINNT < 0x0500
+	// NT4's older API supports 64-bit positions. An all-ones low word can be valid.
+	LONG high = p_distance.HighPart;
+	SetLastError(NO_ERROR);
+	const DWORD low = SetFilePointer(p_file, p_distance.LowPart, &high, p_origin);
+	if (low == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
+		return false;
+	}
+	if (r_position) {
+		r_position->LowPart = low;
+		r_position->HighPart = high;
+	}
+	return true;
+#else
 	return SetFilePointerEx(p_file, p_distance, r_position, p_origin);
+#endif // _WIN32_WINNT < 0x0500
 }
 
 bool FileAccessWindowsNT::_seek(int64_t p_offset, uint32_t p_origin) const {
@@ -183,11 +198,25 @@ uint64_t FileAccessWindowsNT::get_position() const {
 }
 
 uint64_t FileAccessWindowsNT::get_len() const {
+#if _WIN32_WINNT < 0x0500
+	if (!_file) {
+		_error = ERR_UNCONFIGURED;
+		return 0;
+	}
+	ULARGE_INTEGER length;
+	SetLastError(NO_ERROR);
+	length.LowPart = GetFileSize(_file, &length.HighPart);
+	if (length.LowPart == INVALID_FILE_SIZE && GetLastError() != NO_ERROR) {
+		_error = ERR_FILE_CANT_READ;
+		return 0;
+	}
+#else
 	LARGE_INTEGER length;
 	if (!_file || !GetFileSizeEx(_file, &length)) {
 		_error = _file ? ERR_FILE_CANT_READ : ERR_UNCONFIGURED;
 		return 0;
 	}
+#endif // _WIN32_WINNT < 0x0500
 	return length.QuadPart;
 }
 

@@ -516,7 +516,17 @@ bool DisplayServerWindowsNT::is_focused() const {
 
 void DisplayServerWindowsNT::request_attention() {
 	FLASHWINFO flash = { sizeof(FLASHWINFO), _window, FLASHW_TRAY, 3, 0 };
+#if _WIN32_WINNT < 0x0500
+	typedef BOOL(WINAPI * FlashWindowFunction)(PFLASHWINFO);
+	static const auto flash_window = reinterpret_cast<FlashWindowFunction>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"user32.dll"), "FlashWindowEx")));
+	if (flash_window) {
+		flash_window(&flash);
+	} else {
+		FlashWindow(_window, TRUE);
+	}
+#else
 	FlashWindowEx(&flash);
+#endif // _WIN32_WINNT < 0x0500
 }
 
 void DisplayServerWindowsNT::move_to_foreground() {

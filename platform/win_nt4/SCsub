@@ -4,5 +4,10 @@ Import("env")
 
 sources = []
 env.add_source_files(sources, "*.cpp")
-
+env.add_source_files(sources, "os/*.cpp")
+if env["win_legacy_windowed"]:
+    env.add_source_files(sources, "display/*.cpp")
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+
+if env["win_legacy_windowed"]:
+    SConscript("#drivers/win_legacy/common/launcher/SCsub", exports=["env", "prog"])
