@@ -7,10 +7,10 @@
 class FixedFunctionGraphicsDeviceOpenGL1Windows : public FixedFunctionGraphicsDeviceOpenGL1 {
 	static uint8_t _get_optional_features() {
 		uint8_t features = FEATURE_ALL;
-#ifdef WIN_LEGACY_NT_ENABLED
+#if defined(WIN_LEGACY_NT_ENABLED) || defined(WIN_9X_ENABLED)
 		// These display servers bind the main Window through Godot's direct-screen API.
 		features |= FEATURE_DIRECT_SCREEN;
-#endif // WIN_LEGACY_NT_ENABLED
+#endif // defined(WIN_LEGACY_NT_ENABLED) || defined(WIN_9X_ENABLED)
 		const List<String> arguments = OS::get_singleton()->get_cmdline_args();
 		for (const List<String>::Element *argument = arguments.front(); argument; argument = argument->next()) {
 			if (argument->get() == "--opengl1-disable-npot") {

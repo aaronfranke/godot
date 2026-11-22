@@ -93,10 +93,10 @@
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
 #endif
 
-#if defined(WIN_LEGACY_NT_ENABLED) && defined(_MSC_VER) && _WIN32_WINNT < 0x0501
+#if (defined(WIN_LEGACY_NT_ENABLED) || defined(WIN_9X_ENABLED)) && defined(_MSC_VER) && _WIN32_WINNT < 0x0501
 // The Windows SDK hides this protocol constant below the XP header baseline.
 static const int IPPROTO_IPV6 = 41;
-#endif // defined(WIN_LEGACY_NT_ENABLED) && defined(_MSC_VER) && _WIN32_WINNT < 0x0501
+#endif // (defined(WIN_LEGACY_NT_ENABLED) || defined(WIN_9X_ENABLED)) && defined(_MSC_VER) && _WIN32_WINNT < 0x0501
 
 #endif
 

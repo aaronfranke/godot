@@ -30,7 +30,7 @@
 
 #include "ip_unix.h"
 
-#if defined(UNIX_ENABLED) || (defined(WINDOWS_ENABLED) && !defined(WIN_LEGACY_NT_ENABLED))
+#if defined(UNIX_ENABLED) || (defined(WINDOWS_ENABLED) && !defined(WIN_LEGACY_NT_ENABLED) && !defined(WIN_9X_ENABLED))
 
 #include <string.h>
 
@@ -258,4 +258,4 @@ IP *IP_Unix::_create_unix() {
 IP_Unix::IP_Unix() {
 }
 
-#endif // defined(UNIX_ENABLED) || (defined(WINDOWS_ENABLED) && !defined(WIN_LEGACY_NT_ENABLED))
+#endif // defined(UNIX_ENABLED) || (defined(WINDOWS_ENABLED) && !defined(WIN_LEGACY_NT_ENABLED) && !defined(WIN_9X_ENABLED))

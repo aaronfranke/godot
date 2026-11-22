@@ -73,7 +73,7 @@ def configure_msvc(env):
         env.Append(CCFLAGS=["/GL"], ARFLAGS=["/LTCG"], LINKFLAGS=["/LTCG"])
 
 
-def configure_mingw(env, minimum):
+def configure_mingw(env, minimum, windows_9x=False):
     expected = "i686-w64-mingw32" if env["bits"] == "32" else "x86_64-w64-mingw32"
     prefix_option = "mingw_prefix_" + env["bits"]
     prefix = env[prefix_option]
@@ -105,6 +105,9 @@ def configure_mingw(env, minimum):
     env.Append(CCFLAGS=["-Wa,-mbig-obj", "-ffp-contract=off"])
     major = minimum >> 8
     minor = minimum & 0xFF
+    if windows_9x:
+        # WINVER uses BCD 0x10/0x90 for 98/ME; PE minor versions are decimal.
+        minor = (minor >> 4) * 10 + (minor & 0xF)
     env.Append(
         LINKFLAGS=[
             "-Wl,--subsystem,console",

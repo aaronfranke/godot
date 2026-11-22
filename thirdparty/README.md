@@ -362,6 +362,7 @@ Patches:
 - `0002-minixml-fix-buffer-overrun-after-namespace-separator.patch` (upstream 64ef08a, CVE-2026-110656)
 - `0003-minixml-fix-1-byte-out-of-bounds-read.patch` (upstream 42965d7)
 - `0004-win-nt5-winsock.patch` (Winsock and IPv4 multicast selection on Windows 2000)
+- `0007-win95-optional-ip-helper.patch` (optional IPv4 route lookup when Windows 95 lacks IP Helper)
 - `0008-legacy-bind-before-multicast-options.patch` (apply IPv4 multicast options after binding on NT4 and Windows 9x)
 
 
@@ -613,6 +614,29 @@ Some downstream changes have been made and are identified by
 `// -- GODOT start --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `vhacd`
 folder.
+
+
+## winpthreads
+
+- Upstream: https://github.com/mingw-w64/mingw-w64
+- Version: 14.0.0, `mingw-w64-libraries/winpthreads/src/`
+- License: MIT
+
+Files extracted from upstream source: `cond.c`, `cond.h`, and `misc.h`.
+`LICENSE` contains the source files' license notice.
+
+Only the condition-variable unit is compiled for MinGW Windows 9x builds, replacing
+the corresponding unit in the static compiler runtime. Other units and public
+headers come from the toolchain. MinGW-w64 14.0.0 MSVCRT/POSIX is tested; qualify
+other runtime versions before deployment. Windows 95 also requires a compiler
+runtime built without SSE instructions.
+
+Patches:
+
+- `0001-win9x-condition-lock.patch`: use a pthread mutex for the condition-variable
+  counter lock because Windows 9x does not implement `TryEnterCriticalSection`.
+  Other locks retain their native critical sections. Remove the unused private
+  `thread.h` include.
 
 
 ## wslay

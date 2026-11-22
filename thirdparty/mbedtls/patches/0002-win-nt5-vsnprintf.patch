@@ -8,7 +8,7 @@ index 890c4cbaba..6a74b9b9e3 100644
  
 -#if defined(_TRUNCATE)
 +    /* The NT5 MSVCRT does not export vsnprintf_s. */
-+#if defined(_TRUNCATE) && !defined(WIN_LEGACY_NT_ENABLED)
++#if defined(_TRUNCATE) && !defined(WIN_LEGACY_NT_ENABLED) && !defined(WIN_9X_ENABLED)
      ret = vsnprintf_s(s, n, _TRUNCATE, fmt, arg);
  #else
      ret = vsnprintf(s, n, fmt, arg);
@@ -17,7 +17,7 @@ index 890c4cbaba..6a74b9b9e3 100644
          ret = -1;
      }
 -#endif
-+#endif // defined(_TRUNCATE) && !defined(WIN_LEGACY_NT_ENABLED)
++#endif // defined(_TRUNCATE) && !defined(WIN_LEGACY_NT_ENABLED) && !defined(WIN_9X_ENABLED)
 
      return ret;
  }

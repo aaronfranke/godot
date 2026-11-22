@@ -1,0 +1,233 @@
+--- a/thirdparty/winpthreads/cond.c
++++ b/thirdparty/winpthreads/cond.c
+@@ -44,7 +44,6 @@
+ /* internal header files */
+ #include "cond.h"
+ #include "misc.h"
+-#include "thread.h"
+ 
+ #include "pthread_compat.h"
+ 
+@@ -175,11 +174,27 @@
+       free (_c);
+       r = EAGAIN;
+   } else {
+-      InitializeCriticalSection(&_c->waiters_count_lock_);
+-      InitializeCriticalSection(&_c->waiters_b_lock_);
+-      InitializeCriticalSection(&_c->waiters_q_lock_);
+-      _c->value_q = 0;
+-      _c->value_b = 1;
++      /* 9x exports a nonfunctional TryEnterCriticalSection. Use the existing
++         pthread mutex implementation for the lock that needs a try operation.
++         Allocate it now so a later trylock cannot turn OOM into a busy loop. */
++      r = pthread_mutex_init(&_c->waiters_count_lock_, NULL);
++      if (!r) {
++          r = pthread_mutex_lock(&_c->waiters_count_lock_);
++          if (!r)
++              pthread_mutex_unlock(&_c->waiters_count_lock_);
++      }
++      if (r) {
++          pthread_mutex_destroy(&_c->waiters_count_lock_);
++          CloseHandle(_c->sema_q);
++          CloseHandle(_c->sema_b);
++          free(_c);
++          r = EAGAIN;
++      } else {
++          InitializeCriticalSection(&_c->waiters_b_lock_);
++          InitializeCriticalSection(&_c->waiters_q_lock_);
++          _c->value_q = 0;
++          _c->value_b = 1;
++      }
+   }
+   if (!r)
+     {
+@@ -215,7 +230,7 @@
+   r = do_sema_b_wait(_c->sema_b, 0, INFINITE,&_c->waiters_b_lock_,&_c->value_b);
+   if (r != 0)
+     return r;
+-  if (!TryEnterCriticalSection (&_c->waiters_count_lock_))
++  if (pthread_mutex_trylock(&_c->waiters_count_lock_) != 0)
+     {
+        do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+        return EBUSY;
+@@ -224,7 +239,7 @@
+     {
+       r = do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+       if (!r) r = EBUSY;
+-      LeaveCriticalSection(&_c->waiters_count_lock_);
++      pthread_mutex_unlock(&_c->waiters_count_lock_);
+       return r;
+     }
+   *c = (pthread_cond_t)NULL;
+@@ -234,8 +249,8 @@
+     r = EINVAL;
+   if (!CloseHandle (_c->sema_b) && !r)
+     r = EINVAL;
+-  LeaveCriticalSection (&_c->waiters_count_lock_);
+-  DeleteCriticalSection(&_c->waiters_count_lock_);
++  pthread_mutex_unlock(&_c->waiters_count_lock_);
++  pthread_mutex_destroy(&_c->waiters_count_lock_);
+   DeleteCriticalSection(&_c->waiters_b_lock_);
+   DeleteCriticalSection(&_c->waiters_q_lock_);
+   _c->valid  = DEAD_COND;
+@@ -257,13 +272,13 @@
+   else if (_c->valid != (unsigned int)LIFE_COND)
+     return EINVAL;
+ 
+-  EnterCriticalSection (&_c->waiters_count_lock_);
++  pthread_mutex_lock(&_c->waiters_count_lock_);
+   /* If there aren't any waiters, then this is a no-op.   */
+   if (_c->waiters_count_unblock_ != 0)
+     {
+       if (_c->waiters_count_ == 0)
+       {
+-	LeaveCriticalSection (&_c->waiters_count_lock_);
++	pthread_mutex_unlock(&_c->waiters_count_lock_);
+ 	/* pthread_testcancel(); */
+ 	return 0;
+       }
+@@ -275,7 +290,7 @@
+       r = do_sema_b_wait (_c->sema_b, 1, INFINITE,&_c->waiters_b_lock_,&_c->value_b);
+       if (r != 0)
+       {
+-	LeaveCriticalSection (&_c->waiters_count_lock_);
++	pthread_mutex_unlock(&_c->waiters_count_lock_);
+ 	/* pthread_testcancel(); */
+ 	return r;
+       }
+@@ -289,11 +304,11 @@
+     }
+   else
+     {
+-      LeaveCriticalSection (&_c->waiters_count_lock_);
++      pthread_mutex_unlock(&_c->waiters_count_lock_);
+       /* pthread_testcancel(); */
+       return 0;
+     }
+-  LeaveCriticalSection (&_c->waiters_count_lock_);
++  pthread_mutex_unlock(&_c->waiters_count_lock_);
+   r = do_sema_b_release(_c->sema_q, 1,&_c->waiters_q_lock_,&_c->value_q);
+   /* pthread_testcancel(); */
+   return r;
+@@ -314,13 +329,13 @@
+   else if (_c->valid != (unsigned int)LIFE_COND)
+     return EINVAL;
+ 
+-  EnterCriticalSection (&_c->waiters_count_lock_);
++  pthread_mutex_lock(&_c->waiters_count_lock_);
+   /* If there aren't any waiters, then this is a no-op.   */
+   if (_c->waiters_count_unblock_ != 0)
+     {
+       if (_c->waiters_count_ == 0)
+       {
+-	LeaveCriticalSection (&_c->waiters_count_lock_);
++	pthread_mutex_unlock(&_c->waiters_count_lock_);
+ 	/* pthread_testcancel(); */
+ 	return 0;
+       }
+@@ -333,7 +348,7 @@
+       r = do_sema_b_wait (_c->sema_b, 1, INFINITE,&_c->waiters_b_lock_,&_c->value_b);
+       if (r != 0)
+       {
+-	LeaveCriticalSection (&_c->waiters_count_lock_);
++	pthread_mutex_unlock(&_c->waiters_count_lock_);
+ 	/* pthread_testcancel(); */
+ 	return r;
+       }
+@@ -348,11 +363,11 @@
+     }
+   else
+     {
+-      LeaveCriticalSection (&_c->waiters_count_lock_);
++      pthread_mutex_unlock(&_c->waiters_count_lock_);
+       /* pthread_testcancel(); */
+       return 0;
+     }
+-  LeaveCriticalSection (&_c->waiters_count_lock_);
++  pthread_mutex_unlock(&_c->waiters_count_lock_);
+   r = do_sema_b_release(_c->sema_q, relCnt,&_c->waiters_q_lock_,&_c->value_q);
+   /* pthread_testcancel(); */
+   return r;
+@@ -384,7 +399,7 @@
+   if (r != 0)
+     return r;
+ 
+-  if (!TryEnterCriticalSection (&_c->waiters_count_lock_))
++  if (pthread_mutex_trylock(&_c->waiters_count_lock_) != 0)
+   {
+     r = do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+     if (r != 0)
+@@ -394,7 +409,7 @@
+   }
+ 
+   _c->waiters_count_++;
+-  LeaveCriticalSection(&_c->waiters_count_lock_);
++  pthread_mutex_unlock(&_c->waiters_count_lock_);
+   r = do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+   if (r != 0)
+     return r;
+@@ -448,7 +463,7 @@
+   if (r != 0)
+     return r;
+ 
+-  if (!TryEnterCriticalSection (&_c->waiters_count_lock_))
++  if (pthread_mutex_trylock(&_c->waiters_count_lock_) != 0)
+   {
+     r = do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+     if (r != 0)
+@@ -458,7 +473,7 @@
+   }
+ 
+   _c->waiters_count_++;
+-  LeaveCriticalSection(&_c->waiters_count_lock_);
++  pthread_mutex_unlock(&_c->waiters_count_lock_);
+   r = do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+   if (r != 0)
+     return r;
+@@ -512,7 +527,7 @@
+   cond_t *_c;
+ 
+   _c = ch->c;
+-  EnterCriticalSection (&_c->waiters_count_lock_);
++  pthread_mutex_lock(&_c->waiters_count_lock_);
+   n = _c->waiters_count_unblock_;
+   if (n != 0)
+     _c->waiters_count_unblock_ -= 1;
+@@ -522,7 +537,7 @@
+     r = do_sema_b_wait (_c->sema_b, 1, INFINITE,&_c->waiters_b_lock_,&_c->value_b);
+     if (r != 0)
+     {
+-      LeaveCriticalSection(&_c->waiters_count_lock_);
++      pthread_mutex_unlock(&_c->waiters_count_lock_);
+       ch->r[0] = r;
+       return;
+     }
+@@ -530,7 +545,7 @@
+     r = do_sema_b_release (_c->sema_b, 1,&_c->waiters_b_lock_,&_c->value_b);
+     if (r != 0)
+     {
+-      LeaveCriticalSection(&_c->waiters_count_lock_);
++      pthread_mutex_unlock(&_c->waiters_count_lock_);
+       ch->r[0] = r;
+       return;
+     }
+@@ -538,7 +553,7 @@
+   }
+   else
+     _c->waiters_count_gone_ += 1;
+-  LeaveCriticalSection (&_c->waiters_count_lock_);
++  pthread_mutex_unlock(&_c->waiters_count_lock_);
+ 
+   if (n == 1)
+   {
+--- a/thirdparty/winpthreads/cond.h
++++ b/thirdparty/winpthreads/cond.h
+@@ -43,7 +43,7 @@
+     LONG waiters_count_; /* Number of waiting threads.  */
+     LONG waiters_count_unblock_; /* Number of waiting threads whitch can be unblocked.  */
+     LONG waiters_count_gone_; /* Number of waiters which are gone.  */
+-    CRITICAL_SECTION waiters_count_lock_; /* Serialize access to <waiters_count_>.  */
++    pthread_mutex_t waiters_count_lock_; /* Serialize access to <waiters_count_>.  */
+     CRITICAL_SECTION waiters_q_lock_; /* Serialize access to sema_q.  */
+     LONG value_q;
+     CRITICAL_SECTION waiters_b_lock_; /* Serialize access to sema_b.  */

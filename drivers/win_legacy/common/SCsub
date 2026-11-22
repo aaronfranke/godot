@@ -2,7 +2,7 @@
 
 Import("env")
 
-if env["platform"] in ("win_nt4", "win_nt5", "win_nt6") and env["win_legacy_windowed"]:
+if env["platform"] in ("win_9x", "win_nt4", "win_nt5", "win_nt6") and env["win_legacy_windowed"]:
     env.add_source_files(env.drivers_sources, "audio/*.cpp")
     env.add_source_files(env.drivers_sources, "input/*.cpp")
     env.add_source_files(env.drivers_sources, "display/*.cpp")

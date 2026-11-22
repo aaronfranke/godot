@@ -416,6 +416,11 @@ Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
+Files: ./thirdparty/winpthreads/
+Comment: Winpthreads condition variables
+Copyright: 2011-2016, mingw-w64 project
+License: Expat
+
 Files: ./thirdparty/wslay/
 Comment: Wslay
 Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa

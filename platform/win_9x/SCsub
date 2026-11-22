@@ -2,11 +2,18 @@
 
 Import("env")
 
-if env["bits"] != "32":
-    print("The Windows 9x platform only supports x86_32 builds. Use bits=32.")
-    Exit(255)
-
 sources = []
 env.add_source_files(sources, "*.cpp")
+env.add_source_files(sources, "os/*.cpp")
+if env["win_legacy_windowed"]:
+    env.add_source_files(sources, "display/*.cpp")
+if not env.msvc:
+    # Override only the condition-variable unit's unavailable Win9x try-lock API.
+    env_pthreads = env.Clone()
+    env_pthreads.Append(CPPDEFINES=["WINPTHREAD_STATIC", "IN_WINPTHREAD"])
+    env_pthreads.disable_warnings()
+    env_pthreads.add_source_files(sources, "#thirdparty/winpthreads/cond.c")
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+if env["win_legacy_windowed"]:
+    SConscript("#drivers/win_legacy/common/launcher/SCsub", exports=["env", "prog"])

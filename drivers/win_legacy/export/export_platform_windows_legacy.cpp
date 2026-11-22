@@ -238,7 +238,7 @@ Error EditorExportPlatformWindowsLegacy::export_project(const Ref<EditorExportPr
 		add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
 	}
-	// Stage alongside the archive for atomic replacement. A leading dot keeps the project export scan out.
+	// Stage alongside the archive for native replacement. A leading dot keeps the project export scan out.
 	OS *os = OS::get_singleton();
 	const String staging = destination.get_base_dir().plus_file(vformat(".godot-legacy-windows-export-%d-%d", os->get_process_id(), os->get_ticks_usec()));
 	Error error = output->make_dir(staging);
@@ -265,13 +265,14 @@ Error EditorExportPlatformWindowsLegacy::export_project(const Ref<EditorExportPr
 		}
 	}
 	if (error == OK) {
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && !defined(WIN_9X_ENABLED)
 		if (!MoveFileExW(archive.c_str(), destination.c_str(), MOVEFILE_REPLACE_EXISTING)) {
 			error = ERR_FILE_CANT_WRITE;
 		}
 #else
+		// Win9x uses its ANSI backup/rollback replacement; MoveFileExW is a stub.
 		error = output->rename(archive, destination);
-#endif // WINDOWS_ENABLED
+#endif // defined(WINDOWS_ENABLED) && !defined(WIN_9X_ENABLED)
 	}
 	if (error != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not write the export archive to \"%s\"."), p_path));

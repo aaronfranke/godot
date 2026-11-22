@@ -1,5 +1,9 @@
 #include "drivers/win_legacy/common/input/joypad_winmm.h"
 
+#ifdef WIN_9X_ENABLED
+#include "platform/win_9x/encoding_windows_9x.h"
+#endif // WIN_9X_ENABLED
+
 // Godot includes.
 #include "core/os/os.h"
 #include "main/input_default.h"
@@ -90,7 +94,11 @@ void JoypadWinMM::process(InputDefault &p_input) {
 			if (!scan || i >= available_slots) {
 				continue;
 			}
+#ifdef WIN_9X_ENABLED
+			const MMRESULT result = joyGetDevCapsA(i, &slot.caps, sizeof(slot.caps));
+#else
 			const MMRESULT result = joyGetDevCapsW(i, &slot.caps, sizeof(slot.caps));
+#endif // WIN_9X_ENABLED
 			if (result != JOYERR_NOERROR) {
 				continue;
 			}
@@ -115,7 +123,11 @@ void JoypadWinMM::process(InputDefault &p_input) {
 				continue;
 			}
 			slot.caps.szPname[MAXPNAMELEN - 1] = 0;
+#ifdef WIN_9X_ENABLED
+			const String name = Windows9xEncoding::decode(slot.caps.szPname);
+#else
 			const String name(slot.caps.szPname);
+#endif // WIN_9X_ENABLED
 			p_input.joy_connection_changed(slot.device_id, true, name.empty() ? String("WinMM joystick") : name);
 		}
 		if (_input_enabled) {

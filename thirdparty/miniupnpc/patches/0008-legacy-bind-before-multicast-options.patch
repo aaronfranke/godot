@@ -1,6 +1,6 @@
 --- a/thirdparty/miniupnpc/src/minissdpc.c
 +++ b/thirdparty/miniupnpc/src/minissdpc.c
-@@ -613,10 +613,16 @@
+@@ -624,10 +624,16 @@
  						if (table->table[i].dwIndex == ifbestidx && table->table[i].dwAddr != INADDR_ANY) {
  							struct in_addr mc_if;
  							mc_if.s_addr = table->table[i].dwAddr;
@@ -17,7 +17,7 @@
  						}
  					}
  				}
-@@ -743,6 +749,7 @@
+@@ -757,6 +763,7 @@
  			PRINT_SOCKET_ERROR("setsockopt(IPV6_MULTICAST_HOPS,...)");
  		}
  	} else {
@@ -25,7 +25,7 @@
  #ifdef _WIN32
  		if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_TTL, (const char *)&_ttl, sizeof(_ttl)) < 0)
  #else  /* _WIN32 */
-@@ -752,6 +759,7 @@
+@@ -766,6 +773,7 @@
  			/* not a fatal error */
  			PRINT_SOCKET_ERROR("setsockopt(IP_MULTICAST_TTL,...)");
  		}
@@ -33,7 +33,7 @@
  	}
  
  	if(multicastif && multicastif[0] != '\0')
-@@ -795,10 +803,12 @@
+@@ -809,10 +817,12 @@
  			if(mc_if.s_addr != INADDR_NONE)
  			{
  				((struct sockaddr_in *)&sockudp_r)->sin_addr.s_addr = mc_if.s_addr;
@@ -46,7 +46,7 @@
  			} else {
  				/* was not an ip address, try with an interface name */
  #ifndef _WIN32
-@@ -857,6 +867,19 @@
+@@ -871,6 +881,19 @@
  		return NULL;
  	}
  

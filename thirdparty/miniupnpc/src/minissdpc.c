@@ -601,13 +601,24 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 	if(!ipv6) {
 		DWORD ifbestidx;
 #if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
-		/* Windows 2000 has an IPv4 address table, but no GetAdaptersAddresses. */
-		if ((!multicastif || !multicastif[0]) &&
-		    GetBestInterface(inet_addr(UPNP_MCAST_ADDR), &ifbestidx) == NO_ERROR) {
+		/* Windows 98 and 2000 have an IPv4 address table, but no GetAdaptersAddresses. */
+		typedef DWORD (WINAPI * GetBestInterfaceFunction)(IPAddr, PDWORD);
+		typedef DWORD (WINAPI * GetAddressTableFunction)(PMIB_IPADDRTABLE, PULONG, BOOL);
+#ifdef WIN_9X_ENABLED
+		HMODULE ip_helper = (!multicastif || !multicastif[0]) ? LoadLibraryA("iphlpapi.dll") : NULL;
+		GetBestInterfaceFunction get_best_interface = ip_helper ? (GetBestInterfaceFunction)(void *)GetProcAddress(ip_helper, "GetBestInterface") : NULL;
+		GetAddressTableFunction get_address_table = ip_helper ? (GetAddressTableFunction)(void *)GetProcAddress(ip_helper, "GetIpAddrTable") : NULL;
+#else
+		GetBestInterfaceFunction get_best_interface = GetBestInterface;
+		GetAddressTableFunction get_address_table = GetIpAddrTable;
+#endif // WIN_9X_ENABLED
+		/* 95 has no IP Helper DLL. Let Winsock choose the default interface there. */
+		if ((!multicastif || !multicastif[0]) && get_best_interface && get_address_table &&
+		    get_best_interface(inet_addr(UPNP_MCAST_ADDR), &ifbestidx) == NO_ERROR) {
 			ULONG table_size = 0;
-			if (GetIpAddrTable(NULL, &table_size, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
+			if (get_address_table(NULL, &table_size, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
 				PMIB_IPADDRTABLE table = malloc(table_size);
-				if (table && GetIpAddrTable(table, &table_size, FALSE) == NO_ERROR) {
+				if (table && get_address_table(table, &table_size, FALSE) == NO_ERROR) {
 					DWORD i;
 					for (i = 0; i < table->dwNumEntries; i++) {
 						if (table->table[i].dwIndex == ifbestidx && table->table[i].dwAddr != INADDR_ANY) {
@@ -629,6 +640,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 				free(table);
 			}
 		}
+#ifdef WIN_9X_ENABLED
+		if (ip_helper) FreeLibrary(ip_helper);
+#endif // WIN_9X_ENABLED
 #else
 #if _WIN32_WINNT >= 0x0600 // _WIN32_WINNT_VISTA
 		// While we don't need IPv6 support, the IPv4 only funciton is not available in UWP apps.

@@ -54,9 +54,9 @@
 #include "servers/navigation_server.h"
 
 // Used to test for GLES3 support.
-#if !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
+#if !defined(SERVER_ENABLED) && !defined(WIN_9X_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 #include "drivers/gles3/rasterizer_gles3.h"
-#endif // !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
+#endif // !defined(SERVER_ENABLED) && !defined(WIN_9X_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");
@@ -874,13 +874,13 @@ public:
 			current_driver = os->get_video_driver_name(os->get_current_video_driver());
 		}
 		bool gles3_viable = has_gles3;
-#if !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
+#if !defined(SERVER_ENABLED) && !defined(WIN_9X_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 		// Probing needs an active GLES context. With Fixed Function active, list
 		// compiled GLES drivers without loading GLAD against the wrong context.
 		if (has_gles3 && (current_driver == "GLES2" || current_driver == "GLES3")) {
 			gles3_viable = RasterizerGLES3::is_viable() == OK;
 		}
-#endif // !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
+#endif // !defined(SERVER_ENABLED) && !defined(WIN_9X_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 
 		if (has_gles3) {
 			Container *rvb = memnew(VBoxContainer);
