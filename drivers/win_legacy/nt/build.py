@@ -6,12 +6,14 @@ import sys
 def get_flags():
     return [
         ("modules_enabled_by_default", False),
+        ("module_bcdec_enabled", True),
         ("module_bmp_enabled", True),
         ("module_bullet_enabled", True),
         ("module_csg_enabled", True),
         ("module_cvtt_enabled", "${tools}"),
         ("module_dds_enabled", True),
         ("module_enet_enabled", True),
+        ("module_etcpak_enabled", True),
         ("module_freetype_enabled", True),
         ("module_gdscript_enabled", True),
         ("module_gltf_enabled", True),
@@ -136,6 +138,8 @@ def configure(env, minimum):
         env["bits"] = "64"
     if env["bits"] not in ("32", "64"):
         fail("Legacy Windows supports bits=32 or bits=64.")
+    if env["bits"] == "64" and (env["d3d7"] or env["d3d3_software"]):
+        fail("D3D7 and D3D3 Software require bits=32; disable both for x86_64.")
     if env["lto"] == "auto":
         env["lto"] = "none"
     if env["lto"] == "thin":
@@ -157,7 +161,9 @@ def configure(env, minimum):
             ("_WIN32_WINNT", hex(minimum)),
         ]
     )
-    env["win_legacy_windowed"] = env["opengl3"]
+    fixed_function = any(env.get(option, False) for option in ("d3d3_software", "d3d7", "d3d9", "opengl1"))
+    env["fixed_function"] = fixed_function
+    env["win_legacy_windowed"] = fixed_function or env["opengl3"]
     if env.msvc:
         env["LINKFLAGS"].remove("/SUBSYSTEM:CONSOLE")
         env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS" if env["win_legacy_windowed"] else "/SUBSYSTEM:CONSOLE"])
@@ -172,12 +178,19 @@ def configure(env, minimum):
         system_libs += ["user32", "gdi32", "imm32", "winmm", "comdlg32"]
     else:
         env.Append(CPPDEFINES=["SERVER_ENABLED"])
+    if fixed_function:
+        env.Append(CPPDEFINES=["FIXED_FUNCTION_ENABLED"])
+    for option in ("d3d3_software", "d3d7", "d3d9", "opengl1"):
+        if env.get(option, False):
+            env.Append(CPPDEFINES=[option.upper() + "_ENABLED"])
     if env.get("opengl3", False):
         # Set desktop GL headers before SCons creates the GLES source objects.
         env.Append(CPPDEFINES=["GLES_ENABLED", "GLES_OVER_GL", "GLAD_ENABLED"])
         env.Prepend(CPPPATH=["#thirdparty/glad"])
-    if env["opengl3"]:
+    if env["opengl3"] or env["opengl1"]:
         system_libs.append("opengl32")
+    if env["d3d7"] or env["d3d3_software"]:
+        system_libs.append("dxguid")
     if env.msvc:
         env.Append(LINKFLAGS=[lib + env["LIBSUFFIX"] for lib in system_libs])
     else:

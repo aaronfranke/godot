@@ -54,9 +54,9 @@
 #include "servers/navigation_server.h"
 
 // Used to test for GLES3 support.
-#ifndef SERVER_ENABLED
+#if !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 #include "drivers/gles3/rasterizer_gles3.h"
-#endif
+#endif // !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 
 static inline String get_project_key_from_path(const String &dir) {
 	return dir.replace("/", "::");
@@ -460,10 +460,9 @@ private:
 			} else {
 				if (mode == MODE_NEW) {
 					ProjectSettings::CustomMap initial_settings;
-					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "GLES3") {
-						initial_settings["rendering/quality/driver/driver_name"] = "GLES3";
-					} else {
-						initial_settings["rendering/quality/driver/driver_name"] = "GLES2";
+					const String driver_name = rasterizer_button_group->get_pressed_button()->get_meta("driver_name");
+					initial_settings["rendering/quality/driver/driver_name"] = driver_name;
+					if (driver_name == "GLES2") {
 						initial_settings["rendering/vram_compression/import_etc2"] = false;
 						initial_settings["rendering/vram_compression/import_etc"] = true;
 					}
@@ -852,49 +851,116 @@ public:
 		rasterizer_container->add_child(rshb);
 		rasterizer_button_group.instance();
 
-		// Enable GLES3 by default as it's the default value for the project setting.
-#ifndef SERVER_ENABLED
-		bool gles3_viable = RasterizerGLES3::is_viable() == OK;
-#else
-		// Whatever, project manager isn't even used in headless builds.
-		bool gles3_viable = false;
-#endif
+		OS *os = OS::get_singleton();
+		bool has_gles2 = false;
+		bool has_gles3 = false;
+#ifdef FIXED_FUNCTION_ENABLED
+		Vector<String> fixed_function_drivers;
+#endif // FIXED_FUNCTION_ENABLED
+		for (int i = 0; i < os->get_video_driver_count(); i++) {
+			const String driver_name = os->get_video_driver_name(i);
+			if (driver_name == "GLES2") {
+				has_gles2 = true;
+			} else if (driver_name == "GLES3") {
+				has_gles3 = true;
+#ifdef FIXED_FUNCTION_ENABLED
+			} else if (driver_name != "Dummy") {
+				fixed_function_drivers.push_back(driver_name);
+#endif // FIXED_FUNCTION_ENABLED
+			}
+		}
+		String current_driver;
+		if (os->get_current_video_driver() >= 0 && os->get_current_video_driver() < os->get_video_driver_count()) {
+			current_driver = os->get_video_driver_name(os->get_current_video_driver());
+		}
+		bool gles3_viable = has_gles3;
+#if !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
+		// Probing needs an active GLES context. With Fixed Function active, list
+		// compiled GLES drivers without loading GLAD against the wrong context.
+		if (has_gles3 && (current_driver == "GLES2" || current_driver == "GLES3")) {
+			gles3_viable = RasterizerGLES3::is_viable() == OK;
+		}
+#endif // !defined(SERVER_ENABLED) && (!defined(WIN_LEGACY_NT_ENABLED) || defined(GLES_ENABLED))
 
-		Container *rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
-		rshb->add_child(rvb);
-		Button *rs_button = memnew(CheckBox);
-		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 3.0"));
-		rs_button->set_meta("driver_name", "GLES3");
-		rvb->add_child(rs_button);
-		if (gles3_viable) {
-			rs_button->set_pressed(true);
-		} else {
-			// If GLES3 can't be used, don't let users shoot themselves in the foot.
-			rs_button->set_disabled(true);
+		if (has_gles3) {
+			Container *rvb = memnew(VBoxContainer);
+			rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+			rshb->add_child(rvb);
+			Button *rs_button = memnew(CheckBox);
+			rs_button->set_button_group(rasterizer_button_group);
+			rs_button->set_text(TTR("OpenGL ES 3.0"));
+			rs_button->set_meta("driver_name", "GLES3");
+			rvb->add_child(rs_button);
+			if (gles3_viable) {
+				rs_button->set_pressed(true);
+			} else {
+				// If GLES3 can't be used, don't let users shoot themselves in the foot.
+				rs_button->set_disabled(true);
+				l = memnew(Label);
+				l->set_text(TTR("Not supported by your GPU drivers."));
+				l->set_autowrap(true);
+				l->set_custom_minimum_size(Size2(180 * EDSCALE, 0));
+				rvb->add_child(l);
+			}
 			l = memnew(Label);
-			l->set_text(TTR("Not supported by your GPU drivers."));
+			l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
+			l->set_autowrap(true);
+			l->set_custom_minimum_size(Size2(180 * EDSCALE, 0));
 			rvb->add_child(l);
 		}
-		l = memnew(Label);
-		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
-		rvb->add_child(l);
 
-		rshb->add_child(memnew(VSeparator));
+		if (has_gles2) {
+			if (has_gles3) {
+				rshb->add_child(memnew(VSeparator));
+			}
+			Container *rvb = memnew(VBoxContainer);
+			rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+			rshb->add_child(rvb);
+			Button *rs_button = memnew(CheckBox);
+			rs_button->set_button_group(rasterizer_button_group);
+			rs_button->set_text(TTR("OpenGL ES 2.0"));
+			rs_button->set_meta("driver_name", "GLES2");
+			rs_button->set_pressed(!gles3_viable);
+			rvb->add_child(rs_button);
+			l = memnew(Label);
+			l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
+			l->set_autowrap(true);
+			l->set_custom_minimum_size(Size2(180 * EDSCALE, 0));
+			rvb->add_child(l);
+		}
 
-		rvb = memnew(VBoxContainer);
-		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
-		rshb->add_child(rvb);
-		rs_button = memnew(CheckBox);
-		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("OpenGL ES 2.0"));
-		rs_button->set_meta("driver_name", "GLES2");
-		rs_button->set_pressed(!gles3_viable);
-		rvb->add_child(rs_button);
-		l = memnew(Label);
-		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
-		rvb->add_child(l);
+#ifdef FIXED_FUNCTION_ENABLED
+		// Present OpenGL1 ahead of D3D7 in recommendation order.
+		const int opengl1_index = fixed_function_drivers.find("OpenGL1");
+		const int d3d7_index = fixed_function_drivers.find("D3D7");
+		if (d3d7_index >= 0 && opengl1_index > d3d7_index) {
+			SWAP(fixed_function_drivers.write[opengl1_index], fixed_function_drivers.write[d3d7_index]);
+		}
+		if (!fixed_function_drivers.empty()) {
+			if (has_gles2 || has_gles3) {
+				rshb->add_child(memnew(VSeparator));
+			}
+			Container *rvb = memnew(VBoxContainer);
+			rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+			rshb->add_child(rvb);
+			l = memnew(Label);
+			l->set_text(TTR("Fixed Function"));
+			rvb->add_child(l);
+			for (int i = 0; i < fixed_function_drivers.size(); i++) {
+				Button *rs_button = memnew(CheckBox);
+				rs_button->set_button_group(rasterizer_button_group);
+				rs_button->set_text(fixed_function_drivers[i]);
+				rs_button->set_meta("driver_name", fixed_function_drivers[i]);
+				rvb->add_child(rs_button);
+				if (fixed_function_drivers[i] == current_driver || !rasterizer_button_group->get_pressed_button()) {
+					rs_button->set_pressed(true);
+				}
+			}
+			l = memnew(Label);
+			l->set_text(TTR("Reduced visual effects\nDriver capabilities vary"));
+			rvb->add_child(l);
+		}
+#endif // FIXED_FUNCTION_ENABLED
 
 		l = memnew(Label);
 		l->set_text(TTR("Renderer can be changed later, but scenes may need to be adjusted."));

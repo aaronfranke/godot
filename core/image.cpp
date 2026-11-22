@@ -2161,7 +2161,7 @@ Error Image::decompress() {
 	} else {
 		return ERR_UNAVAILABLE;
 	}
-	return OK;
+	return is_compressed() ? ERR_UNAVAILABLE : OK;
 }
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {

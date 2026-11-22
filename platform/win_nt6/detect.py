@@ -21,6 +21,12 @@ def get_opts():
     return nt_build.get_opts() + [
         ("target_win_version", "Minimum Windows NT version (auto = 0x0601 aka Windows 7)", "auto"),
         BoolVariable("opengl3", "Build the existing GLES2/GLES3 renderers", True),
+        BoolVariable(
+            "d3d3_software", "Build the Fixed Function Direct3D 3 software device backend (x86_32 only)", False
+        ),
+        BoolVariable("d3d7", "Build the Fixed Function Direct3D 7 device backend (x86_32 only)", False),
+        BoolVariable("d3d9", "Build the Fixed Function Direct3D 9 device backend", True),
+        BoolVariable("opengl1", "Build the Fixed Function OpenGL 1.1 device backend", True),
     ]
 
 

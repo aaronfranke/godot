@@ -37,7 +37,19 @@ while IFS= read -rd '' f; do
                 continue 2
             elif [[ "$f" == "platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix"* ]]; then
                 continue 2
+            elif [[ "$f" == "drivers/d3d3_software/"* ]]; then
+                continue 2
+            elif [[ "$f" == "drivers/d3d7/"* ]]; then
+                continue 2
+            elif [[ "$f" == "drivers/d3d9/"* ]]; then
+                continue 2
+            elif [[ "$f" == "drivers/fixed_function/"* ]]; then
+                continue 2
+            elif [[ "$f" == "drivers/opengl1/"* ]]; then
+                continue 2
             elif [[ "$f" == "drivers/win_legacy/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/osx/fixed_function/"* ]]; then
                 continue 2
             elif [[ "$f" == "platform/win_9x/"* ]]; then
                 continue 2
@@ -46,6 +58,10 @@ while IFS= read -rd '' f; do
             elif [[ "$f" == "platform/win_nt5/"* ]]; then
                 continue 2
             elif [[ "$f" == "platform/win_nt6/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/windows/fixed_function/"* ]]; then
+                continue 2
+            elif [[ "$f" == "platform/x11/fixed_function/"* ]]; then
                 continue 2
             fi
             python misc/scripts/copyright_headers.py "$f"

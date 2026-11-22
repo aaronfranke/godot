@@ -1326,7 +1326,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (video_driver_idx < 0) {
-		video_driver_idx = 0;
+#ifdef FIXED_FUNCTION_ENABLED
+		// An unavailable saved backend (e.g. D3D7 in an x86_64 build) should keep
+		// using Fixed Function. Explicit invalid command-line choices were rejected above.
+		const String fixed_function_drivers[] = { "D3D9", "D3D7", "OpenGL1", "D3D3 Software" };
+		for (unsigned int i = 0; i < sizeof(fixed_function_drivers) / sizeof(fixed_function_drivers[0]); i++) {
+			if (video_driver != fixed_function_drivers[i]) {
+				continue;
+			}
+			for (unsigned int fallback = 0; fallback < sizeof(fixed_function_drivers) / sizeof(fixed_function_drivers[0]) && video_driver_idx < 0; fallback++) {
+				for (int driver = 0; driver < OS::get_singleton()->get_video_driver_count(); driver++) {
+					if (fixed_function_drivers[fallback] == OS::get_singleton()->get_video_driver_name(driver)) {
+						video_driver_idx = driver;
+						WARN_PRINT(vformat("Fixed Function driver '%s' is unavailable in this build. Using '%s' for this run.", video_driver, fixed_function_drivers[fallback]));
+						break;
+					}
+				}
+			}
+			break;
+		}
+#endif // FIXED_FUNCTION_ENABLED
+		if (video_driver_idx < 0) {
+			video_driver_idx = 0;
+		}
 	}
 
 	if (audio_driver == "") { // specified in project.godot

@@ -80,6 +80,7 @@ public:
 
 	int get_video_driver_count() const override;
 	const char *get_video_driver_name(int p_driver) const override;
+	const char *get_video_driver_enum_name(int p_driver) const override;
 	int get_current_video_driver() const override;
 	bool can_draw() const override;
 	Point2 get_mouse_position() const override;

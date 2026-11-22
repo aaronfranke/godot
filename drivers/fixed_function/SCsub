@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+
+# Godot 3.x links its test runner in every editor build, including release_debug.
+if env["tools"]:
+    env.add_source_files(env.drivers_sources, "tests/*.cpp")

@@ -5,6 +5,9 @@
 // Godot includes.
 #include "core/map.h"
 #include "core/os/os.h"
+#ifdef FIXED_FUNCTION_ENABLED
+#include "platform/windows/fixed_function/fixed_function_windows.h"
+#endif // FIXED_FUNCTION_ENABLED
 
 #ifdef GLES_ENABLED
 class GLContextWindowsNT;
@@ -26,6 +29,9 @@ class DisplayServerWindowsNT {
 		uint32_t physical;
 	};
 
+#ifdef FIXED_FUNCTION_ENABLED
+	FixedFunctionWindows *_renderer = nullptr;
+#endif // FIXED_FUNCTION_ENABLED
 #ifdef GLES_ENABLED
 	GLContextWindowsNT *_gl_context = nullptr;
 #endif // GLES_ENABLED
@@ -127,10 +133,13 @@ class DisplayServerWindowsNT {
 
 public:
 	static int get_driver_count();
+	static int get_driver_index(int p_driver);
 	static bool is_gl_driver(int p_driver);
 	static const char *get_driver_name(int p_driver);
+	static const char *get_driver_enum_name(int p_driver);
 
 	Error initialize(const OS::VideoMode &p_mode, int p_driver, InputDefault &p_input);
+	Error get_initialization_error() const;
 	void show(MainLoop &p_main_loop);
 	void process_events();
 	void process_and_drop_events();
@@ -155,6 +164,7 @@ public:
 	uint32_t keyboard_get_scancode_from_physical(uint32_t p_scancode) const;
 
 	HWND get_window() const;
+	bool should_render_directly_to_window() const;
 	void make_rendering_thread();
 	void release_rendering_thread();
 	void swap_buffers();

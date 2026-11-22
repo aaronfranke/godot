@@ -26,6 +26,9 @@ int DisplayServerWindowsNT::get_driver_count() {
 #ifdef GLES_ENABLED
 	count += 2; // Preserve Godot 3.x's GLES3=0, GLES2=1 video driver indices.
 #endif // GLES_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	count += FixedFunctionWindows::get_driver_count();
+#endif // FIXED_FUNCTION_ENABLED
 	return count;
 }
 
@@ -37,6 +40,13 @@ bool DisplayServerWindowsNT::is_gl_driver(int p_driver) {
 #endif // GLES_ENABLED
 }
 
+int DisplayServerWindowsNT::get_driver_index(int p_driver) {
+#ifdef GLES_ENABLED
+	p_driver -= 2;
+#endif // GLES_ENABLED
+	return p_driver;
+}
+
 const char *DisplayServerWindowsNT::get_driver_name(int p_driver) {
 	ERR_FAIL_INDEX_V(p_driver, get_driver_count(), "");
 #ifdef GLES_ENABLED
@@ -44,7 +54,23 @@ const char *DisplayServerWindowsNT::get_driver_name(int p_driver) {
 		return p_driver == 0 ? "GLES3" : "GLES2";
 	}
 #endif // GLES_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	return FixedFunctionWindows::get_driver_name(get_driver_index(p_driver));
+#else
 	return "";
+#endif // FIXED_FUNCTION_ENABLED
+}
+
+const char *DisplayServerWindowsNT::get_driver_enum_name(int p_driver) {
+	ERR_FAIL_INDEX_V(p_driver, get_driver_count(), nullptr);
+	if (is_gl_driver(p_driver)) {
+		return nullptr; // These two constants are already bound by core_bind.cpp.
+	}
+#ifdef FIXED_FUNCTION_ENABLED
+	return FixedFunctionWindows::get_driver_enum_name(get_driver_index(p_driver));
+#else
+	return nullptr;
+#endif // FIXED_FUNCTION_ENABLED
 }
 
 Error DisplayServerWindowsNT::initialize(const OS::VideoMode &p_mode, int p_driver, InputDefault &p_input) {
@@ -107,7 +133,28 @@ Error DisplayServerWindowsNT::initialize(const OS::VideoMode &p_mode, int p_driv
 		return error;
 	}
 #endif // GLES_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	_renderer = memnew(FixedFunctionWindows);
+	return _renderer->install(get_driver_index(p_driver), window, _client_size, p_mode.use_vsync);
+#else
 	return ERR_UNAVAILABLE;
+#endif // FIXED_FUNCTION_ENABLED
+}
+
+Error DisplayServerWindowsNT::get_initialization_error() const {
+#ifdef FIXED_FUNCTION_ENABLED
+	return _renderer ? _renderer->get_initialization_error() : OK;
+#else
+	return OK;
+#endif // FIXED_FUNCTION_ENABLED
+}
+
+bool DisplayServerWindowsNT::should_render_directly_to_window() const {
+#ifdef FIXED_FUNCTION_ENABLED
+	return _renderer && _renderer->should_render_directly_to_window();
+#else
+	return false;
+#endif // FIXED_FUNCTION_ENABLED
 }
 
 void DisplayServerWindowsNT::make_rendering_thread() {
@@ -218,6 +265,11 @@ void DisplayServerWindowsNT::_update_window() {
 	if (can_draw()) {
 		if (_display_change_pending) {
 			_display_change_pending = false;
+#ifdef FIXED_FUNCTION_ENABLED
+			if (_renderer) {
+				_renderer->notify_display_changed();
+			}
+#endif // FIXED_FUNCTION_ENABLED
 			Main::force_redraw();
 		}
 		if (_fullscreen_bounds_dirty) {
@@ -230,7 +282,13 @@ void DisplayServerWindowsNT::_update_window() {
 			_apply_mouse_passthrough_polygon(_mouse_passthrough_polygon, false);
 		}
 		// A native resize can produce several WM_SIZE messages before this frame.
-		if (_client_size != _render_size) {
+		bool resized = true;
+#ifdef FIXED_FUNCTION_ENABLED
+		if (_renderer && _client_size != _render_size) {
+			resized = _renderer->resize(_client_size) == OK;
+		}
+#endif // FIXED_FUNCTION_ENABLED
+		if (_client_size != _render_size && resized) {
 			_render_size = _client_size;
 			Main::force_redraw();
 		}
@@ -356,7 +414,19 @@ Size2i DisplayServerWindowsNT::_get_frame_size(const Size2i &p_client_size) cons
 }
 
 Size2i DisplayServerWindowsNT::_get_size_limit() const {
-	return _max_size;
+	Size2i limit;
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_renderer) {
+		limit = _renderer->get_max_window_size();
+	}
+#endif // FIXED_FUNCTION_ENABLED
+	if (_max_size.x > 0 && (limit.x == 0 || _max_size.x < limit.x)) {
+		limit.x = _max_size.x;
+	}
+	if (_max_size.y > 0 && (limit.y == 0 || _max_size.y < limit.y)) {
+		limit.y = _max_size.y;
+	}
+	return limit;
 }
 
 void DisplayServerWindowsNT::set_min_size(const Size2i &p_size) {
@@ -454,6 +524,11 @@ void DisplayServerWindowsNT::set_use_vsync(bool p_enabled) {
 		_gl_context->set_use_vsync(p_enabled);
 	}
 #endif // GLES_ENABLED
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_renderer) {
+		_renderer->set_use_vsync(p_enabled);
+	}
+#endif // FIXED_FUNCTION_ENABLED
 }
 
 Point2 DisplayServerWindowsNT::get_mouse_position() const {
@@ -716,6 +791,12 @@ LRESULT DisplayServerWindowsNT::_handle_message(UINT p_message, WPARAM p_wparam,
 
 DisplayServerWindowsNT::~DisplayServerWindowsNT() {
 	stop_events();
+	// DirectDraw can still hook the HWND until its device is released.
+#ifdef FIXED_FUNCTION_ENABLED
+	if (_renderer) {
+		memdelete(_renderer);
+	}
+#endif // FIXED_FUNCTION_ENABLED
 #ifdef GLES_ENABLED
 	if (_gl_context) {
 		memdelete(_gl_context);

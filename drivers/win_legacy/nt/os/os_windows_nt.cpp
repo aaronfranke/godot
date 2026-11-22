@@ -19,6 +19,7 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "main/input_default.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
@@ -86,7 +87,8 @@ Error OS_WindowsNT::initialize(const VideoMode &p_desired, int p_video_driver, i
 				continue;
 			}
 			if (DisplayServerWindowsNT::is_gl_driver(driver)) {
-				// Keep 3.x's GLES3-to-GLES2 fallback policy.
+				// Keep 3.x's GLES3-to-GLES2 policy. An explicitly selected Fixed
+				// Function driver falls back within that renderer's available backends.
 				const bool allow_gles2 = bool(GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) || Engine::get_singleton()->is_editor_hint();
 				if (requested_driver != 0 || driver != 1 || !allow_gles2) {
 					continue;
@@ -97,11 +99,15 @@ Error OS_WindowsNT::initialize(const VideoMode &p_desired, int p_video_driver, i
 		Error error = ERR_UNAVAILABLE;
 		for (int i = 0; i < candidates.size(); ++i) {
 			const int driver = candidates[i];
+			if (!DisplayServerWindowsNT::is_gl_driver(driver) && get_render_thread_mode() == RENDER_SEPARATE_THREAD) {
+				continue; // Fixed Function keeps native work on the main thread.
+			}
 			_display = _create_display();
 			error = _display->initialize(p_desired, driver, *_input);
 			if (error == OK) {
 				_video_driver = driver;
 				_initialize_visual_server();
+				error = _display->get_initialization_error();
 			}
 			if (error == OK) {
 				if (driver != requested_driver) {
@@ -204,6 +210,13 @@ void OS_WindowsNT::run() {
 	_main_loop->init();
 #ifdef WIN_LEGACY_WINDOWED_ENABLED
 	if (_display) {
+		if (_display->should_render_directly_to_window()) {
+			SceneTree *tree = Object::cast_to<SceneTree>(_main_loop);
+			if (tree) {
+				// Use the full window buffer when offscreen rendering is unavailable or would downscale the main UI.
+				tree->get_root()->set_use_render_direct_to_screen(true);
+			}
+		}
 		_display->show(*_main_loop);
 		while (!_display->is_quit_requested()) {
 			_display->process_events();
@@ -312,6 +325,16 @@ int OS_WindowsNT::get_video_driver_count() const {
 #else
 	return 1;
 #endif // WIN_LEGACY_WINDOWED_ENABLED
+}
+
+const char *OS_WindowsNT::get_video_driver_enum_name(int p_driver) const {
+	ERR_FAIL_INDEX_V(p_driver, get_video_driver_count(), nullptr);
+#ifdef WIN_LEGACY_WINDOWED_ENABLED
+	if (p_driver < DisplayServerWindowsNT::get_driver_count()) {
+		return DisplayServerWindowsNT::get_driver_enum_name(p_driver);
+	}
+#endif // WIN_LEGACY_WINDOWED_ENABLED
+	return nullptr;
 }
 
 int OS_WindowsNT::get_current_video_driver() const {

@@ -113,6 +113,15 @@ They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
 
 
+## etcpak
+
+- Upstream: https://github.com/wolfpld/etcpak
+- Version: 2.1 (7f15da4739cc5f8562311bdbb800436986d268ca, 2026)
+- License: BSD-3-Clause
+
+Contains the ETC/EAC decoder files and their dependencies, copied from Godot 4.x.
+
+
 ## fonts
 
 - `NotoSans*.woff2`, `NotoNaskhArabicUI_Regular.woff2`:
@@ -374,6 +383,10 @@ comments and a patch is provided in the `patches` folder.
 
 Collection of single-file libraries used in Godot components.
 
+- `bcdec.h`
+  * Upstream: https://github.com/iOrange/bcdec
+  * Version: git (80859ed3b7afb1c527a2a99d70c61457bea72d0c, 2026)
+  * License: MIT or Unlicense
 - `clipper.{cpp,hpp}`
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 (2017) + Godot changes (added optional exceptions handling)

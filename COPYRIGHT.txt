@@ -187,6 +187,11 @@ Comment: Etc2Comp
 Copyright: 2015, Etc2Comp Authors
 License: Apache-2.0
 
+Files: ./thirdparty/etcpak/
+Comment: etcpak
+Copyright: 2013-2026, Bartosz Taudul
+License: BSD-3-clause
+
 Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
@@ -290,6 +295,11 @@ Copyright: 1998-2010, Gilles Vollant
  2007-2008, Even Rouault
  2009-2010, Mathias Svensson
 License: Zlib
+
+Files: ./thirdparty/misc/bcdec.h
+Comment: bcdec
+Copyright: 2022, Sergii Kudlai
+License: Unlicense or Expat
 
 Files: ./thirdparty/misc/clipper.cpp
  ./thirdparty/misc/clipper.hpp

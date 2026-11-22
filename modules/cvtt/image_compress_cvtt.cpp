@@ -138,15 +138,15 @@ static void _digest_job_queue(void *p_job_queue) {
 }
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
-	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
-		return; //do not compress, already compressed
+	if (p_image->empty() || p_image->is_compressed()) {
+		return;
 	}
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
-	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RH) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
+	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RF) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
 
 	if (!is_ldr && !is_hdr) {
 		return; // Not a usable source format

@@ -34,11 +34,27 @@ doc_classes/*                       @godotengine/documentation
 /drivers/xaudio2/                   @godotengine/audio
 
 ## Rendering
+/drivers/d3d3_software/             @aaronfranke
+/drivers/d3d3_software/**/SCsub     @aaronfranke @godotengine/buildsystem
+/drivers/d3d3_software/tests/       @aaronfranke @godotengine/tests
+/drivers/d3d7/                      @aaronfranke
+/drivers/d3d7/**/SCsub              @aaronfranke @godotengine/buildsystem
+/drivers/d3d7/tests/                @aaronfranke @godotengine/tests
+/drivers/d3d9/                      @aaronfranke
+/drivers/d3d9/**/SCsub              @aaronfranke @godotengine/buildsystem
+/drivers/d3d9/shaders/generate_shaders.py @aaronfranke @godotengine/buildsystem
+/drivers/d3d9/tests/                @aaronfranke @godotengine/tests
 /drivers/dummy/                     @godotengine/rendering
+/drivers/fixed_function/            @aaronfranke
+/drivers/fixed_function/**/SCsub    @aaronfranke @godotengine/buildsystem
+/drivers/fixed_function/tests/      @aaronfranke @godotengine/tests
 /drivers/gl_context/                @godotengine/rendering
 /drivers/gles2/                     @godotengine/rendering
 /drivers/gles3/                     @godotengine/rendering
 /drivers/gles_common/               @godotengine/rendering
+/drivers/opengl1/                   @aaronfranke
+/drivers/opengl1/**/SCsub           @aaronfranke @godotengine/buildsystem
+/drivers/opengl1/tests/             @aaronfranke @godotengine/tests
 /drivers/win_legacy/                @aaronfranke
 /drivers/win_legacy/**/*.py         @aaronfranke @godotengine/buildsystem
 /drivers/win_legacy/**/SCsub        @aaronfranke @godotengine/buildsystem
@@ -162,6 +178,7 @@ doc_classes/*                       @godotengine/documentation
 /platform/win_nt6/**/*.py           @aaronfranke @godotengine/buildsystem
 /platform/win_nt6/**/SCsub          @aaronfranke @godotengine/buildsystem
 /platform/windows/                  @godotengine/windows
+/platform/windows/fixed_function/tests/ @godotengine/windows @godotengine/tests
 
 # Scene
 

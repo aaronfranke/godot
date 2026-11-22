@@ -54,6 +54,10 @@
 #undef BitMap
 #undef CursorShape
 
+#ifdef OPENGL1_ENABLED
+class FixedFunctionOSX;
+#endif // OPENGL1_ENABLED
+
 class OS_OSX : public OS_Unix {
 public:
 	struct KeyEvent {
@@ -120,6 +124,11 @@ public:
 	NSOpenGLContext *context;
 	NSOpenGLContext *context_offscreen;
 
+#ifdef OPENGL1_ENABLED
+	FixedFunctionOSX *fixed_function = nullptr;
+	void _release_fixed_function();
+#endif // OPENGL1_ENABLED
+
 	Vector<Vector2> mpath;
 	bool layered_window;
 
@@ -160,6 +169,13 @@ public:
 
 	int video_driver_index;
 	virtual int get_current_video_driver() const;
+#ifdef OPENGL1_ENABLED
+	virtual int get_video_driver_count() const;
+	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_enum_name(int p_driver) const;
+	virtual void *get_native_handle(int p_handle_type);
+	void resize_fixed_function();
+#endif // OPENGL1_ENABLED
 
 	struct GlobalMenuItem {
 		String label;

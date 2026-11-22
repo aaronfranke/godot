@@ -12,7 +12,9 @@ scons platform=win_nt6 tools=no target=release bits=64 use_mingw=yes mingw_prefi
 
 Use `target=release_debug` for debug templates, or `tools=yes target=release_debug` for an editor. Select matching templates in the **Windows 7/8/8.1/10** export preset. EXE and ZIP exports support PCKs, console wrappers, and optional native icon/version resource editing on Windows editor hosts.
 
-Godot 3.x's GLES2/GLES3 renderers are enabled by default. Select `GLES2` or `GLES3` through `--video-driver`. GLES3 can fall back to GLES2 using the existing project setting. For a dedicated headless build, use `opengl3=no`.
+Godot 3.x's GLES2/GLES3 and [Fixed Function](../../drivers/fixed_function/README.md) are enabled by default. Select `GLES2`, `GLES3`, `D3D9` or `OpenGL1` through `--video-driver`. GLES3 can fall back to GLES2 using the existing project setting; Fixed Function can fall back among available backends. Separate-thread rendering is available only with GLES.
+
+D3D7 and D3D3 Software are optional x86_32 backends. For a dedicated headless build, use `opengl3=no d3d7=no d3d9=no opengl1=no d3d3_software=no`.
 
 ## License
 
