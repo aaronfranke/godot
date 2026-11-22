@@ -49,6 +49,9 @@ private:
 	SOCKET_TYPE _sock;
 	IP::Type _ip_type;
 	bool _is_stream;
+#ifdef WINDOWS_ENABLED
+	bool _connect_pending;
+#endif // WINDOWS_ENABLED
 
 	enum NetError {
 		ERR_NET_WOULD_BLOCK,

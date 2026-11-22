@@ -440,6 +440,9 @@ void EditorResourcePreview::stop() {
 		while (!exited.is_set()) {
 			OS::get_singleton()->delay_usec(10000);
 			VisualServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
+			// A preview can still be waiting for a frame-drawn callback after the
+			// final main-loop frame. Complete that draw without presenting it.
+			VisualServer::get_singleton()->draw(false);
 		}
 		thread.wait_to_finish();
 	}

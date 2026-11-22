@@ -640,9 +640,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				if (k->get_unicode() >= 32 && k->get_scancode() != KEY_DELETE) {
 					if (editable) {
 						selection_delete();
-						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
 						int prev_len = text.length();
-						append_at_cursor(ucodestr);
+						append_at_cursor(String::chr(k->get_unicode()));
 						if (text.length() != prev_len) {
 							_text_changed();
 						}

@@ -238,6 +238,7 @@ private:
 
 	int video_driver_current;
 	String video_driver_request;
+	bool _restart_for_video_driver_change = false;
 	void _video_driver_selected(int);
 	void _update_video_driver_color();
 

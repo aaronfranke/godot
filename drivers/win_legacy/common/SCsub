@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+Import("env")
+
+if env["platform"] == "win_nt6" and env["win_legacy_windowed"]:
+    env.add_source_files(env.drivers_sources, "audio/*.cpp")
+    env.add_source_files(env.drivers_sources, "input/*.cpp")
+    env.add_source_files(env.drivers_sources, "display/*.cpp")
+    # The key table and HWND renderer binding do not depend on OS_Windows.
+    env.add_source_files(env.drivers_sources, "#platform/windows/key_mapping_windows.cpp")

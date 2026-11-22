@@ -143,7 +143,7 @@ int wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, 
 
 void wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_msg_recv_arg *arg, void *user_data) {
 	struct WSLPeer::PeerData *peer_data = (struct WSLPeer::PeerData *)user_data;
-	if (!peer_data->valid || peer_data->closing) {
+	if (!peer_data->valid || (peer_data->closing && arg->opcode != WSLAY_CONNECTION_CLOSE)) {
 		return;
 	}
 	WSLPeer *peer = (WSLPeer *)peer_data->peer;
@@ -305,7 +305,7 @@ void WSLPeer::close_now() {
 void WSLPeer::close(int p_code, String p_reason) {
 	if (_data && !wslay_event_get_close_sent(_data->ctx)) {
 		CharString cs = p_reason.utf8();
-		wslay_event_queue_close(_data->ctx, p_code, (uint8_t *)cs.ptr(), cs.size());
+		wslay_event_queue_close(_data->ctx, p_code, (const uint8_t *)cs.ptr(), cs.length());
 		wslay_event_send(_data->ctx);
 		_data->closing = true;
 	}

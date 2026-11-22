@@ -36,25 +36,32 @@
 #include "core/os/midi_driver.h"
 #include "core/vector.h"
 
-#include <stdio.h>
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include <mmsystem.h>
 
 class MIDIDriverWinMidi : public MIDIDriver {
-	Vector<HMIDIIN> connected_sources;
+	struct MIDIInputDevice {
+		String name;
+		HMIDIIN handle;
+	};
 
-	static void CALLBACK read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+	Vector<MIDIInputDevice> _devices;
+	HWND _message_window = nullptr;
+
+	static LRESULT CALLBACK _window_proc(HWND p_window, UINT p_message, WPARAM p_wparam, LPARAM p_lparam);
+	void _read(HMIDIIN p_handle, uint32_t p_message);
 
 public:
-	virtual Error open();
-	virtual void close();
+	Error open() override;
+	void close() override;
+	PoolStringArray get_connected_inputs() override;
+	void process();
 
-	virtual PoolStringArray get_connected_inputs();
-
-	MIDIDriverWinMidi();
-	virtual ~MIDIDriverWinMidi();
+	~MIDIDriverWinMidi() override;
 };
 
 #endif // WINMIDI_ENABLED

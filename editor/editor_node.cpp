@@ -1638,6 +1638,11 @@ void EditorNode::restart_editor() {
 
 	const Vector<String> &forwardable_args = Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL);
 	for (int i = 0; i < forwardable_args.size(); i++) {
+		if (_restart_for_video_driver_change && forwardable_args[i] == "--video-driver") {
+			// A deliberate renderer change supersedes the old CLI choice; ordinary restarts retain it.
+			i++;
+			continue;
+		}
 		args.push_back(forwardable_args[i]);
 	}
 
@@ -2946,6 +2951,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SET_VIDEO_DRIVER_SAVE_AND_RESTART: {
 			ProjectSettings::get_singleton()->set("rendering/quality/driver/driver_name", video_driver_request);
 			ProjectSettings::get_singleton()->save();
+			_restart_for_video_driver_change = true;
 
 			save_all_scenes();
 			restart_editor();

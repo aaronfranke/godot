@@ -59,13 +59,14 @@ methods.save_active_platforms(active_platforms, active_platform_ids)
 custom_tools = ["default"]
 
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
+is_legacy_windows = platform_arg in ("win_nt6",)
 
 if platform_arg == "android":
     custom_tools = ["clang", "clang++", "as", "ar", "link"]
 elif platform_arg == "javascript":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
-elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
+elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", is_legacy_windows):
     custom_tools = ["mingw"]
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
@@ -302,11 +303,17 @@ for path in module_search_paths:
     modules_detected.update(modules)
 
 # Add module options
+# Apply the platform default before declaring the per-module flags.
+modules_enabled_by_default = env_base["modules_enabled_by_default"]
+if "modules_enabled_by_default" not in ARGUMENTS:
+    modules_enabled_by_default = dict(platform_flags.get(selected_platform, [])).get(
+        "modules_enabled_by_default", modules_enabled_by_default
+    )
 for name, path in modules_detected.items():
     sys.path.insert(0, path)
     import config
 
-    if env_base["modules_enabled_by_default"]:
+    if modules_enabled_by_default:
         enabled = True
         try:
             enabled = config.is_enabled()

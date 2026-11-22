@@ -31,6 +31,7 @@
 #include "file_dialog.h"
 
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/print_string.h"
 #include "scene/gui/label.h"
 
@@ -150,7 +151,7 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_entered(String p_dir) {
-	_change_dir(root_prefix.plus_file(p_dir));
+	_change_dir(root_prefix.plus_file(OS::get_singleton()->expand_path(p_dir)));
 	file->set_text("");
 }
 
@@ -159,7 +160,8 @@ void FileDialog::_file_entered(const String &p_file) {
 }
 
 void FileDialog::_save_confirm_pressed() {
-	String f = dir_access->get_current_dir().plus_file(file->get_text());
+	const String f = save_confirm_path;
+	save_confirm_path = String();
 	emit_signal("file_selected", f);
 	hide();
 }
@@ -206,7 +208,7 @@ void FileDialog::_action_pressed() {
 		return;
 	}
 
-	String file_text = file->get_text();
+	const String file_text = OS::get_singleton()->expand_path(file->get_text());
 	String f = file_text.is_abs_path() ? file_text : dir_access->get_current_dir().plus_file(file_text);
 
 	if ((mode == MODE_OPEN_ANY || mode == MODE_OPEN_FILE) && dir_access->file_exists(f)) {
@@ -281,6 +283,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f)) {
+			save_confirm_path = f;
 			confirm_save->set_text(RTR("File exists, overwrite?"));
 			confirm_save->popup_centered(Size2(200, 80));
 		} else {
@@ -627,15 +630,12 @@ void FileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size()) {
 		return;
 	}
-	int pos = MAX(p_path.rfind("/"), p_path.rfind("\\"));
-	if (pos == -1) {
-		set_current_file(p_path);
-	} else {
-		String dir = p_path.substr(0, pos);
-		String file = p_path.substr(pos + 1, p_path.length());
-		set_current_dir(dir);
-		set_current_file(file);
+	const String path = OS::get_singleton()->expand_path(p_path);
+	const String base_dir = path.get_base_dir();
+	if (!base_dir.empty()) {
+		set_current_dir(base_dir);
 	}
+	set_current_file(path.get_file());
 }
 
 void FileDialog::set_root_subfolder(const String &p_root) {

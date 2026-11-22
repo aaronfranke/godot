@@ -107,8 +107,6 @@ size_t NetSocketPosix::_set_addr_storage(struct sockaddr_storage *p_addr, const 
 		addr6->sin6_port = htons(p_port);
 		if (p_ip.is_valid()) {
 			memcpy(&addr6->sin6_addr.s6_addr, p_ip.get_ipv6(), 16);
-		} else {
-			addr6->sin6_addr = in6addr_any;
 		}
 		return sizeof(sockaddr_in6);
 	} else { // IPv4 socket
@@ -153,7 +151,8 @@ void NetSocketPosix::make_default() {
 #if defined(WINDOWS_ENABLED)
 	if (_create == NULL) {
 		WSADATA data;
-		WSAStartup(MAKEWORD(2, 2), &data);
+		const int error = WSAStartup(MAKEWORD(2, 2), &data);
+		ERR_FAIL_COND_MSG(error != 0, vformat("Could not initialize Winsock (error %d).", error));
 	}
 #endif
 	_create = _create_func;
@@ -172,6 +171,9 @@ NetSocketPosix::NetSocketPosix() :
 		_sock(SOCK_EMPTY),
 		_ip_type(IP::TYPE_NONE),
 		_is_stream(false) {
+#ifdef WINDOWS_ENABLED
+	_connect_pending = false;
+#endif // WINDOWS_ENABLED
 }
 
 NetSocketPosix::~NetSocketPosix() {
@@ -323,6 +325,16 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 	int type = p_sock_type == TYPE_TCP ? SOCK_STREAM : SOCK_DGRAM;
 	_sock = socket(family, type, protocol);
 
+#ifdef WINDOWS_ENABLED
+	if (_sock != SOCK_EMPTY && ip_type == IP::TYPE_ANY) {
+		const DWORD ipv6_only = 0;
+		if (setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char *>(&ipv6_only), sizeof(ipv6_only)) == SOCKET_ERROR) {
+			// Some older providers implement IPv6 without IPv4-mapped addresses.
+			close();
+		}
+	}
+#endif // WINDOWS_ENABLED
+
 	if (_sock == SOCK_EMPTY && ip_type == IP::TYPE_ANY) {
 		// Careful here, changing the referenced parameter so the caller knows that we are using an IPv4 socket
 		// in place of a dual stack one, and further calls to _set_sock_addr will work as expected.
@@ -334,10 +346,12 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 	ERR_FAIL_COND_V(_sock == SOCK_EMPTY, FAILED);
 	_ip_type = ip_type;
 
+#ifndef WINDOWS_ENABLED
 	if (family == AF_INET6) {
 		// Select IPv4 over IPv6 mapping
 		set_ipv6_only_enabled(ip_type != IP::TYPE_ANY);
 	}
+#endif // !WINDOWS_ENABLED
 
 	if (protocol == IPPROTO_UDP) {
 		// Make sure to disable broadcasting for UDP sockets.
@@ -382,6 +396,9 @@ void NetSocketPosix::close() {
 	_sock = SOCK_EMPTY;
 	_ip_type = IP::TYPE_NONE;
 	_is_stream = false;
+#ifdef WINDOWS_ENABLED
+	_connect_pending = false;
+#endif // WINDOWS_ENABLED
 }
 
 Error NetSocketPosix::bind(IP_Address p_addr, uint16_t p_port) {
@@ -418,6 +435,26 @@ Error NetSocketPosix::connect_to_host(IP_Address p_host, uint16_t p_port) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!_can_use_ip(p_host, false), ERR_INVALID_PARAMETER);
 
+#ifdef WINDOWS_ENABLED
+	if (_connect_pending) {
+		// Winsock providers can reject a repeated WSAConnect with WSAEINVAL while
+		// the first attempt is pending. Poll it and inspect its final error instead.
+		const Error ready = poll(POLL_TYPE_OUT, 0);
+		if (ready == ERR_BUSY) {
+			return ERR_BUSY;
+		}
+		int socket_error = 0;
+		int error_length = int(sizeof(socket_error));
+		if (ready != OK || getsockopt(_sock, SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&socket_error), &error_length) != 0 || socket_error != 0) {
+			print_verbose("Connection to remote host failed.");
+			close();
+			return FAILED;
+		}
+		_connect_pending = false;
+		return OK;
+	}
+#endif // WINDOWS_ENABLED
+
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_addr_storage(&addr, p_host, p_port, _ip_type);
 
@@ -431,6 +468,9 @@ Error NetSocketPosix::connect_to_host(IP_Address p_host, uint16_t p_port) {
 			// Still waiting to connect, try again in a while
 			case ERR_NET_WOULD_BLOCK:
 			case ERR_NET_IN_PROGRESS:
+#ifdef WINDOWS_ENABLED
+				_connect_pending = _is_stream;
+#endif // WINDOWS_ENABLED
 				return ERR_BUSY;
 			default:
 				print_verbose("Connection to remote host failed!");

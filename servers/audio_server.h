@@ -93,6 +93,8 @@ public:
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
+	// Capture may negotiate a separate PCM rate that microphone playback must resample.
+	virtual int get_input_mix_rate() const { return get_mix_rate(); }
 	virtual SpeakerMode get_speaker_mode() const = 0;
 	virtual Array get_device_list();
 	virtual String get_device();

@@ -1084,8 +1084,13 @@ String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
 	return ret;
 }
 
-String String::chr(CharType p_char) {
-	CharType c[2] = { p_char, 0 };
+String String::chr(uint32_t p_char) {
+	if (sizeof(CharType) == 2 && p_char >= 0x10000 && p_char <= 0x10ffff) {
+		const uint32_t supplementary = p_char - 0x10000;
+		const CharType pair[] = { CharType(0xd800 + (supplementary >> 10)), CharType(0xdc00 + (supplementary & 0x3ff)), 0 };
+		return String(pair);
+	}
+	const CharType c[] = { CharType(p_char), 0 };
 	return String(c);
 }
 String String::num(double p_num, int p_decimals) {

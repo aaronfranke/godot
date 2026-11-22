@@ -97,6 +97,7 @@ private:
 	bool mode_overrides_title;
 	String root_subfolder;
 	String root_prefix;
+	String save_confirm_path;
 
 	static bool default_show_hidden_files;
 	bool show_hidden_files;

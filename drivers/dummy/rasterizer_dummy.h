@@ -152,6 +152,7 @@ public:
 
 	mutable RID_Owner<DummyTexture> texture_owner;
 	mutable RID_Owner<DummyMesh> mesh_owner;
+	RID_Owner<RID_Data> shader_material_owner;
 
 	RID texture_create() {
 		DummyTexture *texture = memnew(DummyTexture);
@@ -254,7 +255,8 @@ public:
 
 	/* SHADER API */
 
-	RID shader_create() { return RID(); }
+	// Materials and their generated shaders still have a lifetime in headless scenes.
+	RID shader_create() { return shader_material_owner.make_rid(memnew(RID_Data)); }
 
 	void shader_set_code(RID p_shader, const String &p_code) {}
 	String shader_get_code(RID p_shader) const { return ""; }
@@ -272,7 +274,7 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	RID material_create() { return RID(); }
+	RID material_create() { return shader_material_owner.make_rid(memnew(RID_Data)); }
 
 	void material_set_render_priority(RID p_material, int priority) {}
 	void material_set_shader(RID p_shader_material, RID p_shader) {}
@@ -757,6 +759,10 @@ public:
 			LightmapCapture *lightmap_capture = lightmap_capture_data_owner.getornull(p_rid);
 			lightmap_capture_data_owner.free(p_rid);
 			memdelete(lightmap_capture);
+		} else if (shader_material_owner.owns(p_rid)) {
+			RID_Data *resource = shader_material_owner.get(p_rid);
+			shader_material_owner.free(p_rid);
+			memdelete(resource);
 		} else {
 			return false;
 		}

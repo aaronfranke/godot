@@ -51,7 +51,7 @@ public:
 
 	virtual PoolStringArray get_connected_inputs();
 
-	static void receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_t length);
+	static void receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_t length, int p_device = 0);
 
 	MIDIDriver();
 	virtual ~MIDIDriver() {}

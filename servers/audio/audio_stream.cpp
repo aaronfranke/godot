@@ -132,7 +132,7 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
-	int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
+	int mix_rate = AudioDriver::get_singleton()->get_input_mix_rate();
 	unsigned int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
 #ifdef DEBUG_ENABLED
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
@@ -176,7 +176,7 @@ void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale
 }
 
 float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
-	return AudioDriver::get_singleton()->get_mix_rate();
+	return AudioDriver::get_singleton()->get_input_mix_rate();
 }
 
 void AudioStreamPlaybackMicrophone::start(float p_from_pos) {

@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+env.add_source_files(env.drivers_sources, "os/*.cpp")
+if env["win_legacy_windowed"]:
+    env.add_source_files(env.drivers_sources, "display/*.cpp")
+
+if env.get("opengl3", False):
+    env.add_source_files(env.drivers_sources, "display/opengl/*.cpp")

@@ -69,9 +69,10 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#ifdef _MSC_VER
+// MinGW may target MSVCRT versions that do not export strcpy_s.
 #define strcpy strcpy_s
-#endif
+#endif // _MSC_VER
 
 #ifdef GLAD_ENABLED
 // We offer the option to disable GPU threaded optimizations indirectly by forcing debug output.

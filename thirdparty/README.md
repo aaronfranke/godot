@@ -287,6 +287,10 @@ Files extracted from upstream source:
 - `src/` and `sharpyuv/` except from: `.am`, `.rc` and `.in` files
 - `AUTHORS`, `COPYING`, `PATENTS`
 
+Patches:
+
+- `0001-msvc-fpstrict.patch` (use a constant initializer with MSVC's strict floating-point mode)
+
 
 ## mbedtls
 

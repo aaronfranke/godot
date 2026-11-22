@@ -1396,7 +1396,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	message_queue = memnew(MessageQueue);
 
 	if (p_second_phase) {
-		return setup2();
+		exit_code = setup2();
+		if (exit_code != OK) {
+			goto error;
+		}
+		return OK;
 	}
 	OS::get_singleton()->benchmark_end_measure("core");
 	return OK;

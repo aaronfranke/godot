@@ -4030,15 +4030,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
-				const CharType chr[2] = { (CharType)k->get_unicode(), 0 };
+				const String characters = String::chr(k->get_unicode());
 
 				if (completion_hint != "" && k->get_unicode() == ')') {
 					completion_hint = "";
 				}
-				if (auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
-					_consume_pair_symbol(chr[0]);
+				if (auto_brace_completion_enabled && characters.length() == 1 && _is_pair_symbol(characters[0])) {
+					_consume_pair_symbol(characters[0]);
 				} else {
-					_insert_text_at_cursor(chr);
+					_insert_text_at_cursor(characters);
 				}
 
 				if (insert_mode && !had_selection) {

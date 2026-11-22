@@ -165,7 +165,8 @@ void ThemeItemImportTree::_update_items_tree() {
 					break;
 
 				case Theme::DATA_TYPE_MAX:
-					break; // Can't happen, but silences warning.
+				default:
+					continue; // Not a theme data type.
 			}
 
 			bool data_type_any_checked = false;
@@ -401,7 +402,8 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 			break;
 
 		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		default:
+			return; // Not a theme data type.
 	}
 
 	if (!total_selected_items_label) {
@@ -585,7 +587,8 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 			break;
 
 		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		default:
+			return; // Not a theme data type.
 	}
 
 	updating_tree = true;
@@ -636,7 +639,8 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 			break;
 
 		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		default:
+			return; // Not a theme data type.
 	}
 
 	updating_tree = true;
@@ -688,7 +692,8 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 			break;
 
 		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		default:
+			return; // Not a theme data type.
 	}
 
 	updating_tree = true;
@@ -1033,7 +1038,8 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				break;
 
 			case Theme::DATA_TYPE_MAX:
-				continue; // Can't happen, but silences warning.
+			default:
+				continue; // Not a theme data type.
 		}
 
 		if (i > 0) {

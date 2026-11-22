@@ -80,9 +80,10 @@
 #include <EGL/eglext.h>
 #endif
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#ifdef _MSC_VER
+// MinGW may target MSVCRT versions that do not export strcpy_s.
 #define strcpy strcpy_s
-#endif
+#endif // _MSC_VER
 
 #ifdef CAN_DEBUG
 
