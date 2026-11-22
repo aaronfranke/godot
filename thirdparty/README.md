@@ -324,6 +324,7 @@ File extracted from upstream release tarball:
 Patches:
   
 - `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
+- `0002-win-nt5-vsnprintf.patch` (use the fallback on NT5 MSVCRT)
 
 
 ## minimp3
@@ -360,6 +361,7 @@ Patches:
 - `0001-minixml-fix-buffer-read-overflow.patch` (upstream 3cfb4fb, CVE-2026-110655)
 - `0002-minixml-fix-buffer-overrun-after-namespace-separator.patch` (upstream 64ef08a, CVE-2026-110656)
 - `0003-minixml-fix-1-byte-out-of-bounds-read.patch` (upstream 42965d7)
+- `0004-win-nt5-winsock.patch` (Winsock and IPv4 multicast selection on Windows 2000)
 
 
 ## minizip

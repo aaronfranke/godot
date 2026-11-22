@@ -4,7 +4,7 @@ Import("env")
 
 thirdparty_obj = []
 
-if env["platform"] in ["haiku", "osx", "windows", "x11", "win_nt6"]:
+if env["platform"] in ["haiku", "osx", "windows", "x11", "win_nt5", "win_nt6"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [

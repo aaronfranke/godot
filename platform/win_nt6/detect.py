@@ -31,7 +31,7 @@ def get_opts():
 
 
 def get_flags():
-    return [("bits", "64")] + nt_build.get_flags()
+    return [("bits", "64"), ("module_bullet_enabled", True)] + nt_build.get_flags()
 
 
 def configure(env):

@@ -44,7 +44,12 @@ int DisplayServerWindowsNT::get_driver_index(int p_driver) {
 #ifdef GLES_ENABLED
 	p_driver -= 2;
 #endif // GLES_ENABLED
+#if defined(WIN_NT5_ENABLED) && defined(D3D7_ENABLED) && defined(D3D9_ENABLED)
+	// Retain NT5's D3D7 default without changing NT6's registry order.
+	return p_driver < 2 ? 1 - p_driver : p_driver;
+#else
 	return p_driver;
+#endif // defined(WIN_NT5_ENABLED) && defined(D3D7_ENABLED) && defined(D3D9_ENABLED)
 }
 
 const char *DisplayServerWindowsNT::get_driver_name(int p_driver) {
@@ -583,6 +588,7 @@ LRESULT DisplayServerWindowsNT::_handle_message(UINT p_message, WPARAM p_wparam,
 			_fullscreen_bounds_dirty = _fullscreen;
 			break;
 		case WM_SYSCOMMAND: {
+			// The NT5 SDK target omits SCF_ISSECURE.
 			enum { SCREENSAVER_SECURE = 0x0001 };
 			// The display idle request does not inhibit ordinary screen savers.
 			if (_keep_screen_on && (p_wparam & 0xfff0) == SC_SCREENSAVE && !(p_wparam & SCREENSAVER_SECURE)) {

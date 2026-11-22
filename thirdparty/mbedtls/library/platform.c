@@ -121,7 +121,8 @@ int mbedtls_platform_win32_vsnprintf(char *s, size_t n, const char *fmt, va_list
         return -1;
     }
 
-#if defined(_TRUNCATE)
+    /* The NT5 MSVCRT does not export vsnprintf_s. */
+#if defined(_TRUNCATE) && !defined(WIN_LEGACY_NT_ENABLED)
     ret = vsnprintf_s(s, n, _TRUNCATE, fmt, arg);
 #else
     ret = vsnprintf(s, n, fmt, arg);
@@ -129,7 +130,7 @@ int mbedtls_platform_win32_vsnprintf(char *s, size_t n, const char *fmt, va_list
         s[n-1] = '\0';
         ret = -1;
     }
-#endif
+#endif // defined(_TRUNCATE) && !defined(WIN_LEGACY_NT_ENABLED)
 
     return ret;
 }

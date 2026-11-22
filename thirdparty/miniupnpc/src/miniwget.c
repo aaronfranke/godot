@@ -13,6 +13,9 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
+#include <wspiapi.h>
+#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
 #include <io.h>
 #define MAXHOSTNAMELEN 64
 #include "win32_snprintf.h"

@@ -282,6 +282,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
+#ifdef TOOLS_ENABLED
 void image_decompress_cvtt(Image *p_image) {
 	Image::Format target_format;
 	bool is_signed = false;
@@ -394,3 +395,4 @@ void image_decompress_cvtt(Image *p_image) {
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
+#endif // TOOLS_ENABLED

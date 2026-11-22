@@ -49,17 +49,21 @@ String OS_WindowsNT::get_system_dir(SystemDir p_dir, bool) const {
 		case SYSTEM_DIR_DOCUMENTS:
 			break;
 		case SYSTEM_DIR_DOWNLOADS: {
-			// Downloads has no CSIDL; the known-folder API is available on NT6.
+			// Downloads has no CSIDL. Resolve the Vista API on systems that export it.
 			constexpr GUID DOWNLOADS_FOLDER_ID = { 0x374de290, 0x123f, 0x4565, { 0x91, 0x64, 0x39, 0xc4, 0x92, 0x5e, 0x46, 0x7b } };
 			constexpr DWORD KNOWN_FOLDER_DONT_VERIFY = 0x4000;
-			PWSTR path = nullptr;
-			String downloads;
-			if (SHGetKnownFolderPath(DOWNLOADS_FOLDER_ID, KNOWN_FOLDER_DONT_VERIFY, nullptr, &path) == S_OK && path) {
-				downloads = String(path).replace("\\", "/");
-			}
-			CoTaskMemFree(path);
-			if (!downloads.empty()) {
-				return downloads;
+			using KnownFolderPath = HRESULT(WINAPI *)(const GUID &, DWORD, HANDLE, PWSTR *);
+			static const auto known_folder = reinterpret_cast<KnownFolderPath>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"shell32.dll"), "SHGetKnownFolderPath")));
+			if (known_folder) {
+				PWSTR path = nullptr;
+				String downloads;
+				if (known_folder(DOWNLOADS_FOLDER_ID, KNOWN_FOLDER_DONT_VERIFY, nullptr, &path) == S_OK && path) {
+					downloads = String(path).replace("\\", "/");
+				}
+				CoTaskMemFree(path);
+				if (!downloads.empty()) {
+					return downloads;
+				}
 			}
 		} break;
 		case SYSTEM_DIR_MOVIES:

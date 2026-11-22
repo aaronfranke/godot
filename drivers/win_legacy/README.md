@@ -10,7 +10,7 @@ This folder contains shared code for old Windows platforms. Named "win" to fit i
 - Code just for Windows NT5 goes in `platform/win_nt5/`.
 - Code just for Windows NT6 in `platform/win_nt6/`.
 
-Godot 3.x keeps window APIs on OS; the shared display helper does not add a DisplayServer API to the engine. The platform owns its build options, API baseline, entry point, feature tags, and exporter identity.
+NT5 and NT6 each provide their own OS subclasses and private display helper subclasses over the shared NT implementation. Godot 3.x keeps window APIs on OS; the helpers do not add a DisplayServer API to the engine. Each platform owns its build options, API baseline, entry point, feature tags, and exporter identity.
 
 Shared runtime sources are selected by this folder's `SCsub`. Windowed builds define `WIN_LEGACY_WINDOWED_ENABLED`; dedicated headless builds omit the window and device sources. Shared export packaging is compiled for editor builds on every host platform.
 

@@ -6,7 +6,7 @@ env.drivers_sources = []
 
 # OS drivers
 SConscript("unix/SCsub")
-legacy_windows = env["platform"] == "win_nt6"
+legacy_windows = env["platform"] in ("win_nt5", "win_nt6")
 if not legacy_windows:
     SConscript("windows/SCsub")
 SConscript("win_legacy/SCsub")

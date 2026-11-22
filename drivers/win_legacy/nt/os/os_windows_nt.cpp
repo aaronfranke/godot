@@ -463,11 +463,13 @@ String OS_WindowsNT::get_user_data_dir() const {
 
 String OS_WindowsNT::get_locale() const {
 	constexpr DWORD MUI_LANGUAGE_NAME_FLAG = 0x8;
+	using PreferredLanguages = BOOL(WINAPI *)(DWORD, PULONG, PWSTR, PULONG);
+	static const auto preferred = reinterpret_cast<PreferredLanguages>(reinterpret_cast<void *>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetUserPreferredUILanguages")));
 	ULONG count = 0;
 	ULONG length = 0;
-	if (GetUserPreferredUILanguages(MUI_LANGUAGE_NAME_FLAG, &count, nullptr, &length) && length > 0 && length <= INT_MAX) {
+	if (preferred && preferred(MUI_LANGUAGE_NAME_FLAG, &count, nullptr, &length) && length > 0 && length <= INT_MAX) {
 		String names;
-		if (names.resize(length) == OK && GetUserPreferredUILanguages(MUI_LANGUAGE_NAME_FLAG, &count, names.ptrw(), &length) && count > 0) {
+		if (names.resize(length) == OK && preferred(MUI_LANGUAGE_NAME_FLAG, &count, names.ptrw(), &length) && count > 0) {
 			const String primary = String(names.c_str());
 			if (!primary.empty()) {
 				return primary.replace("-", "_");

@@ -30,15 +30,14 @@
 
 #include "register_types.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "image_compress_cvtt.h"
 
 void register_cvtt_types() {
 	Image::set_compress_bptc_func(image_compress_cvtt);
+#ifdef TOOLS_ENABLED
+	// NT5 exports install the bcdec decoder independently of the optional encoder.
 	Image::_image_decompress_bptc = image_decompress_cvtt;
+#endif // TOOLS_ENABLED
 }
 
 void unregister_cvtt_types() {}
-
-#endif

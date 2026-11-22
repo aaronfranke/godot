@@ -34,6 +34,8 @@
 #include "core/image.h"
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source);
+#ifdef TOOLS_ENABLED
 void image_decompress_cvtt(Image *p_image);
+#endif // TOOLS_ENABLED
 
 #endif // IMAGE_COMPRESS_CVTT_H

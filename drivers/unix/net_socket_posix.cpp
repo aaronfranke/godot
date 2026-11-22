@@ -93,6 +93,11 @@
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
 #endif
 
+#if defined(WIN_LEGACY_NT_ENABLED) && defined(_MSC_VER) && _WIN32_WINNT < 0x0501
+// The Windows SDK hides this protocol constant below the XP header baseline.
+static const int IPPROTO_IPV6 = 41;
+#endif // defined(WIN_LEGACY_NT_ENABLED) && defined(_MSC_VER) && _WIN32_WINNT < 0x0501
+
 #endif
 
 size_t NetSocketPosix::_set_addr_storage(struct sockaddr_storage *p_addr, const IP_Address &p_ip, uint16_t p_port, IP::Type p_ip_type) {

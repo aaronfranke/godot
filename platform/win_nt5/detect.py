@@ -1,10 +1,6 @@
 import os
-import sys
 
-
-def _fail(message):
-    print("ERROR: " + message, file=sys.stderr)
-    sys.exit(255)
+from drivers.win_legacy.nt import build as nt_build
 
 
 def is_active():
@@ -16,52 +12,43 @@ def get_name():
 
 
 def can_build():
-    return False
+    return os.name == "nt"
 
 
 def get_opts():
     from SCons.Variables import BoolVariable
 
-    return [
+    return nt_build.get_opts() + [
         (
             "target_win_version",
             "Minimum Windows NT version (auto = 0x0500/2000 for x86_32, or 0x0502/XPx64 for x86_64)",
             "auto",
         ),
-        BoolVariable(
-            "use_mingw",
-            "Use MinGW GCC instead of MSVC. Required to make the build actually portable to old Windows.",
-            True,
-        ),
-        ("mingw_prefix", "Path to the MinGW-w64 MSVCRT toolchain root", os.getenv("MINGW_PREFIX", "")),
-        BoolVariable("use_static_cpp", "Link the compiler runtime statically", True),
+        BoolVariable("d3d3_software", "Build Fixed Function D3D3 Software (x86_32 only)", False),
+        BoolVariable("d3d7", "Build Fixed Function D3D7 (x86_32 only)", '${bits != "64"}'),
+        BoolVariable("d3d9", "Build Fixed Function D3D9", True),
+        BoolVariable("opengl1", "Build Fixed Function OpenGL1", True),
+        BoolVariable("opengl3", "Build the existing GLES2/GLES3 renderers", False),
     ]
 
 
 def get_flags():
-    return [("bits", "32")]
+    return [("bits", "32")] + nt_build.get_flags()
 
 
 def configure(env):
     if env["bits"] == "default":
         env["bits"] = "32"
-    if env["bits"] not in ["32", "64"]:
-        _fail("win_nt5 supports only bits=32 or bits=64.")
-    # 0x0500 = Windows 2000, 0x0501 = Windows XP 32-bit, 0x0502 = Windows XP x64 Edition / Server 2003.
-    # 0x0600 = Windows Vista / Server 2008.
-    target_win_version_int = 0x0500
+    floor = 0x0500
+    if env["bits"] == "64" and floor < 0x0502:
+        floor = 0x0502
+    minimum = floor
+    try:
+        minimum = floor if env["target_win_version"] == "auto" else int(env["target_win_version"], 0)
+    except ValueError:
+        nt_build.fail("target_win_version must be 'auto' or a numeric Windows version.")
+    if minimum < floor or minimum >= 0x0601:
+        nt_build.fail(f"Invalid target_win_version for win_nt5: {minimum:#06x}.")
     if env["target_win_version"] == "auto":
-        env["target_win_version"] = "0x0502" if env["bits"] == "64" else "0x0500"
-        target_win_version_int = 0x0502 if env["bits"] == "64" else 0x0500
-    else:
-        try:
-            target_win_version_int = int(env["target_win_version"], 0)
-        except ValueError:
-            _fail("target_win_version must be 'auto' or a numeric Windows NT version such as 0x0500.")
-        if target_win_version_int < 0x0500:
-            _fail("Target Windows NT version too low for `win_nt5`. Consider using `platform=win_nt4` instead.")
-        elif target_win_version_int < 0x0502 and env["bits"] == "64":
-            _fail("The x86_64 architecture requires target_win_version=0x0502 (Windows XP x64 Edition) or newer.")
-        elif target_win_version_int >= 0x0601:
-            _fail("Target Windows NT version too high for `win_nt5`. Consider using `platform=win_nt6` instead.")
-    env["target_win_version_int"] = target_win_version_int
+        env["target_win_version"] = f"0x{minimum:04x}"
+    nt_build.configure(env, minimum)

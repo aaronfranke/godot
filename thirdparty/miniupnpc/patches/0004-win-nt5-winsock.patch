@@ -1,0 +1,95 @@
+diff --git a/thirdparty/miniupnpc/src/connecthostport.c b/thirdparty/miniupnpc/src/connecthostport.c
+index 79f832b8db..e2bdbbf9dc 100644
+--- a/thirdparty/miniupnpc/src/connecthostport.c
++++ b/thirdparty/miniupnpc/src/connecthostport.c
+@@ -17,6 +17,9 @@
+ #ifdef _WIN32
+ #include <winsock2.h>
+ #include <ws2tcpip.h>
++#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
++#include <wspiapi.h>
++#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
+ #include <io.h>
+ #define MAXHOSTNAMELEN 64
+ #include "win32_snprintf.h"
+diff --git a/thirdparty/miniupnpc/src/minissdpc.c b/thirdparty/miniupnpc/src/minissdpc.c
+index 98c5b37463..93a405da61 100644
+--- a/thirdparty/miniupnpc/src/minissdpc.c
++++ b/thirdparty/miniupnpc/src/minissdpc.c
+@@ -18,6 +18,13 @@
+ #ifdef _WIN32
+ #include <winsock2.h>
+ #include <ws2tcpip.h>
++#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
++#include <wspiapi.h>
++#ifdef _MSC_VER
++/* The Windows SDK hides the IPv6 protocol number at the Windows 2000 baseline. */
++static const int IPPROTO_IPV6 = 41;
++#endif // _MSC_VER
++#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
+ #include <io.h>
+ #include <iphlpapi.h>
+ #include "win32_snprintf.h"
+@@ -576,7 +583,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
+ 		p->sin6_family = AF_INET6;
+ 		if(localport > 0 && localport < 65536)
+ 			p->sin6_port = htons((unsigned short)localport);
++#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0501
+ 		p->sin6_addr = in6addr_any; /* in6addr_any is not available with MinGW32 3.4.2 */
++#endif // !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0501
+ 	} else {
+ 		struct sockaddr_in * p = (struct sockaddr_in *)&sockudp_r;
+ 		p->sin_family = AF_INET;
+@@ -591,6 +600,30 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
+  * in order to give this ip to setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF) */
+ 	if(!ipv6) {
+ 		DWORD ifbestidx;
++#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
++		/* Windows 2000 has an IPv4 address table, but no GetAdaptersAddresses. */
++		if ((!multicastif || !multicastif[0]) &&
++		    GetBestInterface(inet_addr(UPNP_MCAST_ADDR), &ifbestidx) == NO_ERROR) {
++			ULONG table_size = 0;
++			if (GetIpAddrTable(NULL, &table_size, FALSE) == ERROR_INSUFFICIENT_BUFFER) {
++				PMIB_IPADDRTABLE table = malloc(table_size);
++				if (table && GetIpAddrTable(table, &table_size, FALSE) == NO_ERROR) {
++					DWORD i;
++					for (i = 0; i < table->dwNumEntries; i++) {
++						if (table->table[i].dwIndex == ifbestidx && table->table[i].dwAddr != INADDR_ANY) {
++							struct in_addr mc_if;
++							mc_if.s_addr = table->table[i].dwAddr;
++							if (setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) == 0) {
++								((struct sockaddr_in *)&sockudp_r)->sin_addr = mc_if;
++								break;
++							}
++						}
++					}
++				}
++				free(table);
++			}
++		}
++#else
+ #if _WIN32_WINNT >= 0x0600 // _WIN32_WINNT_VISTA
+ 		// While we don't need IPv6 support, the IPv4 only funciton is not available in UWP apps.
+ 		SOCKADDR_IN destAddr;
+@@ -682,6 +715,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
+ 				pAddresses = NULL;
+ 			}
+ 		}
++#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
+ 	}
+ #endif	/* _WIN32 */
+ 
+diff --git a/thirdparty/miniupnpc/src/miniwget.c b/thirdparty/miniupnpc/src/miniwget.c
+index e76a5e516b..86e2e1fd46 100644
+--- a/thirdparty/miniupnpc/src/miniwget.c
++++ b/thirdparty/miniupnpc/src/miniwget.c
+@@ -13,6 +13,9 @@
+ #ifdef _WIN32
+ #include <winsock2.h>
+ #include <ws2tcpip.h>
++#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
++#include <wspiapi.h>
++#endif // defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0501
+ #include <io.h>
+ #define MAXHOSTNAMELEN 64
+ #include "win32_snprintf.h"
